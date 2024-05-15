@@ -26,6 +26,6 @@ class DatabaseSeeder extends Seeder
         'isAdmin' => 1,
         ]);
 
-        \App\Models\Report::factory(10)->create();
+        \App\Models\Report::factory(20)->create();
     }
 }

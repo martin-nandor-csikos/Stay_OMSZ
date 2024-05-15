@@ -19,5 +19,6 @@ class Report extends Model
         'diagnosis',
         'withWho',
         'img',
+        'user_id',
     ];
 }

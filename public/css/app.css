@@ -5,3 +5,25 @@
 .logo-menu {
     width: 50px;
 }
+
+.create-report {
+    margin-top: 50px !important;
+    width: 400px;
+    display: block;
+    margin: auto;
+}
+
+.view-reports {
+    -moz-box-shadow: 0 0 5px 3px #888;
+    -webkit-box-shadow: 0 0 5px 3px#888;
+    box-shadow: 0 0 5px 3px #888;
+    padding: 0px;
+    margin-top: 30px;
+}
+
+@media screen and (max-width: 640px) {
+    .view-reports {
+        overflow: auto;
+        display: inline-block;
+    }
+}

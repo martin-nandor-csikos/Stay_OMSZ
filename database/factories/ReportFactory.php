@@ -17,7 +17,7 @@ class ReportFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => fake()->randomNumber(2, false),
+            'user_id' => fake()->randomNumber(1, false),
             'price' => fake()->randomNumber(5, true),
             'diagnosis' => fake()->text(),
             'withWho' => fake()->text(),
