@@ -18,9 +18,13 @@ Route::get('/', function () {
     return view('auth.login');
 });
 
-Route::get('/dashboard', function () {
+Route::get('/fooldal', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/jelenteseim', function () {
+    return view('create_report');
+})->middleware(['auth', 'verified'])->name('create_report');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
