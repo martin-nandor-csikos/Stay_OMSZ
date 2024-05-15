@@ -11,14 +11,17 @@
         </div>
     @endsession
 
-    <div class="container view-reports">
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
         <table class="table table-striped table-hover">
             <thead>
                 <tr>
                     <th scope="col">#</th>
                     <th scope="col">Ár ($)</th>
                     <th scope="col">Diagnózis</th>
-                    <th scope="col">Társad</th>
+                    <th scope="col">Társaid</th>
                     <th scope="col">Kép</th>
                     <th scope="col">Beküldve</th>
                     <th scope="col">Törlés</th>
@@ -46,5 +49,8 @@
             @endforeach
             </tbody>
         </table>
+                </div>
+            </div>
+        </div>
     </div>
 </x-app-layout>
