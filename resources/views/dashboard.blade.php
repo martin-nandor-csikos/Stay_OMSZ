@@ -8,7 +8,7 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-6 col-sm-12">
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6 text-gray-900 view-reports-padding">
                             <p class="top5">Top 5 jelentésíró a héten</p>
@@ -33,13 +33,14 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-6 col-12">
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6 text-gray-900 view-reports-padding">
                             <p class="top5">Statisztikák</p>
                             <p><b>Jelentéseid száma:</b> {{ $reportCount }}</p>
                             <p><b>Utolsó felvitt jelentésed:</b> {{ \Illuminate\Support\Carbon::parse($lastReportDate)->format('Y.m.d H:i') }} </p>
                             <p><b>Szolgálati idő:</b> {{ $dutyMinuteSum }} perc</p>
+                            <p>Ennyi időt kell még szolgálatban lenned, hogy első legyél: <b>{{ $minutesUntilTopDutyTime }}</b> perc</p>
                             <p>Az összes leadott jelentés <b>{{ $userReportPercentage }}%</b>-át te adtad le.</p>
                             
                             <br>

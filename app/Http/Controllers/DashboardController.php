@@ -54,6 +54,16 @@ class DashboardController extends Controller
             ->limit(1)
             ->get();
 
+        $topDutyTime = DB::table('duty_times')
+            ->select(
+                DB::raw('sum(duty_times.minutes) as topDutyTime'),
+                'duty_times.user_id'
+            )
+            ->groupBy('user_id')
+            ->orderBy('topDutyTime', 'desc')
+            ->limit(1)
+            ->get();
+
         /*
                 DB::raw('(SELECT reports.created_at FROM reports WHERE reports.user_id = users.id ORDER BY reports.created_at DESC LIMIT 1) as lastReportDate'),
                 DB::raw('count(reports.user_id) as reportCount'),
@@ -62,6 +72,8 @@ class DashboardController extends Controller
                 DB::raw('(SELECT SUM(duty_times.minutes) FROM duty_times) as allDutyMinuteSum'),
         */
         $percentage = round(($reportCount[0]->reportCount / $allReportCount[0]->allReportCount) * 100);
+        $minutesUntilTopDutyTime = $topDutyTime[0]->topDutyTime - $dutyMinuteSum[0]->dutyMinuteSum;
+
         return view('dashboard', [
             'topReports' => $topReports,
             'reportCount' => $reportCount[0]->reportCount,
@@ -69,6 +81,7 @@ class DashboardController extends Controller
             'dutyMinuteSum' => $dutyMinuteSum[0]->dutyMinuteSum,
             'allReportCount' => $allReportCount[0]->allReportCount,
             'userReportPercentage' => $percentage,
+            'minutesUntilTopDutyTime' => $minutesUntilTopDutyTime,
         ]);
     }
 }
