@@ -20,7 +20,7 @@
                         <!-- Price -->
                         <div>
                             <x-input-label for="price" :value="__('Ár ($)')" class="price-currency" />
-                            <x-text-input id="price" class="block mt-1 w-full" type="number" name="price" :value="old('price')" required autofocus autocomplete="price" max="300000" />
+                            <x-text-input id="price" class="block mt-1 w-full" type="number" name="price" :value="old('price')" required autofocus autocomplete="price" max="300000" min="0" />
                             <x-input-error :messages="$errors->get('price')" class="mt-2" />
                         </div>
 

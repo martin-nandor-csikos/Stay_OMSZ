@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->integer('user_id');
             $table->integer('price');
-            $table->text('diagnosis');
+            $table->string('diagnosis');
             $table->string('withWho')->nullable();
-            $table->string('img');
+            $table->string('img')->unique();
             $table->timestamps();
         });
     }

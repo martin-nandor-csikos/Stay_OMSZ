@@ -6,6 +6,12 @@
     width: 50px;
 }
 
+.top5 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
 
 @media screen and (max-width: 640px) {
     .view-reports {

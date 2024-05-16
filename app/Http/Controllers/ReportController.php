@@ -36,15 +36,16 @@ class ReportController extends Controller
      */
     public function store(Request $request)
     {
-        $report = $request->validate([
-            'price' => ['required', 'integer', 'max:300000'],
-            'diagnosis' => ['required', 'string', 'max:100'],
-            'withWho' => ['nullable', 'string', 'max:100'],
-            'img' => ['required', 'url', 'max:100'],
+        $validatedData = $request->validate([
+            'price' => ['required', 'integer', 'max:300000', 'min:0'],
+            'diagnosis' => ['required', 'string'],
+            'withWho' => ['nullable', 'string'],
+            'img' => ['required', 'url', 'unique:reports'],
         ], [
             'price.required' => 'Az ár nem lehet üres.',
             'price.integer' => 'Az árnak egy pozitív egész számnak kell lennie.',
-            'price.max' => 'Az árnak maximum 6 számjegyű számnak kell lennie.',
+            'price.max' => 'Az ár maximum $300.000 lehet.',
+            'price.min' => 'Az ár minimum $0 lehet.',
 
             'diagnosis.required' => 'A diagnózis nem lehet üres.',
             'diagnosis.string' => 'A diagnózis csak szöveg lehet.',
@@ -55,6 +56,7 @@ class ReportController extends Controller
             'img.required' => 'A kép megadása kötelező.',
             'img.url' => 'A képnek érvényes URL-nek kell lennie.',
             'img.max' => 'A kép URL-je maximum 100 karakterből állhat.',
+            'img.unique' => 'Ezt a képet már feltöltötted.',
         ]);
 
         $report['user_id'] = $request->user()->id;
@@ -88,15 +90,17 @@ class ReportController extends Controller
      */
     public function update(Request $request, Report $report)
     {
+        /*
         $validatedData = $request->validate([
-            'price' => ['required', 'integer', 'max:300000'],
+            'price' => ['required', 'integer', 'max:300000', 'min:0'],
             'diagnosis' => ['required', 'string'],
             'withWho' => ['nullable', 'string'],
-            'img' => ['required', 'url'],
+            'img' => ['required', 'url', 'unique:reports'],
         ], [
             'price.required' => 'Az ár nem lehet üres.',
             'price.integer' => 'Az árnak egy pozitív egész számnak kell lennie.',
-            'price.max' => 'Az árnak maximum 6 számjegyű számnak kell lennie.',
+            'price.max' => 'Az ár maximum $300.000 lehet.',
+            'price.min' => 'Az ár minimum $0 lehet.',
 
             'diagnosis.required' => 'A diagnózis nem lehet üres.',
             'diagnosis.string' => 'A diagnózis csak szöveg lehet.',
@@ -107,6 +111,7 @@ class ReportController extends Controller
             'img.required' => 'A kép megadása kötelező.',
             'img.url' => 'A képnek érvényes URL-nek kell lennie.',
             'img.max' => 'A kép URL-je maximum 100 karakterből állhat.',
+            'img.unique' => 'Ezt a képet már feltöltötted.',
         ]);
         
         $oldReport = Report::findOrFail($report->id);
@@ -117,6 +122,7 @@ class ReportController extends Controller
         $oldReport->save();
 
         return redirect()->route('reports.index')->with('successful-update', 'A jelentés frissítése sikeres.');
+        */
     }
 
 
