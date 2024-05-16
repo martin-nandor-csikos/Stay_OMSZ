@@ -17,7 +17,14 @@ class PasswordController extends Controller
     {
         $validated = $request->validateWithBag('updatePassword', [
             'current_password' => ['required', 'current_password'],
-            'password' => ['required', Password::defaults(), 'confirmed'],
+            'password' => ['required', 'min:8', 'confirmed'],
+        ], [
+            'password.confirmed' => 'A megadott 2 jelszó nem egyezik meg.',
+            'password.required' => 'Meg kell adnod egy új jelszót.',
+            'password.min' => 'Túl rövid a jelszó. Minimum 8 karakterből kell állnia.',
+
+            'current_password.required' => 'Meg kell adnod a jelenlegi jelszavad.',
+            'current_password.current_password' => 'Hibás jelszó.',
         ]);
 
         $request->user()->update([

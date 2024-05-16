@@ -6,12 +6,6 @@
     width: 50px;
 }
 
-.create-report {
-    margin-top: 50px !important;
-    width: 400px;
-    display: block;
-    margin: auto;
-}
 
 @media screen and (max-width: 640px) {
     .view-reports {
@@ -21,5 +15,11 @@
 
     .view-reports-padding {
         padding: 0px !important;
+    }
+}
+
+@media screen and (min-width: 992px) {
+    .create-report {
+        width: 700px !important;
     }
 }

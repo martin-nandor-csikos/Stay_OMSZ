@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\User;
+use Validator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,11 +26,45 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request, $id)
     {
-        $request->user()->fill($request->validated());
+        $user = User::findOrFail($id);
+        $emailCheck = ($request->input('email') !== '') && ($request->input('email') !== $user->email);
 
-        $request->user()->save();
+        if ($emailCheck) {
+            $emailRules = [
+                'email' => 'email|max:255|unique:users',
+            ];
+        } else {
+            $emailRules = [
+                'email' => 'email|max:255',
+            ];
+        }
+
+        $validator = Validator::make($request->all(), $emailRules);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        if ($emailCheck) {
+            $user->email = $request->input('email');
+        }
+
+        $user->save();
+
+        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    public function updatePassword(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        if ($request->input('password') !== null) {
+            $user->password = Hash::make($request->input('password'));
+        }
+
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
