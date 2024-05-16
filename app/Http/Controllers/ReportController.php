@@ -60,6 +60,11 @@ class ReportController extends Controller
         ]);
 
         $report['user_id'] = $request->user()->id;
+        $report['price'] = $request->price;
+        $report['diagnosis'] = $request->diagnosis;
+        $report['withWho'] = $request->withWho;
+        $report['img'] = $request->img;
+        
         $createdReport = Report::create($report);
 
         return redirect()->route('reports.create')->with('successful-creation', 'A jelentés beadása sikeres.');

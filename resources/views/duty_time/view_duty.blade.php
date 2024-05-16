@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Jelentéseim') }}
+            {{ __('Szolgálatok') }}
         </h2>
     </x-slot>
 
@@ -18,37 +18,33 @@
                     <div class="row">
                         <div class="col-md-4"></div>
                         <div class="col-md-4 d-flex justify-content-center new-report">
-                            <a href="{{ route('reports.create') }}">
+                            <a href="{{ route('duty_time.create') }}">
                                 <x-primary-button>
-                                        {{ __('Új jelentés felvétele') }}
+                                        {{ __('Új szolgálat felvétele') }}
                                 </x-primary-button>
                             </a>
                         </div>
                         <div class="col-md-4"></div>
                     </div>
+
                     <table class="table table-striped table-hover view-reports">
                         <thead>
                             <tr>
                                 <th scope="col">#</th>
-                                <th scope="col">Ár ($)</th>
-                                <th scope="col">Diagnózis</th>
-                                <th scope="col">Társaid</th>
-                                <th scope="col">Kép</th>
-                                <th scope="col">Felvéve</th>
-                                <th scope="col">Törlés</th>
+                                <th scope="col">Felvétel</th>
+                                <th scope="col">Leadás</th>
+                                <th scope="col">Idő</th>
                             </tr>
                         </thead>
                         <tbody>
-                        @foreach ($reports as $report)
+                        @foreach ($dutyTimes as $dutyTime)
                             <tr>
                                 <th scope="row">{{ $loop->iteration }}</th>
-                                <td>{{ $report->price }}</td>
-                                <td>{{ $report->diagnosis }}</td>
-                                <td>{{ $report->withWho }}</td>
-                                <td><a href="{{ $report->img }}" target="blank">{{ $report->img }}</a></td>
-                                <td>{{ \Illuminate\Support\Carbon::parse($report->created_at)->format('Y.m.d H:i') }}</td>
+                                <td>{{ \Illuminate\Support\Carbon::parse($dutyTime->begin)->format('Y.m.d H:i') }}</td>
+                                <td>{{ \Illuminate\Support\Carbon::parse($dutyTime->end)->format('Y.m.d H:i') }}</td>
+                                <td>{{ $dutyTime->minutes }} perc</td>
                                 <td>
-                                    <form action="{{ route('reports.delete', $report->id) }}" method="post">
+                                    <form action="{{ route('duty_time.delete', $dutyTime->id) }}" method="post">
                                         @csrf
                                         @method('DELETE')
                                         <x-primary-button>

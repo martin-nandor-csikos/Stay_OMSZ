@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Report extends Model
+class DutyTime extends Model
 {
     use HasFactory;
 
@@ -15,14 +15,14 @@ class Report extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'price',
-        'diagnosis',
-        'withWho',
-        'img',
+        'begin',
+        'end',
         'user_id',
+        'minutes',
     ];
 
     protected $casts = [
-        'created_at' => 'datetime',
+        'begin' => 'datetime',
+        'end' => 'datetime',
     ];
 }

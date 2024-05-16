@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('duty_times', function (Blueprint $table) {
             $table->id();
-            $table->string('charactername');
-            $table->string('username')->unique();
-            $table->string('password');
-            $table->string('isAdmin')->default(0);
-            $table->rememberToken();
+            $table->integer('user_id');
+            $table->timestamp('begin');
+            $table->timestamp('end');
+            $table->integer('minutes');
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('reports');
     }
 };

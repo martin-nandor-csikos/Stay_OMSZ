@@ -12,6 +12,31 @@
     font-weight: bold;
 }
 
+.errorCode {
+    text-align: center;
+    font-weight: bold;
+    font-size: 25px;
+}
+
+.label {
+    font-size: 16px !important;
+}
+
+.reportCheckbox {
+    display: flex;
+    margin: 10px;
+}
+
+.checkbox-wrapper {
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.checkbox {
+    margin-bottom: 10px;
+}
 
 @media screen and (max-width: 640px) {
     .view-reports {
@@ -21,6 +46,19 @@
 
     .view-reports-padding {
         padding: 0px !important;
+    }
+
+    .new-report {
+        margin-top: 10px !important;
+        margin-bottom: 10px !important;
+    }
+
+    p {
+        margin: 10px !important;
+    }
+
+    .checkbox-wrapper {
+        margin-bottom: 20px;
     }
 }
 

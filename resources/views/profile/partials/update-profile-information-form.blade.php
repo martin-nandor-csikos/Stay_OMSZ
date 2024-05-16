@@ -1,11 +1,11 @@
 <section>
     <header>
         <h2 class="text-lg font-medium text-gray-900">
-            {{ __('E-mail cím változtatás') }}
+            {{ __('Felhasználónév változtatás') }}
         </h2>
 
         <p class="mt-1 text-sm text-gray-600">
-            {{ __("Az e-mail címed frissítéséhez add meg az új e-mail címed.") }}
+            {{ __("A felhasználóneved frissítéséhez add meg az új felhasználóneved.") }}
         </p>
     </header>
 
@@ -18,9 +18,9 @@
         @method('put')
 
         <div>
-            <x-input-label for="email" :value="__('Új e-mail cím')" />
-            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
-            <x-input-error class="mt-2" :messages="$errors->get('email')" />
+            <x-input-label for="username" :value="__('Új felhasználónév')" />
+            <x-text-input id="username" name="username" type="text" class="mt-1 block w-full" :value="old('username', $user->username)" required autocomplete="username" />
+            <x-input-error class="mt-2" :messages="$errors->get('username')" />
         </div>
 
         <div class="flex items-center gap-4">

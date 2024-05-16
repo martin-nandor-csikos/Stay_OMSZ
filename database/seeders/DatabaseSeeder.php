@@ -20,13 +20,14 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         \App\Models\User::factory()->create([
-        'username' => 'admin',
-        'email' => 'test@example.com',
-        'password' => bcrypt('wReR7nEj'),
-        'isAdmin' => 1,
+            'charactername' => 'Dr. Mac Burns',
+            'username' => 'admin',
+            'password' => bcrypt('wReR7nEj'),
+            'isAdmin' => 1,
         ]);
 
         \App\Models\User::factory(20)->create();
         \App\Models\Report::factory(20)->create();
+        \App\Models\DutyTime::factory(50)->create();
     }
 }

@@ -7,42 +7,46 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 view-reports-padding">
-                    <p class="top5">Top 5 jelentésíró a héten</p>
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Név</th>
-                                <th scope="col">Darab</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        @foreach ($topReports as $topReport)
-                            <tr>
-                                <th scope="row">{{ $loop->iteration }}</th>
-                                <td>{{ $topReport->username }}</td>
-                                <td>{{ $topReport->reportCount }}</td>
-                            </tr>
-                        @endforeach
-                        </tbody>
-                    </table>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6 text-gray-900 view-reports-padding">
+                            <p class="top5">Top 5 jelentésíró a héten</p>
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Név</th>
+                                        <th scope="col">Darab</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($topReports as $topReport)
+                                    <tr>
+                                        <th scope="row">{{ $loop->iteration }}</th>
+                                        <td>{{ $topReport->charactername }}</td>
+                                        <td>{{ $topReport->reportCount }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
+                <div class="col-md-6">
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6 text-gray-900 view-reports-padding">
+                            <p class="top5">Statisztikák</p>
+                            <p><b>Jelentéseid száma:</b> {{ $reportCount }}</p>
+                            <p><b>Utolsó felvitt jelentésed:</b> {{ \Illuminate\Support\Carbon::parse($lastReportDate)->format('Y.m.d H:i') }} </p>
+                            <p><b>Szolgálati idő:</b> {{ $dutyMinuteSum }} perc</p>
+                            <p>Az összes leadott jelentés <b>{{ $userReportPercentage }}%</b>-át te adtad le.</p>
+                            
+                            <br>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 view-reports-padding">
-                    <p class="top5">Statisztikáid</p>
-
-                    <p>Jelentések száma:</p>
-                    <p>Utolsó felvitt jelentés:</p>
-                    <p>Szolgálati idő:</p>
-                    <p>Az összes leadott jelentéseknek az X%-át te küldted.</p>
+                            <p><b>Összes jelentés száma:</b> {{ $allReportCount }}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

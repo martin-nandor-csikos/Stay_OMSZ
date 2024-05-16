@@ -29,26 +29,26 @@ class ProfileController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        $emailCheck = ($request->input('email') !== '') && ($request->input('email') !== $user->email);
+        $usernameCheck = ($request->input('username') !== '') && ($request->input('username') !== $user->username);
 
-        if ($emailCheck) {
-            $emailRules = [
-                'email' => 'email|max:255|unique:users',
+        if ($usernameCheck) {
+            $usernameRules = [
+                'username' => 'string|max:255|unique:users',
             ];
         } else {
-            $emailRules = [
-                'email' => 'email|max:255',
+            $usernameRules = [
+                'username' => 'string|max:255',
             ];
         }
 
-        $validator = Validator::make($request->all(), $emailRules);
+        $validator = Validator::make($request->all(), $usernameRules);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
 
-        if ($emailCheck) {
-            $user->email = $request->input('email');
+        if ($usernameCheck) {
+            $user->username = $request->input('username');
         }
 
         $user->save();
