@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/felhasznalo-frissites/{id}', [AdminController::class, 'editUser'])->name('admin.editUser');
             Route::put('/felhasznalo-frissites/{id}', [AdminController::class, 'updateUser'])->name('admin.updateUser');
+            Route::put('/felhasznalo-jelszo-frissites/{id}', [PasswordController::class, 'updateUserPassword'])->name('admin.updateUserPassword');
 
             Route::get('/jelentesek/{id}', [AdminController::class, 'viewUserReports'])->name('admin.viewUserReports');
             Route::get('/szolgalatok/{id}', [AdminController::class, 'viewUserDuty'])->name('admin.viewUserDuty');

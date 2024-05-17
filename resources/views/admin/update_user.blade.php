@@ -5,6 +5,11 @@
         </h2>
     </x-slot>
 
+    @session('password-updated')
+        <div class="alert alert-success" role="alert">
+            {{ session('password-updated') }}
+        </div>
+    @endsession
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 create-report">
@@ -27,22 +32,6 @@
                             <x-text-input id="username" class="block mt-1 w-full" type="text" name="username" value="{{ $user->username }}" maxlength="255" autofocus />
                             <x-input-error :messages="$errors->get('username')" class="mt-2" />
                         </div>
-
-                        <!-- Password -->
-                        <div class="mt-4">
-                            <x-input-label for="password" :value="__('Új jelszó')" />
-                            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" maxlength="255" autofocus />
-                            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-                        </div>
-
-                        <!-- Password re -->
-                        <div class="mt-4">
-                            <x-input-label for="password_confirmation" :value="__('Új jelszó újra')" />
-                            <x-text-input id="password_confirmation" class="block mt-1 w-full" type="password" name="password_confirmation" maxlength="255" autofocus />
-                            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-                        </div>
-
-
                         @if (Auth::user()->canGiveAdmin == 1)
                             <div class="mt-4">
                                 <div class="form-check form-check-inline checkbox">
@@ -62,14 +51,38 @@
 
 
                         <div class="flex items-center justify-end mt-4">
-                            <a href="{{ url()->previous() }}">
+                            <x-primary-button class="ms-4">
+                                {{ __('Frissítés') }}
+                            </x-primary-button>
+                        </div>
+                    </form>
+
+                    <form method="POST" action="{{ route('admin.updateUserPassword', $user->id) }}">
+                        @csrf
+                        @method('PUT')                        
+                        <!-- Password -->
+                        <div class="mt-4">
+                            <x-input-label for="password" :value="__('Új jelszó')" />
+                            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" maxlength="255" autofocus />
+                            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                        </div>
+
+                        <!-- Password re -->
+                        <div class="mt-4">
+                            <x-input-label for="password_confirmation" :value="__('Új jelszó újra')" />
+                            <x-text-input id="password_confirmation" class="block mt-1 w-full" type="password" name="password_confirmation" maxlength="255" autofocus />
+                            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+                        </div>
+
+                        <div class="flex items-center justify-end mt-4">
+                            <a href="{{ route('admin.index') }}">
                                 <x-secondary-button>
                                     {{ __('Vissza') }}
                                 </x-secondary-button>
                             </a>
 
                             <x-primary-button class="ms-4">
-                                {{ __('Frissítés') }}
+                                {{ __('Jelszó frissítés') }}
                             </x-primary-button>
                         </div>
                     </form>

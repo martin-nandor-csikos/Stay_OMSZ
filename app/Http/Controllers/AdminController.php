@@ -115,15 +115,6 @@ class AdminController extends Controller
         $user = User::findOrFail($id);
         $usernameCheck = ($request->input('username') !== $user->username);
 
-        if ($request->filled('password') && $request->filled('password_confirmation')) {
-            try {
-                $hashedPassword = $this->updatePassword($request);
-                $user->password = $hashedPassword;
-            } catch (\Exception $e) {
-                return Redirect::back()->withErrors(['password' => $e->getMessage()]);
-            }
-        }
-
         if (Auth::user()->canGiveAdmin == 1) {
             if (Auth::user()->username != $user->username) {
                 if ($request->has('admin')) {
@@ -169,22 +160,6 @@ class AdminController extends Controller
         } catch (\Throwable $th) {
             return Redirect::route('admin.index')->with('user-not-updated', 'A felhasználó frissítése sikertelen.');
         }
-    }
-
-    private function updatePassword(Request $request) {
-        $validated = $request->validateWithBag('updatePassword', [
-            'password' => ['min:8', 'confirmed'],
-        ], [
-            'password.confirmed' => 'A megadott 2 jelszó nem egyezik meg.',
-            'password.required' => 'Meg kell adnod egy új jelszót.',
-            'password.min' => 'Túl rövid a jelszó. Minimum 8 karakterből kell állnia.',
-        ]);
-
-        $request->user()->update([
-            'password' => Hash::make($validated['password']),
-        ]);
-
-        return Hash::make($validated['password']);
     }
 
     public function deleteUser(string $id)

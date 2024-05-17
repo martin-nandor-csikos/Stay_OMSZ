@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use App\Models\User;
 
 class PasswordController extends Controller
 {
@@ -32,5 +33,24 @@ class PasswordController extends Controller
         ]);
 
         return back()->with('status', 'password-updated');
+    }
+
+    public function updateUserPassword(Request $request, string $id): RedirectResponse
+    {
+        $user = User::findOrFail($id);
+ 
+        $validated = $request->validateWithBag('updatePassword', [
+            'password' => ['required', 'min:8', 'confirmed'],
+        ], [
+            'password.confirmed' => 'A megadott 2 jelszó nem egyezik meg.',
+            'password.required' => 'Meg kell adnod egy új jelszót.',
+            'password.min' => 'Túl rövid a jelszó. Minimum 8 karakterből kell állnia.',
+        ]);
+
+        $user->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return back()->with('password-updated', 'A jelszó sikeresen frissült.');
     }
 }
