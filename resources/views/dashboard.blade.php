@@ -64,16 +64,4 @@
             </div>
         </div>
     </div>
-
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 view-reports-padding">
-                    <p class="top5">Felhívások</p>
-                    
-                    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quisquam ut explicabo, labore vero atque non obcaecati doloremque similique consectetur? Error quibusdam nemo illo minima repudiandae optio odit! Voluptas, cum explicabo.</p>
-                </div>
-            </div>
-        </div>
-    </div>
 </x-app-layout>
