@@ -42,18 +42,23 @@
                             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
                         </div>
 
-                        <div class="mt-4">
-                            <div class="form-check form-check-inline checkbox">
-                                @if ($user->isAdmin == 1)
-                                    <input type="checkbox" id="admin" name="admin" value="admin" checked class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                                @endif
 
-                                @if ($user->isAdmin == 0)
-                                    <input type="checkbox" id="admin" name="admin" value="admin" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                                @endif
-                                <label for="admin"> Admin</label><br>
+                        @if (Auth::user()->canGiveAdmin == 1)
+                            <div class="mt-4">
+                                <div class="form-check form-check-inline checkbox">
+                                    @if ($user->username == Auth::user()->username)
+                                        <input type="checkbox" id="admin" name="admin" value="admin" disabled checked class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 form-check-input">
+                                    @else
+                                        @if ($user->isAdmin == 1)
+                                            <input type="checkbox" id="admin" name="admin" value="admin" checked class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 form-check-input">
+                                        @else
+                                            <input type="checkbox" id="admin" name="admin" value="admin" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 form-check-input">
+                                        @endif
+                                    @endif
+                                    <label for="admin" class="form-check-label"> Admin</label><br>
+                                </div>
                             </div>
-                        </div>
+                        @endif
 
 
                         <div class="flex items-center justify-end mt-4">

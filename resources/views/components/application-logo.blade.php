@@ -1,1 +1,1 @@
-<img src="{{ asset('/img/OMSZ.svg') }}" alt="OMSZ logo" class="logo">
+<img src="{{ asset('/img/OMSZ.svg')}} " alt="OMSZ logo" class="logo">

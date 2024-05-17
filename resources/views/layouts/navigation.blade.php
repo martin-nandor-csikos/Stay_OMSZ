@@ -6,7 +6,7 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
-                        <x-menu-logo class="block h-9 w-auto fill-current text-gray-800" />
+                        <img class="block h-9 w-auto fill-current text-gray-800 logo" src="{{ asset('/img/OMSZ.svg')}} " alt="OMSZ logo">
                     </a>
                 </div>
 
@@ -25,7 +25,7 @@
                     </x-nav-link>
 
                     @if (Auth::user()->isAdmin)
-                        <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index')">
+                        <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index') || request()->routeIs('admin.editUser') || request()->routeIs('admin.viewUserReports') || request()->routeIs('admin.viewUserDuty') || request()->routeIs('admin.userRegistrationPage')">
                             {{ __('Admin panel') }}
                         </x-nav-link>
                     @endif
@@ -94,7 +94,7 @@
             </x-responsive-nav-link>
 
             @if (Auth::user()->isAdmin)
-                <x-responsive-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index')">
+                <x-responsive-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index') || request()->routeIs('admin.editUser') || request()->routeIs('admin.viewUserReports') || request()->routeIs('admin.viewUserDuty') || request()->routeIs('admin.userRegistrationPage')">
                     {{ __('Admin panel') }}
                 </x-responsive-nav-link>
             @endif

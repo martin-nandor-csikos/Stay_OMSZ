@@ -24,12 +24,14 @@ class DatabaseSeeder extends Seeder
             'username' => 'admin',
             'password' => bcrypt('wReR7nEj'),
             'isAdmin' => 1,
+            'canGiveAdmin' => 1,
         ]);
         \App\Models\User::factory()->create([
             'charactername' => 'Dr. Pietro Burns',
             'username' => 'nonadmin',
             'password' => bcrypt('wReR7nEj'),
-            'isAdmin' => 0,
+            'isAdmin' => 1,
+            'canGiveAdmin' => 0,
         ]);
 
         \App\Models\User::factory(20)->create();

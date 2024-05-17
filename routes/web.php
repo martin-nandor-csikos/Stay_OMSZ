@@ -53,11 +53,16 @@ Route::middleware('auth')->group(function () {
     Route::middleware('isAdmin')->group(function () {
         Route::prefix('admin')->group(function () {
             Route::get('/', [AdminController::class, 'index'])->name('admin.index');
+
             Route::get('/felhasznalo-frissites/{id}', [AdminController::class, 'editUser'])->name('admin.editUser');
-            Route::get('/felhasznalo-jelentesek/{id}', [AdminController::class, 'viewUserReports'])->name('admin.viewUserReports');
-            Route::get('/felhasznalo-szolgalatok/{id}', [AdminController::class, 'viewUserDuty'])->name('admin.viewUserDuty');
             Route::put('/felhasznalo-frissites/{id}', [AdminController::class, 'updateUser'])->name('admin.updateUser');
-            Route::delete('/felhasznalo-torles/{id}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
+
+            Route::get('/jelentesek/{id}', [AdminController::class, 'viewUserReports'])->name('admin.viewUserReports');
+            Route::get('/szolgalatok/{id}', [AdminController::class, 'viewUserDuty'])->name('admin.viewUserDuty');
+
+            Route::get('/regisztracio', [AdminController::class, 'userRegistrationPage'])->name('admin.userRegistrationPage');
+            Route::post('/regisztracio', [AdminController::class, 'registerUser'])->name('admin.registerUser');
+            Route::delete('/torles/{id}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
         });
     });
 });

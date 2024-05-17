@@ -12,6 +12,10 @@
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6 text-gray-900 view-reports-padding">
                             <p class="top5">Top 5 jelentésíró a héten</p>
+
+                            @if ($topReports->isEmpty())
+                            <p>Még senki nem csinált semmit :(</p>
+                            @else
                             <table class="table table-striped table-hover">
                                 <thead>
                                     <tr>
@@ -30,6 +34,7 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -38,8 +43,15 @@
                         <div class="p-6 text-gray-900 view-reports-padding">
                             <p class="top5">Statisztikák</p>
                             <p><b>Jelentéseid száma:</b> {{ $reportCount }}</p>
-                            <p><b>Utolsó felvitt jelentésed:</b> {{ \Illuminate\Support\Carbon::parse($lastReportDate)->format('Y.m.d H:i') }} </p>
-                            <p><b>Szolgálati idő:</b> {{ $dutyMinuteSum }} perc</p>
+                            @if ($lastReportDate != '-')
+                                <p><b>Utolsó felvitt jelentésed:</b> {{ \Illuminate\Support\Carbon::parse($lastReportDate)->format('Y.m.d H:i') }} </p>                                
+                            @endif
+
+                            @if ($dutyMinuteSum == null)
+                                <p><b>Szolgálati idő:</b> 0 perc</p>
+                            @else
+                                <p><b>Szolgálati idő:</b> {{ $dutyMinuteSum }} perc</p>
+                            @endif
                             <p>Ennyi időt kell még szolgálatban lenned, hogy első legyél: <b>{{ $minutesUntilTopDutyTime }}</b> perc</p>
                             <p>Az összes leadott jelentés <b>{{ $userReportPercentage }}%</b>-át te adtad le.</p>
                             

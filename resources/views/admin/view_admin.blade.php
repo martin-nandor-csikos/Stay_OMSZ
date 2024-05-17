@@ -11,6 +11,18 @@
         </div>
     @endsession
 
+    @session('user-created')
+        <div class="alert alert-success" role="alert">
+            {{ session('user-created') }}
+        </div>
+    @endsession
+
+    @session('user-not-created')
+        <div class="alert alert-danger" role="alert">
+            {{ session('user-not-created') }}
+        </div>
+    @endsession
+
     @session('unsuccessful-user-deletion')
         <div class="alert alert-danger" role="alert">
             {{ session('unsuccessful-user-deletion') }}
@@ -34,6 +46,9 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 view-reports-padding">
                     <p class="top5">Heti statisztika</p>
+                    @if ($userStats->isEmpty())
+                    <p>Még senki nem csinált semmit :(</p>
+                    @else
                     <table class="table table-striped table-hover view-reports" id="weekly-stats">
                         <thead>
                             <tr>
@@ -74,6 +89,7 @@
                         @endforeach
                         </tbody>
                     </table>
+                    @endif
                 </div>
             </div>
         </div>
@@ -84,6 +100,11 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 view-reports-padding">
                     <p class="top5">Regisztrált felhasználók</p>
+                    <form action="{{ route('admin.userRegistrationPage') }}" method="get" style="margin-bottom: 20px">
+                        <x-primary-button>
+                            {{ __('Új felhasználó regisztrálása') }}
+                        </x-primary-button>
+                    </form>
                     <table class="table table-striped table-hover view-reports" id="registered-users">
                         <thead>
                             <tr>
@@ -121,6 +142,7 @@
                                     </form>
                                 </td>
                                 <td>
+                                    @if (Auth::user()->id != $user->id)
                                     <form action="{{ route('admin.deleteUser', $user->id) }}" method="post">
                                         @csrf
                                         @method('DELETE')
@@ -128,6 +150,7 @@
                                             {{ __('Törlés') }}
                                         </x-primary-button>
                                     </form>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -141,13 +164,13 @@
     <script>
         var table = new DataTable('#registered-users', {
             language: {
-                url: '//cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
+                url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
             },
         });
 
         var table1 = new DataTable('#weekly-stats', {
             language: {
-                url: '//cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
+                url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
             },
         });
    </script>

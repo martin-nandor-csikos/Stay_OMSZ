@@ -31,15 +31,19 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'charactername' => ['required', 'string', 'max:255'],
+        ], [
+            'charactername.required' => 'Az IC név nem lehet üres.',
+            'charactername.required' => 'Túl hosszú az IC név.',
         ]);
 
+        $randomUsername = str_random(8);
+        $randomPassword = str_random(8);
+        
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'charactername' => $request->charactername,
+            'username' => $randomUsername,
+            'password' => Hash::make($randomPassword),
         ]);
 
         event(new Registered($user));

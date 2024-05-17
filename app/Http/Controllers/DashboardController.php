@@ -32,12 +32,28 @@ class DashboardController extends Controller
             ->limit(1)
             ->get();
 
+        if ($reportCount->isEmpty()) {
+            $reportCount = collect([
+                (object) [
+                    'reportCount' => '0'
+                ]
+            ]);
+        }
+
         $lastReportDate = DB::table('reports')
             ->select('reports.created_at')
             ->where('reports.user_id', '=', $request->user()->id)
             ->orderBy('reports.created_at', 'desc')
             ->limit(1)
             ->get();
+
+        if ($lastReportDate->isEmpty()) {
+            $lastReportDate = collect([
+                (object) [
+                    'created_at' => '-'
+                ]
+            ]);
+        }
 
         $dutyMinuteSum = DB::table('duty_times')
             ->select(
@@ -47,12 +63,28 @@ class DashboardController extends Controller
             ->limit(1)
             ->get();
 
+        if ($dutyMinuteSum->isEmpty()) {
+            $dutyMinuteSum = collect([
+                (object) [
+                    'dutyMinuteSum' => '0'
+                ]
+            ]);
+        }
+
         $allReportCount = DB::table('reports')
             ->select(
                 DB::raw('count(reports.id) as allReportCount'),
             )
             ->limit(1)
             ->get();
+
+        if ($allReportCount->isEmpty()) {
+            $allReportCount = collect([
+                (object) [
+                    'allReportCount' => '0'
+                ]
+            ]);
+        }
 
         $topDutyTime = DB::table('duty_times')
             ->select(
@@ -64,15 +96,26 @@ class DashboardController extends Controller
             ->limit(1)
             ->get();
 
-        /*
-                DB::raw('(SELECT reports.created_at FROM reports WHERE reports.user_id = users.id ORDER BY reports.created_at DESC LIMIT 1) as lastReportDate'),
-                DB::raw('count(reports.user_id) as reportCount'),
-                DB::raw('sum(duty_times.minutes) as dutyMinuteSum'),
-                DB::raw('(SELECT SUM(reports.id) FROM reports) as allReportCount'),
-                DB::raw('(SELECT SUM(duty_times.minutes) FROM duty_times) as allDutyMinuteSum'),
-        */
-        $percentage = round(($reportCount[0]->reportCount / $allReportCount[0]->allReportCount) * 100);
-        $minutesUntilTopDutyTime = $topDutyTime[0]->topDutyTime - $dutyMinuteSum[0]->dutyMinuteSum;
+        if ($topDutyTime->isEmpty()) {
+            $topDutyTime = collect([
+                (object) [
+                    'topDutyTime' => '0',
+                    'user_id' => '-'
+                ]
+            ]);
+        }
+
+        if ($reportCount[0]->reportCount == '0' || $allReportCount[0]->allReportCount == '0') {
+            $percentage = 0;
+        } else {
+            $percentage = round(($reportCount[0]->reportCount / $allReportCount[0]->allReportCount) * 100);
+        }
+
+        if ($topDutyTime[0]->topDutyTime == '0' || $dutyMinuteSum[0]->dutyMinuteSum == '0') {
+            $minutesUntilTopDutyTime = 0;
+        } else {
+            $minutesUntilTopDutyTime = $topDutyTime[0]->topDutyTime - $dutyMinuteSum[0]->dutyMinuteSum;
+        }
 
         return view('dashboard', [
             'topReports' => $topReports,

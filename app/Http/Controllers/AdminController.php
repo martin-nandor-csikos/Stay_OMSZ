@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -36,6 +38,39 @@ class AdminController extends Controller
             'users' => $users,
             'userStats' => $userStats,
         ]);
+    }
+
+    public function userRegistrationPage()
+    {
+        return view('admin.register_user');
+    }
+
+    public function registerUser(Request $request)
+    {
+        $request->validate([
+            'charactername' => ['required', 'string', 'max:255'],
+        ], [
+            'charactername.required' => 'Az IC név nem lehet üres.',
+            'charactername.required' => 'Túl hosszú az IC név.',
+        ]);
+
+        try {
+            $randomUsername = Str::random(8);
+            $randomPassword = Str::random(8);
+
+            //dd($request->charactername);
+            //dd($randomUsername);
+            //dd($randomPassword);
+
+            $user = User::create([
+                'charactername' => $request->charactername,
+                'username' => $randomUsername,
+                'password' => Hash::make($randomPassword),
+            ]);
+            return Redirect::route('admin.index')->with('user-created', 'A felhasználó regisztrációja sikeres. FELHASZNÁLÓNÉV: ' . $randomUsername . ', JELSZÓ: ' . $randomPassword);
+        } catch (\Throwable $th) {
+            return Redirect::route('admin.index')->with('user-not-created', 'A felhasználó regisztrációja sikertelen');
+        }
     }
     
     public function viewUserReports (string $id)
@@ -89,12 +124,15 @@ class AdminController extends Controller
             }
         }
 
-        if ($request->has('admin')) {
-            $user->isAdmin = 1;
-        } else {
-            $user->isAdmin = 0;
+        if (Auth::user()->canGiveAdmin == 1) {
+            if (Auth::user()->username != $user->username) {
+                if ($request->has('admin')) {
+                    $user->isAdmin = 1;
+                } else {
+                    $user->isAdmin = 0;
+                }
+            }
         }
-
 
         // Check if username was changed, if not, then don't validate for unique
         if ($usernameCheck) {
@@ -149,23 +187,17 @@ class AdminController extends Controller
         return Hash::make($validated['password']);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
-
     public function deleteUser(string $id)
     {
-        try {
-            $user = User::findOrFail($id);
-            $user->delete();
+        if (Auth::user()->id != $id) {
+            try {
+                $user = User::findOrFail($id);
+                $user->delete();
 
-            return to_route('admin.index')->with('successful-user-deletion', 'A felhasználó törlése sikeres.');
-        } catch (\Throwable $th) {
-            return to_route('admin.index')->with('unsuccessful-user-deletion', 'A felhasználó törlése sikertelen.');
+                return to_route('admin.index')->with('successful-user-deletion', 'A felhasználó törlése sikeres.');
+            } catch (\Throwable $th) {
+                return to_route('admin.index')->with('unsuccessful-user-deletion', 'A felhasználó törlése sikertelen.');
+            }
         }
     }
 }
