@@ -136,8 +136,13 @@ class ReportController extends Controller
      */
     public function destroy($id)
     {
-        $report = Report::findOrFail($id);
-        $report->delete();
-        return to_route('reports.index')->with('successful-deletion', 'A jelentés törlése sikeres.');
+        try {
+            $report = Report::findOrFail($id);
+            $report->delete();
+            
+            return to_route('reports.index')->with('successful-deletion', 'A jelentés törlése sikeres.');
+        } catch (\Throwable $th) {
+            return to_route('reports.index')->with('unsuccessful-deletion', 'A jelentés törlése sikertelen.');
+        }
     }
 }

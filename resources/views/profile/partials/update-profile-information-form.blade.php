@@ -35,6 +35,15 @@
                     class="text-sm text-gray-600"
                 >{{ __('Elmentve.') }}</p>
             @endif
+            @if (session('status') === 'profile-not-updated')
+                <p
+                    x-data="{ show: true }"
+                    x-show="show"
+                    x-transition
+                    x-init="setTimeout(() => show = false, 2000)"
+                    class="text-sm text-gray-600"
+                >{{ __('Hiba történt.') }}</p>
+            @endif
         </div>
     </form>
 </section>

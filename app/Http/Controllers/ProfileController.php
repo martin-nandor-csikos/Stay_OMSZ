@@ -32,41 +32,31 @@ class ProfileController extends Controller
         $usernameCheck = ($request->input('username') !== '') && ($request->input('username') !== $user->username);
 
         if ($usernameCheck) {
-            $usernameRules = [
-                'username' => 'string|max:255|unique:users',
-            ];
+            $validatedData = $request->validate([
+                'username' => ['string', 'max:255', 'unique:users'],
+            ], [
+                'username.unique' => 'Ez a felhasználónév már foglalt.',
+                'username.max' => 'Túl hosszú a felhasználónév.',
+            ]);
         } else {
-            $usernameRules = [
-                'username' => 'string|max:255',
-            ];
-        }
-
-        $validator = Validator::make($request->all(), $usernameRules);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            $validatedData = $request->validate([
+                'username' => ['string', 'max:255'],
+            ], [
+                'username.max' => 'Túl hosszú a felhasználónév.',
+            ]);
         }
 
         if ($usernameCheck) {
             $user->username = $request->input('username');
         }
 
-        $user->save();
+        try {
+            $user->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
-    }
-
-    public function updatePassword(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
-
-        if ($request->input('password') !== null) {
-            $user->password = Hash::make($request->input('password'));
+            return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        } catch (\Throwable $th) {
+            return Redirect::route('profile.edit')->with('status', 'profile-not-updated');
         }
-
-        $user->save();
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**

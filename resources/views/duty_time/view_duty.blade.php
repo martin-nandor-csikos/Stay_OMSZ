@@ -11,6 +11,12 @@
         </div>
     @endsession
 
+    @session('unsuccessful-deletion')
+        <div class="alert alert-danger" role="alert">
+            {{ session('unsuccessful-deletion') }}
+        </div>
+    @endsession
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -34,6 +40,7 @@
                                 <th scope="col">Felvétel</th>
                                 <th scope="col">Leadás</th>
                                 <th scope="col">Idő</th>
+                                <th scope="col">Törlés</th>
                             </tr>
                         </thead>
                         <tbody>

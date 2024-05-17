@@ -7,6 +7,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DutyTimeController;
+use App\Http\Controllers\AdminController;
 
 
 /*
@@ -47,6 +48,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/uj-szolgalat', [DutyTimeController::class, 'create'])->name('duty_time.create');
     Route::post('/uj-szolgalat', [DutyTimeController::class, 'store'])->name('duty_time.store');
     Route::delete('/szolgalat-torles/{id}', [DutyTimeController::class, 'destroy'])->name('duty_time.delete');
+
+    // Admin
+    Route::middleware('isAdmin')->group(function () {
+        Route::prefix('admin')->group(function () {
+            Route::get('/', [AdminController::class, 'index'])->name('admin.index');
+            Route::get('/felhasznalo-frissites/{id}', [AdminController::class, 'editUser'])->name('admin.editUser');
+            Route::get('/felhasznalo-jelentesek/{id}', [AdminController::class, 'viewUserReports'])->name('admin.viewUserReports');
+            Route::get('/felhasznalo-szolgalatok/{id}', [AdminController::class, 'viewUserDuty'])->name('admin.viewUserDuty');
+            Route::put('/felhasznalo-frissites/{id}', [AdminController::class, 'updateUser'])->name('admin.updateUser');
+            Route::delete('/felhasznalo-torles/{id}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
+        });
+    });
 });
+
 
 require __DIR__.'/auth.php';

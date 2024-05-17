@@ -12,6 +12,8 @@
     @endsession
 
     <script>
+        // When the checkboxes are checked, update the value of price and diagnosis
+
         $(document).ready(function() {
             $('input[type=checkbox]').click(function () {
                 let price = parseFloat($('#price').val()) || 0;

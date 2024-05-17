@@ -25,6 +25,12 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('wReR7nEj'),
             'isAdmin' => 1,
         ]);
+        \App\Models\User::factory()->create([
+            'charactername' => 'Dr. Pietro Burns',
+            'username' => 'nonadmin',
+            'password' => bcrypt('wReR7nEj'),
+            'isAdmin' => 0,
+        ]);
 
         \App\Models\User::factory(20)->create();
         \App\Models\Report::factory(20)->create();

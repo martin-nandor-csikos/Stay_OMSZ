@@ -38,6 +38,11 @@
     margin-bottom: 10px;
 }
 
+.dt-input {
+    padding-right: 20px !important;
+    margin-right: 10px !important;
+}
+
 @media screen and (max-width: 640px) {
     .view-reports {
         overflow: auto !important;

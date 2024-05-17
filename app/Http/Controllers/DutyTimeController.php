@@ -100,8 +100,13 @@ class DutyTimeController extends Controller
      */
     public function destroy($id)
     {
-        $duty = DutyTime::findOrFail($id);
-        $duty->delete();
-        return to_route('duty_time.index')->with('successful-deletion', 'A szolgálat törlése sikeres.');
+        try {
+            $duty = DutyTime::findOrFail($id);
+            $duty->delete();
+            
+            return to_route('duty_time.index')->with('successful-deletion', 'A szolgálat törlése sikeres.');
+        } catch (\Throwable $th) {
+            return to_route('duty_time.index')->with('unsuccessful-deletion', 'A szolgálat törlése sikertelen.');
+        }
     }
 }
