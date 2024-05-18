@@ -21,7 +21,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 view-reports-padding">
-                    <div class="row">
+                    <div class="row" style="margin-bottom: 20px">
                         <div class="col-md-4"></div>
                         <div class="col-md-4 d-flex justify-content-center new-report">
                             <a href="{{ route('duty_time.create') }}">

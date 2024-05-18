@@ -20,7 +20,7 @@ class AdminController extends Controller
     public function index(Request $request)
     {
         $users = DB::table('users')
-            ->select('users.id', 'users.charactername', 'users.username', 'users.created_at', 'users.isAdmin')
+            ->select('users.id', 'users.charactername', 'users.username', 'users.created_at', 'users.isAdmin', 'users.canGiveAdmin')
             ->get();
 
         $userStats = DB::table('reports')

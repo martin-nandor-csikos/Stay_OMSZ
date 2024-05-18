@@ -38,6 +38,10 @@
             <main>
                 {{ $slot }}
             </main>
+
+            <footer class="bg-gray-100">
+                <p class="footer-text">&copy; 2024 MateLUL <em>(Hibajelentésért keress fel Discordon, @nortman_jenkins)</em></p>
+            </footer>
         </div>
     </body>
 </html>

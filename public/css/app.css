@@ -43,6 +43,23 @@
     margin-right: 10px !important;
 }
 
+/* Footer staying at the bottom of the page */
+main, .login-panel {
+    min-height: 90vh !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+}
+
+footer {
+    min-height: 40px !important;
+}
+
+.footer-text {
+    text-align: center;
+}
+
 @media screen and (max-width: 640px) {
     .view-reports {
         overflow: auto !important;

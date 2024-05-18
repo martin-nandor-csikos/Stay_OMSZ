@@ -25,7 +25,7 @@
                     </x-nav-link>
 
                     @if (Auth::user()->isAdmin)
-                        <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index') || request()->routeIs('admin.editUser') || request()->routeIs('admin.viewUserReports') || request()->routeIs('admin.viewUserDuty') || request()->routeIs('admin.userRegistrationPage')">
+                        <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index') || request()->routeIs('admin.editUser') || request()->routeIs('admin.viewUserReports') || request()->routeIs('admin.viewUserDuty') || request()->routeIs('admin.userRegistrationPage') || request()->routeIs('admin.viewClosedUserReports') || request()->routeIs('admin.viewClosedUserDuty')">
                             {{ __('Admin panel') }}
                         </x-nav-link>
                     @endif
@@ -94,7 +94,7 @@
             </x-responsive-nav-link>
 
             @if (Auth::user()->isAdmin)
-                <x-responsive-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index') || request()->routeIs('admin.editUser') || request()->routeIs('admin.viewUserReports') || request()->routeIs('admin.viewUserDuty') || request()->routeIs('admin.userRegistrationPage')">
+                <x-responsive-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index') || request()->routeIs('admin.editUser') || request()->routeIs('admin.viewUserReports') || request()->routeIs('admin.viewUserDuty') || request()->routeIs('admin.userRegistrationPage') || request()->routeIs('admin.viewClosedUserReports') || request()->routeIs('admin.viewClosedUserDuty')">
                     {{ __('Admin panel') }}
                 </x-responsive-nav-link>
             @endif

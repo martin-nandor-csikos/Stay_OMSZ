@@ -37,12 +37,9 @@ class DutyTimeController extends Controller
      */
     public function store(Request $request)
     {
-        // Somehow I have to add 2 hours to now() in order for the before_or_equal to work. Otherwise now() would be 2 hours ago.
-        // What the fuck
-        $twoHoursLater = now()->addHours(2);
         $validatedData = $request->validate([
-            'begin' => ['required', 'date', 'before_or_equal:' . $twoHoursLater],
-            'end' => ['required', 'date', 'after_or_equal:begin', 'before_or_equal:' . $twoHoursLater],
+            'begin' => ['required', 'date', 'before_or_equal:' . now()],
+            'end' => ['required', 'date', 'after_or_equal:begin', 'before_or_equal:' . now()],
         ], [
             'begin.required' => 'A kezdés ideje nem lehet üres.',
             'begin.date' => 'A kezdés érvényes dátum kell legyen.',

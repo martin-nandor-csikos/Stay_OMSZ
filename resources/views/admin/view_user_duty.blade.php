@@ -1,7 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __($charactername . ' szolgálatai') }}
+            @if (request()->routeIs('admin.viewClosedUserDuty'))
+                {{ __($charactername . ' lezárt szolgálatai') }}
+            @else
+                {{ __($charactername . ' lezárt szolgálatai') }}
+            @endif
         </h2>
     </x-slot>
 
