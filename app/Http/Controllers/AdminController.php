@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
+
 
 class AdminController extends Controller
 {
@@ -34,11 +36,44 @@ class AdminController extends Controller
             ->groupBy('users.id', 'users.charactername')
             ->get();
 
+        $closedUserStats = DB::table('reports_closed')
+            ->join('users_closed', 'users_closed.id', '=', 'reports_closed.user_id')
+            ->select(
+                'users_closed.id',
+                'users_closed.charactername',
+                DB::raw('count(reports_closed.user_id) as reportCount'),
+                DB::raw('(SELECT MAX(reports_closed.created_at) FROM reports_closed WHERE reports_closed.user_id = users_closed.id) as lastReportDate'),
+                DB::raw('(SELECT SUM(duty_times_closed.minutes) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id) as dutyMinuteSum'),
+                DB::raw('(SELECT MAX(duty_times_closed.end) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id) as lastDutyDate'),
+            )
+            ->groupBy('users_closed.id', 'users_closed.charactername')
+            ->get();
+
         return view('admin.view_admin', [
             'users' => $users,
             'userStats' => $userStats,
+            'closedUserStats' => $closedUserStats,
         ]);
     }
+
+    public function closeWeek()
+    {
+        DB::transaction(function () {
+            DB::delete('DELETE FROM reports_closed');
+            DB::delete('DELETE FROM duty_times_closed');
+            DB::delete('DELETE FROM users_closed');
+
+            DB::insert('INSERT INTO users_closed SELECT id, charactername FROM users');
+            DB::insert('INSERT INTO reports_closed SELECT * FROM reports');
+            DB::insert('INSERT INTO duty_times_closed SELECT * FROM duty_times');
+
+            DB::delete('DELETE FROM reports');
+            DB::delete('DELETE FROM duty_times');
+        });
+
+        return Redirect::route('admin.index')->with('close-success', 'A hét sikeresen lezárva.');
+    }
+
 
     public function userRegistrationPage()
     {
@@ -58,10 +93,6 @@ class AdminController extends Controller
             $randomUsername = Str::random(8);
             $randomPassword = Str::random(8);
 
-            //dd($request->charactername);
-            //dd($randomUsername);
-            //dd($randomPassword);
-
             $user = User::create([
                 'charactername' => $request->charactername,
                 'username' => $randomUsername,
@@ -69,7 +100,7 @@ class AdminController extends Controller
             ]);
             return Redirect::route('admin.index')->with('user-created', 'A felhasználó regisztrációja sikeres. FELHASZNÁLÓNÉV: ' . $randomUsername . ', JELSZÓ: ' . $randomPassword);
         } catch (\Throwable $th) {
-            return Redirect::route('admin.index')->with('user-not-created', 'A felhasználó regisztrációja sikertelen');
+            return Redirect::route('admin.index')->with('user-not-created', 'A felhasználó regisztrációja sikertelen.');
         }
     }
     
@@ -92,6 +123,34 @@ class AdminController extends Controller
         $dutyTimes = DB::table('duty_times')
             ->join('users', 'users.id', '=', 'duty_times.user_id')
             ->select('duty_times.id', 'duty_times.begin', 'duty_times.end', 'duty_times.minutes', 'users.charactername')
+            ->where('user_id', '=', $id)
+            ->get();
+
+        return view('admin.view_user_duty', [
+            'dutyTimes' => $dutyTimes,
+            'charactername' => $dutyTimes[0]->charactername,
+        ]);
+    }
+
+    public function viewClosedUserReports (string $id)
+    {
+        $reports = DB::table('reports_closed')
+            ->join('users_closed', 'users_closed.id', '=', 'reports_closed.user_id')
+            ->select('reports_closed.id', 'reports_closed.price', 'reports_closed.diagnosis', 'reports_closed.withWho', 'reports_closed.img', 'reports_closed.created_at', 'users_closed.charactername')
+            ->where('user_id', '=', $id)
+            ->get();
+
+        return view('admin.view_user_reports', [
+            'reports' => $reports,
+            'charactername' => $reports[0]->charactername,
+        ]);
+    }
+
+    public function viewClosedUserDuty (string $id)
+    {
+        $dutyTimes = DB::table('duty_times_closed')
+            ->join('users_closed', 'users_closed.id', '=', 'duty_times_closed.user_id')
+            ->select('duty_times_closed.id', 'duty_times_closed.begin', 'duty_times_closed.end', 'duty_times_closed.minutes', 'users_closed.charactername')
             ->where('user_id', '=', $id)
             ->get();
 

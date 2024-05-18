@@ -70,31 +70,6 @@ class DutyTimeController extends Controller
         return redirect()->route('duty_time.create')->with('successful-creation', 'A szolgálat felvitele sikeres.');
     }
 
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(DutyTime $dutyTime)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(DutyTime $dutyTime)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, DutyTime $dutyTime)
-    {
-        //
-    }
-
     /**
      * Remove the specified resource from storage.
      */

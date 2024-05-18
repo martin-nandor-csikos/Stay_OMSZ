@@ -15,7 +15,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 create-report">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <p class="top5">Csak azok az adatok frissülnek, amik ki vannak töltve.</p>
+                    <p class="top5">Csak azok az adatok frissülnek, amik megváltoznak.</p>
                     <form method="POST" action="{{ route('admin.updateUser', $user->id) }}">
                         @csrf
                         @method('PUT')

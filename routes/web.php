@@ -61,9 +61,14 @@ Route::middleware('auth')->group(function () {
             Route::get('/jelentesek/{id}', [AdminController::class, 'viewUserReports'])->name('admin.viewUserReports');
             Route::get('/szolgalatok/{id}', [AdminController::class, 'viewUserDuty'])->name('admin.viewUserDuty');
 
+            Route::get('/lezart-jelentesek/{id}', [AdminController::class, 'viewClosedUserReports'])->name('admin.viewClosedUserReports');
+            Route::get('/lezart-szolgalatok/{id}', [AdminController::class, 'viewClosedUserDuty'])->name('admin.viewClosedUserDuty');
+
             Route::get('/regisztracio', [AdminController::class, 'userRegistrationPage'])->name('admin.userRegistrationPage');
             Route::post('/regisztracio', [AdminController::class, 'registerUser'])->name('admin.registerUser');
             Route::delete('/torles/{id}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
+
+            Route::post('/het-lezaras', [AdminController::class, 'closeWeek'])->name('admin.closeWeek');
         });
     });
 });

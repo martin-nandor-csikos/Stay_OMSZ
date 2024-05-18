@@ -69,15 +69,7 @@ class ReportController extends Controller
 
         return redirect()->route('reports.create')->with('successful-creation', 'A jelentés beadása sikeres.');
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Report $report)
-    {
-        //
-    }
-
+    
     /**
      * Show the form for editing the specified resource.
      */
