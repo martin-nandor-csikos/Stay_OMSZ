@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Report;
+use App\Models\DutyTime;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Hash;
@@ -132,10 +134,14 @@ class AdminController extends Controller
             ->where('user_id', '=', $id)
             ->get();
 
-        return view('admin.view_user_reports', [
-            'reports' => $reports,
-            'charactername' => $reports[0]->charactername,
-        ]);
+        if ($reports->isEmpty()) {
+            return Redirect::route('admin.index');
+        } else {
+            return view('admin.view_user_reports', [
+                'reports' => $reports,
+                'charactername' => $reports[0]->charactername,
+            ]);
+        }
     }
 
     public function viewUserDuty (string $id)
@@ -146,10 +152,14 @@ class AdminController extends Controller
             ->where('user_id', '=', $id)
             ->get();
 
-        return view('admin.view_user_duty', [
-            'dutyTimes' => $dutyTimes,
-            'charactername' => $dutyTimes[0]->charactername,
-        ]);
+        if ($dutyTimes->isEmpty()) {
+            return Redirect::route('admin.index');
+        } else {
+            return view('admin.view_user_duty', [
+                'dutyTimes' => $dutyTimes,
+                'charactername' => $dutyTimes[0]->charactername,
+            ]);
+        }
     }
 
     public function viewClosedUserReports (string $id)
@@ -279,6 +289,52 @@ class AdminController extends Controller
             } catch (\Throwable $th) {
                 return to_route('admin.index')->with('unsuccessful-user-deletion', 'A felhasználó törlése sikertelen.');
             }
+        }
+    }
+
+    public function deleteReport(string $id)
+    {
+        $report = Report::findOrFail($id);
+        $user = $report->user_id;
+        try {
+            $charactername = DB::table('users')
+                ->join('reports', 'reports.user_id', '=', 'users.id')
+                ->select('users.charactername')
+                ->where('user_id', '=', $user)
+                ->get();
+
+            $report->delete();
+
+            DB::table('admin_logs')->insert(
+                ['user_id' => Auth::user()->id, 'didWhat' => 'Kitörölte a(z) ' . $charactername[0]->charactername . ' (Jelentés ID: ' . $id . ') felhasználó jelentését']
+            );
+
+            return Redirect::route('admin.viewUserReports', $user)->with('successful-user-report-deletion', 'A felhasználó jelentésének törlése sikeres.');
+        } catch (\Throwable $th) {
+            return Redirect::route('admin.viewUserReports', $user)->with('unsuccessful-user-report-deletion', 'A felhasználó jelentésének törlése sikertelen.');
+        }
+    }
+
+    public function deleteDutyTime(string $id)
+    {
+        $duty = DutyTime::findOrFail($id);
+        $user = $duty->user_id;
+        try {
+            $charactername = DB::table('users')
+                ->join('duty_times', 'duty_times.user_id', '=', 'users.id')
+                ->select('users.charactername')
+                ->where('user_id', '=', $user)
+                ->get();
+                
+            $duty->delete();
+
+            DB::table('admin_logs')->insert(
+                ['user_id' => Auth::user()->id, 'didWhat' => 'Kitörölte a(z) ' . $charactername[0]->charactername  . ' (Szolgálat ID: ' . $id . ') felhasználó szolgálatát']
+            );
+
+            return Redirect::route('admin.viewUserDuty', $user)->with('successful-user-duty-deletion', 'A felhasználó szolgálatának törlése sikeres.');
+        } catch (\Throwable $th) {
+            return Redirect::route('admin.viewUserDuty', $user)->with('unsuccessful-user-duty-deletion', 'A felhasználó szolgálatának törlése sikertelen.');
         }
     }
 }

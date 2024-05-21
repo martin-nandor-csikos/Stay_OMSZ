@@ -19,7 +19,6 @@
                             <th scope="col">Admin?</th>
                             <th scope="col">Módosítás</th>
                             <th scope="col">Törlés</th>
-
                         </tr>
                     </thead>
                     <tbody>
@@ -45,7 +44,7 @@
                                         <x-primary-button>
                                             {{ __('Módosítás') }}
                                         </x-primary-button>
-                                    </form>                                  
+                                    </form>
                                 @endif
                             </td>
                             <td>

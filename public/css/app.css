@@ -60,6 +60,14 @@ footer {
     text-align: center;
 }
 
+.alert-success {
+    text-align: center;
+}
+
+.alert-danger {
+    text-align: center;
+}
+
 @media screen and (max-width: 640px) {
     .view-reports {
         overflow: auto !important;

@@ -4,10 +4,22 @@
             @if (request()->routeIs('admin.viewClosedUserDuty'))
                 {{ __($charactername . ' lezárt szolgálatai') }}
             @else
-                {{ __($charactername . ' lezárt szolgálatai') }}
+                {{ __($charactername . ' szolgálatai') }}
             @endif
         </h2>
     </x-slot>
+
+    @session('successful-user-duty-deletion')
+        <div class="alert alert-success" role="alert">
+            {{ session('successful-user-duty-deletion') }}
+        </div>
+    @endsession
+
+    @session('unsuccessful-user-duty-deletion')
+        <div class="alert alert-danger" role="alert">
+            {{ session('unsuccessful-user-duty-deletion') }}
+        </div>
+    @endsession
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -20,6 +32,9 @@
                                 <th scope="col">Felvétel</th>
                                 <th scope="col">Leadás</th>
                                 <th scope="col">Idő</th>
+                                @if (request()->routeIs('admin.viewClosedUserDuty'))
+                                    <th scope="col">Törlés</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -29,13 +44,24 @@
                                 <td>{{ \Illuminate\Support\Carbon::parse($dutyTime->begin)->format('Y.m.d H:i') }}</td>
                                 <td>{{ \Illuminate\Support\Carbon::parse($dutyTime->end)->format('Y.m.d H:i') }}</td>
                                 <td>{{ $dutyTime->minutes }} perc</td>
+                                @if (!request()->routeIs('admin.viewClosedUserReports'))
+                                    <td>
+                                        <form action="{{ route('admin.deleteDutyTime', $dutyTime->id) }}" method="post">
+                                            @csrf
+                                            @method('DELETE')
+                                            <x-primary-button onclick="return confirm('Ez egy visszafordíthatatlan esemény. Biztos törölni akarod?')">
+                                                {{ __('Törlés') }}
+                                            </x-primary-button>
+                                        </form>
+                                    </td>
+                                @endif
                             </tr>
                         @endforeach
                         </tbody>
                     </table>
 
                     <div class="flex items-center justify-end mt-4">
-                        <a href="{{ url()->previous() }}">
+                        <a href="{{ route('admin.index') }}">
                             <x-primary-button>
                                 {{ __('Vissza') }}
                             </x-primary-button>
