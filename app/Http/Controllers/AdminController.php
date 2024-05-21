@@ -194,13 +194,21 @@ class AdminController extends Controller
         $user = User::findOrFail($id);
         $usernameCheck = ($request->input('username') !== $user->username);
 
-        if (Auth::user()->canGiveAdmin == 1) {
-            if (Auth::user()->username != $user->username) {
-                if ($request->has('admin')) {
-                    $user->isAdmin = 1;
-                } else {
-                    $user->isAdmin = 0;
+        if (Auth::user()->canGiveAdmin == 1 && Auth::user()->username != $user->username) {
+            if ($request->has('admin')) {
+                if ($user->isAdmin == 0) {
+                    DB::table('admin_logs')->insert(
+                        ['user_id' => Auth::user()->id, 'didWhat' => 'Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó admin rangját (0 -> 1)']
+                    );
                 }
+                $user->isAdmin = 1;
+            } else {
+                if ($user->isAdmin == 1) {
+                    DB::table('admin_logs')->insert(
+                        ['user_id' => Auth::user()->id, 'didWhat' => 'Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó admin rangját (1 -> 0)']
+                    );
+                }
+                $user->isAdmin = 0;
             }
         }
 
@@ -229,12 +237,23 @@ class AdminController extends Controller
             'charactername.max' => 'Túl hosszú az IC név.',
         ]);
 
-        $user->username = $request->input('username');
-        $user->charactername = $request->input('charactername');
+        if ($request->input('username') !== $user->username) {
+            $oldusername = $user->username;
+            $user->username = $request->input('username');
 
-        DB::table('admin_logs')->insert(
-            ['user_id' => Auth::user()->id, 'didWhat' => 'Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó IC nevét és/vagy felhasználónevét']
-        );
+            DB::table('admin_logs')->insert(
+                ['user_id' => Auth::user()->id, 'didWhat' => 'Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó felhasználónevét (' . $oldusername . ' -> ' . $request->input('username') . ')']
+            );
+        }
+
+        if ($request->input('charactername') !== $user->charactername) {
+            $oldcharactername = $user->charactername;
+            $user->charactername = $request->input('charactername');
+
+            DB::table('admin_logs')->insert(
+                ['user_id' => Auth::user()->id, 'didWhat' => 'Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó IC nevét (' . $oldcharactername . ' -> ' . $request->input('charactername') . ')']
+            );
+        }
 
         try {
             $user->save();
