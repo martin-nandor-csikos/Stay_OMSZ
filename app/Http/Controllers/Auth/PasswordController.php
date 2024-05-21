@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
 class PasswordController extends Controller
@@ -50,6 +51,10 @@ class PasswordController extends Controller
         $user->update([
             'password' => Hash::make($validated['password']),
         ]);
+
+        DB::table('admin_logs')->insert(
+            ['user_id' => Auth::user()->id, 'didWhat' => 'Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó jelszavát']
+        );
 
         return back()->with('password-updated', 'A jelszó sikeresen frissült.');
     }

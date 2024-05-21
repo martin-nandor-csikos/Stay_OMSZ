@@ -1,4 +1,4 @@
-<div class="py-12">
+<div class="py-12" id="registrated-users-block">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 text-gray-900 view-reports-padding">
@@ -12,6 +12,7 @@
                     <thead>
                         <tr>
                             <th scope="col">#</th>
+                            <th scope="col">ID</th>
                             <th scope="col">IC név</th>
                             <th scope="col">Felhasználónév</th>
                             <th scope="col">Regisztráció ideje</th>
@@ -25,6 +26,7 @@
                     @foreach ($users as $user)
                         <tr>
                             <th scope="row">{{ $loop->iteration }}</th>
+                            <td>{{ $user->id }}</td>
                             <td>{{ $user->charactername }}</td>
                             <td>{{ $user->username }}</td>
                             <td>{{ \Illuminate\Support\Carbon::parse($user->created_at)->format('Y.m.d H:i') }}</td>

@@ -49,10 +49,21 @@ class AdminController extends Controller
             ->groupBy('users_closed.id', 'users_closed.charactername')
             ->get();
 
+        $admin_logs = DB::table('admin_logs')
+            ->join('users', 'users.id', '=', 'admin_logs.user_id')
+            ->select(
+                'users.charactername',
+                'admin_logs.didWhat',
+                'admin_logs.created_at',
+            )
+            ->orderBy('admin_logs.created_at', 'desc')
+            ->get();
+
         return view('admin.view_admin', [
             'users' => $users,
             'userStats' => $userStats,
             'closedUserStats' => $closedUserStats,
+            'admin_logs' => $admin_logs,
         ]);
     }
 
@@ -70,6 +81,10 @@ class AdminController extends Controller
             DB::delete('DELETE FROM reports');
             DB::delete('DELETE FROM duty_times');
         });
+
+        DB::table('admin_logs')->insert(
+            ['user_id' => Auth::user()->id, 'didWhat' => 'Lezárta a hetet']
+        );
 
         return Redirect::route('admin.index')->with('close-success', 'A hét sikeresen lezárva.');
     }
@@ -98,6 +113,11 @@ class AdminController extends Controller
                 'username' => $randomUsername,
                 'password' => Hash::make($randomPassword),
             ]);
+
+            DB::table('admin_logs')->insert(
+                ['user_id' => Auth::user()->id, 'didWhat' => 'Regisztrált egy új felhasználót ' . $request->charactername . ' IC néven']
+            );
+
             return Redirect::route('admin.index')->with('user-created', 'A felhasználó regisztrációja sikeres. FELHASZNÁLÓNÉV: ' . $randomUsername . ', JELSZÓ: ' . $randomPassword);
         } catch (\Throwable $th) {
             return Redirect::route('admin.index')->with('user-not-created', 'A felhasználó regisztrációja sikertelen.');
@@ -212,6 +232,10 @@ class AdminController extends Controller
         $user->username = $request->input('username');
         $user->charactername = $request->input('charactername');
 
+        DB::table('admin_logs')->insert(
+            ['user_id' => Auth::user()->id, 'didWhat' => 'Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó IC nevét és/vagy felhasználónevét']
+        );
+
         try {
             $user->save();
 
@@ -227,6 +251,10 @@ class AdminController extends Controller
             try {
                 $user = User::findOrFail($id);
                 $user->delete();
+
+                DB::table('admin_logs')->insert(
+                    ['user_id' => Auth::user()->id, 'didWhat' => 'Kitörölte a(z) ' . $user->charactername . ' (ID: ' . $user->id . ') felhasználót']
+                );
 
                 return to_route('admin.index')->with('successful-user-deletion', 'A felhasználó törlése sikeres.');
             } catch (\Throwable $th) {

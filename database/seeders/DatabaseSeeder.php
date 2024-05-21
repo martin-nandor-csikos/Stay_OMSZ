@@ -22,14 +22,14 @@ class DatabaseSeeder extends Seeder
         \App\Models\User::factory()->create([
             'charactername' => 'Dr. Mac Burns',
             'username' => 'admin',
-            'password' => bcrypt('wReR7nEj'),
+            'password' => bcrypt('12345678'),
             'isAdmin' => 1,
             'canGiveAdmin' => 1,
         ]);
         \App\Models\User::factory()->create([
             'charactername' => 'Dr. Pietro Burns',
             'username' => 'nonadmin',
-            'password' => bcrypt('wReR7nEj'),
+            'password' => bcrypt('12345678'),
             'isAdmin' => 1,
             'canGiveAdmin' => 0,
         ]);
@@ -37,5 +37,6 @@ class DatabaseSeeder extends Seeder
         \App\Models\User::factory(20)->create();
         \App\Models\Report::factory(20)->create();
         \App\Models\DutyTime::factory(50)->create();
+        \App\Models\AdminLog::factory(20)->create();
     }
 }

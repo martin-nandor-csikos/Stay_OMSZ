@@ -11,13 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('reports_closed', function (Blueprint $table) {
+        Schema::create('admin_logs', function (Blueprint $table) {
             $table->id();
             $table->integer('user_id');
-            $table->integer('price');
-            $table->string('diagnosis');
-            $table->string('withWho')->nullable();
-            $table->string('img')->unique();
+            $table->string('didWhat');
             $table->timestamps();
         });
     }
@@ -27,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('reports_closed');
+        Schema::dropIfExists('admin_logs');
     }
 };
