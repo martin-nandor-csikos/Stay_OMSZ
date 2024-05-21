@@ -117,7 +117,7 @@ class AdminController extends Controller
             ]);
 
             DB::table('admin_logs')->insert(
-                ['user_id' => Auth::user()->id, 'didWhat' => 'Regisztrált egy új felhasználót ' . $request->charactername . ' IC néven']
+                ['user_id' => Auth::user()->id, 'didWhat' => 'Regisztrált egy új felhasználót ' . $request->charactername . ' IC néven (ID: ' . $user->id . ')']
             );
 
             return Redirect::route('admin.index')->with('user-created', 'A felhasználó regisztrációja sikeres. FELHASZNÁLÓNÉV: ' . $randomUsername . ', JELSZÓ: ' . $randomPassword);
@@ -325,7 +325,7 @@ class AdminController extends Controller
                 ->select('users.charactername')
                 ->where('user_id', '=', $user)
                 ->get();
-                
+
             $duty->delete();
 
             DB::table('admin_logs')->insert(
