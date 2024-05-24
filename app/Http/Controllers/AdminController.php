@@ -40,14 +40,11 @@ class AdminController extends Controller
             ->groupBy('users.id', 'users.charactername')
             ->get();
 
-
-        $closedUserStats = Cache::remember('closed_user_stats', 120, function() {
-            return DB::table('reports_closed')
+        $closedUserStats = DB::table('reports_closed')
             ->join('users_closed', 'users_closed.id', '=', 'reports_closed.user_id')
             ->select(
                 'users_closed.id',
                 'users_closed.charactername',
-
                 DB::raw('COALESCE(count(reports_closed.user_id), 0) as reportCount'),
                 DB::raw('COALESCE((SELECT MAX(reports_closed.created_at) FROM reports_closed WHERE reports_closed.user_id = users_closed.id), "-") as lastReportDate'),
                 DB::raw('COALESCE((SELECT SUM(duty_times_closed.minutes) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), 0) as dutyMinuteSum'),
@@ -55,7 +52,6 @@ class AdminController extends Controller
             )
             ->groupBy('users_closed.id', 'users_closed.charactername')
             ->get();
-        });
 
         $admin_logs = DB::table('admin_logs')
             ->join('users', 'users.id', '=', 'admin_logs.user_id')

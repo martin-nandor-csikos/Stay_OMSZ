@@ -21,7 +21,7 @@
                                     <tr>
                                         <th scope="col">#</th>
                                         <th scope="col">Név</th>
-                                        <th scope="col">Darab</th>
+                                        <th scope="col">Jelentések</th>
                                     </tr>
                                 </thead>
                                 <tbody>

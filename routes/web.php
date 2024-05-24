@@ -34,7 +34,7 @@ Route::middleware('auth')->group(function () {
     // Profile
     Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profil/{id}', [ProfileController::class, 'update'])->name('profile.update');
-    Route::put('/profil', [PasswordController::class, 'update'])->name('password.update');
+    Route::put('/profil', [PasswordController::class, 'update'])->name('profile.updatePassword');
     Route::delete('/profil', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Reports
