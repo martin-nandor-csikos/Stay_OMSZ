@@ -37,13 +37,16 @@ class DutyTimeController extends Controller
      */
     public function store(Request $request)
     {
+        $oneDayAgo = now()->subDays(1);
+
         $validatedData = $request->validate([
-            'begin' => ['required', 'date', 'before_or_equal:' . now()],
+            'begin' => ['required', 'date', 'before_or_equal:' . now(), 'after_or_equal:' . $oneDayAgo],
             'end' => ['required', 'date', 'after_or_equal:begin', 'before_or_equal:' . now()],
         ], [
             'begin.required' => 'A kezdés ideje nem lehet üres.',
             'begin.date' => 'A kezdés érvényes dátum kell legyen.',
             'begin.before_or_equal' => 'A kezdési idő nem lehet későbbi, mint a jelenlegi idő.',
+            'begin.after_or_equal' => 'A kezdési idő maximum 1 nappal a jelenlegi idő előtt lehet.',
 
             'end.required' => 'A leadás ideje nem lehet üres.',
             'end.date' => 'A leadás érvényes dátum kell legyen.',

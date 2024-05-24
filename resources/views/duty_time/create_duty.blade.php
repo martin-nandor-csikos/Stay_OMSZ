@@ -21,7 +21,7 @@
                         <div>
                             <x-input-label for="begin" :value="__('Felvétel')" />
                             <x-text-input id="begin" class="block mt-1 w-full" type="datetime-local" name="begin" :value="old('begin')" required autofocus />
-                            <x-input-error :messages="$errors->get('price')" class="mt-2" />
+                            <x-input-error :messages="$errors->get('begin')" class="mt-2" />
                         </div>
 
                         <!-- End -->
@@ -32,7 +32,7 @@
                         </div>
 
                         <div class="flex items-center justify-end mt-4">
-                            <a href="{{ url()->previous() }}">
+                            <a href="{{ route('duty_time.index') }}">
                                 <x-secondary-button>
                                     {{ __('Vissza') }}
                                 </x-secondary-button>

@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+
 
 
 class AdminController extends Controller
@@ -25,31 +27,35 @@ class AdminController extends Controller
             ->select('users.id', 'users.charactername', 'users.username', 'users.created_at', 'users.isAdmin', 'users.canGiveAdmin')
             ->get();
 
-        $userStats = DB::table('reports')
-            ->join('users', 'users.id', '=', 'reports.user_id')
+        $userStats = DB::table('users')
+            ->leftJoin('reports', 'users.id', '=', 'reports.user_id')
             ->select(
                 'users.id',
                 'users.charactername',
-                DB::raw('count(reports.user_id) as reportCount'),
-                DB::raw('(SELECT MAX(reports.created_at) FROM reports WHERE reports.user_id = users.id) as lastReportDate'),
-                DB::raw('(SELECT SUM(duty_times.minutes) FROM duty_times WHERE duty_times.user_id = users.id) as dutyMinuteSum'),
-                DB::raw('(SELECT MAX(duty_times.end) FROM duty_times WHERE duty_times.user_id = users.id) as lastDutyDate'),
+                DB::raw('COALESCE(count(reports.user_id), 0) as reportCount'),
+                DB::raw('COALESCE((SELECT MAX(reports.created_at) FROM reports WHERE reports.user_id = users.id), "-") as lastReportDate'),
+                DB::raw('COALESCE((SELECT SUM(duty_times.minutes) FROM duty_times WHERE duty_times.user_id = users.id), 0) as dutyMinuteSum'),
+                DB::raw('COALESCE((SELECT MAX(duty_times.end) FROM duty_times WHERE duty_times.user_id = users.id), "-") as lastDutyDate')
             )
             ->groupBy('users.id', 'users.charactername')
             ->get();
 
-        $closedUserStats = DB::table('reports_closed')
+
+        $closedUserStats = Cache::remember('closed_user_stats', 120, function() {
+            return DB::table('reports_closed')
             ->join('users_closed', 'users_closed.id', '=', 'reports_closed.user_id')
             ->select(
                 'users_closed.id',
                 'users_closed.charactername',
-                DB::raw('count(reports_closed.user_id) as reportCount'),
-                DB::raw('(SELECT MAX(reports_closed.created_at) FROM reports_closed WHERE reports_closed.user_id = users_closed.id) as lastReportDate'),
-                DB::raw('(SELECT SUM(duty_times_closed.minutes) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id) as dutyMinuteSum'),
-                DB::raw('(SELECT MAX(duty_times_closed.end) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id) as lastDutyDate'),
+
+                DB::raw('COALESCE(count(reports_closed.user_id), 0) as reportCount'),
+                DB::raw('COALESCE((SELECT MAX(reports_closed.created_at) FROM reports_closed WHERE reports_closed.user_id = users_closed.id), "-") as lastReportDate'),
+                DB::raw('COALESCE((SELECT SUM(duty_times_closed.minutes) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), 0) as dutyMinuteSum'),
+                DB::raw('COALESCE((SELECT MAX(duty_times_closed.end) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), "-") as lastDutyDate'),
             )
             ->groupBy('users_closed.id', 'users_closed.charactername')
             ->get();
+        });
 
         $admin_logs = DB::table('admin_logs')
             ->join('users', 'users.id', '=', 'admin_logs.user_id')

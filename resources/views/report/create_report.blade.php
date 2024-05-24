@@ -134,7 +134,7 @@
                         </div>
 
                         <div class="flex items-center justify-end mt-4">
-                            <a href="{{ url()->previous() }}">
+                            <a href="{{ route('reports.index') }}">
                                 <x-secondary-button>
                                     {{ __('Vissza') }}
                                 </x-secondary-button>

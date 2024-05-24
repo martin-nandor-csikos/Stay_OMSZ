@@ -22,23 +22,33 @@
                             <th scope="row">{{ $loop->iteration }}</th>
                             <td>{{ $closedUserStat->charactername }}</td>
                             <td>{{ $closedUserStat->reportCount }}</td>
-                            <td>{{ \Illuminate\Support\Carbon::parse($closedUserStat->lastReportDate)->format('Y.m.d H:i') }}</td>
-                            <td>
-                                <form action="{{ route('admin.viewClosedUserReports', $closedUserStat->id) }}" method="get">
-                                    <x-primary-button>
-                                        {{ __('Jelentések') }}
-                                    </x-primary-button>
-                                </form>
-                            </td>
+                            @if ($closedUserStat->lastReportDate != '-')
+                                <td>{{ \Illuminate\Support\Carbon::parse($closedUserStat->lastReportDate)->format('Y.m.d H:i') }}</td>
+                                <td>
+                                    <form action="{{ route('admin.viewClosedUserReports', $closedUserStat->id) }}" method="get">
+                                        <x-primary-button>
+                                            {{ __('Jelentések') }}
+                                        </x-primary-button>
+                                    </form>
+                                </td>
+                            @else
+                                <td>-</td>
+                                <td>-</td>
+                            @endif
                             <td>{{ $closedUserStat->dutyMinuteSum }}</td>
-                            <td>{{ \Illuminate\Support\Carbon::parse($closedUserStat->lastDutyDate)->format('Y.m.d H:i') }}</td>
-                            <td>
-                                <form action="{{ route('admin.viewClosedUserDuty', $closedUserStat->id) }}" method="get">
-                                    <x-primary-button>
-                                        {{ __('Szolgálatok') }}
-                                    </x-primary-button>
-                                </form>
-                            </td>
+                            @if ($closedUserStat->lastDutyDate != '-')
+                                <td>{{ \Illuminate\Support\Carbon::parse($closedUserStat->lastDutyDate)->format('Y.m.d H:i') }}</td>
+                                <td>
+                                    <form action="{{ route('admin.viewClosedUserDuty', $closedUserStat->id) }}" method="get">
+                                        <x-primary-button>
+                                            {{ __('Szolgálatok') }}
+                                        </x-primary-button>
+                                    </form>
+                                </td>
+                            @else
+                                <td>-</td>
+                                <td>-</td>
+                            @endif
                         </tr>
                     @endforeach
                     </tbody>

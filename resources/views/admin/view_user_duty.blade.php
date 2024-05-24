@@ -32,7 +32,7 @@
                                 <th scope="col">Felvétel</th>
                                 <th scope="col">Leadás</th>
                                 <th scope="col">Idő</th>
-                                @if (request()->routeIs('admin.viewClosedUserDuty'))
+                                @if (!request()->routeIs('admin.viewClosedUserDuty'))
                                     <th scope="col">Törlés</th>
                                 @endif
                             </tr>
@@ -44,7 +44,7 @@
                                 <td>{{ \Illuminate\Support\Carbon::parse($dutyTime->begin)->format('Y.m.d H:i') }}</td>
                                 <td>{{ \Illuminate\Support\Carbon::parse($dutyTime->end)->format('Y.m.d H:i') }}</td>
                                 <td>{{ $dutyTime->minutes }} perc</td>
-                                @if (!request()->routeIs('admin.viewClosedUserReports'))
+                                @if (!request()->routeIs('admin.viewClosedUserDuty'))
                                     <td>
                                         <form action="{{ route('admin.deleteDutyTime', $dutyTime->id) }}" method="post">
                                             @csrf
