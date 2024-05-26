@@ -6,6 +6,7 @@ use App\Models\DutyTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use DateTime;
+use Carbon\Carbon;
 
 class DutyTimeController extends Controller
 {
@@ -37,7 +38,8 @@ class DutyTimeController extends Controller
      */
     public function store(Request $request)
     {
-        $oneDayAgo = now()->subDays(1);
+        $endDate = Carbon::parse($request->end);
+        $oneDayAgo = $endDate->subDays(1);
 
         $validatedData = $request->validate([
             'begin' => ['required', 'date', 'before_or_equal:' . now(), 'after_or_equal:' . $oneDayAgo],
@@ -46,7 +48,7 @@ class DutyTimeController extends Controller
             'begin.required' => 'A kezdés ideje nem lehet üres.',
             'begin.date' => 'A kezdés érvényes dátum kell legyen.',
             'begin.before_or_equal' => 'A kezdési idő nem lehet későbbi, mint a jelenlegi idő.',
-            'begin.after_or_equal' => 'A kezdési idő maximum 1 nappal a jelenlegi idő előtt lehet.',
+            'begin.after_or_equal' => 'Maximum 24 óra szolgálatot veszünk figyelembe.',
 
             'end.required' => 'A leadás ideje nem lehet üres.',
             'end.date' => 'A leadás érvényes dátum kell legyen.',
