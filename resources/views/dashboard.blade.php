@@ -46,7 +46,7 @@
                             @if ($minimumReportCount - $reportCount > 0)
                                 <p><i>(Minimum jelentés számhoz <b>{{ $minimumReportCount - $reportCount }} darab</b> kell még)</i></p>
                             @else
-                                <p><i><b>Megvan</b> a minimum jelentés számod</i></p>
+                                <p><i>(<b>Megvan</b> a minimum jelentés számod)</i></p>
                             @endif
 
                             @if ($lastReportDate != '-')
