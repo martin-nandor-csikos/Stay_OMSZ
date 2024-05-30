@@ -96,6 +96,20 @@ class DashboardController extends Controller
             ->limit(1)
             ->get();
 
+        $sumDutyTime = DB::table('duty_times')
+            ->select(
+                DB::raw('sum(duty_times.minutes) as sumDutyTime'),
+            )
+            ->get();
+
+        if ($sumDutyTime->isEmpty()) {
+            $sumDutyTime = collect([
+                (object) [
+                    'sumDutyTime' => '0',
+                ]
+            ]);
+        }
+
         if ($topDutyTime->isEmpty()) {
             $topDutyTime = collect([
                 (object) [
@@ -117,6 +131,9 @@ class DashboardController extends Controller
             $minutesUntilTopDutyTime = $topDutyTime[0]->topDutyTime - $dutyMinuteSum[0]->dutyMinuteSum;
         }
 
+        $minimumDutyTime = 500;
+        $minimumReportCount = 15;
+
         return view('dashboard', [
             'topReports' => $topReports,
             'reportCount' => $reportCount[0]->reportCount,
@@ -125,6 +142,9 @@ class DashboardController extends Controller
             'allReportCount' => $allReportCount[0]->allReportCount,
             'userReportPercentage' => $percentage,
             'minutesUntilTopDutyTime' => $minutesUntilTopDutyTime,
+            'minimumDutyTime' => $minimumDutyTime,
+            'minimumReportCount' => $minimumReportCount,
+            'sumDutyTime'=> $sumDutyTime[0]->sumDutyTime,
         ]);
     }
 }
