@@ -39,3 +39,27 @@
         {{ session('close-success') }}
     </div>
 @endsession
+
+@session('updateinactivity-success')
+    <div class="alert alert-success" role="alert">
+        {{ session('updateinactivity-success') }}
+    </div>
+@endsession
+
+@session('updateinactivity-failed')
+    <div class="alert alert-danger" role="alert">
+        {{ session('updateinactivity-failed') }}
+    </div>
+@endsession
+
+@session('destroyinactivity-success')
+    <div class="alert alert-success" role="alert">
+        {{ session('destroyinactivity-success') }}
+    </div>
+@endsession
+
+@session('destroyinactivity-failed')
+    <div class="alert alert-danger" role="alert">
+        {{ session('destroyinactivity-failed') }}
+    </div>
+@endsession

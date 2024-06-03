@@ -10,6 +10,7 @@
     @include('admin.partials.header_navigation')
     @include('admin.partials.view_weekly_stats')
     @include('admin.partials.view_closed_week_stats')
+    @include('admin.partials.view_inactivities')
     @include('admin.partials.view_registrated_users')
     @include('admin.partials.view_admin_logs')
 
@@ -33,6 +34,12 @@
         });
 
         var table3 = new DataTable('#admin-logs', {
+            language: {
+                url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
+            },
+        });
+
+        var table4 = new DataTable('#inactivities', {
             language: {
                 url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
             },

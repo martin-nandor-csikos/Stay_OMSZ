@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DutyTimeController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\InactivityController;
 
 
 /*
@@ -49,6 +50,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/uj-szolgalat', [DutyTimeController::class, 'store'])->name('duty_time.store');
     Route::delete('/szolgalat-torles/{id}', [DutyTimeController::class, 'destroy'])->name('duty_time.delete');
 
+    // Inactivity
+    Route::get('/inaktivitas', [InactivityController::class, 'index'])->name('inactivity.index');
+    Route::get('/uj-inaktivitas', [InactivityController::class, 'create'])->name('inactivity.create');
+    Route::post('/uj-inaktivitas', [InactivityController::class, 'store'])->name('inactivity.store');
+    Route::delete('/inaktivitas-torles/{id}', [InactivityController::class, 'destroy'])->name('inactivity.delete');
+
     // Admin
     Route::middleware('isAdmin')->group(function () {
         Route::prefix('admin')->group(function () {
@@ -71,6 +78,9 @@ Route::middleware('auth')->group(function () {
             Route::delete('/felhasznalo-torles/{id}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
 
             Route::post('/het-lezaras', [AdminController::class, 'closeWeek'])->name('admin.closeWeek');
+
+            Route::post('/inaktivitas-elfogadas/{id}', [AdminController::class, 'updateInactivity'])->name('admin.updateInactivity');
+            Route::delete('/admin-inaktivitas-torles/{id}', [AdminController::class, 'destroyInactivity'])->name('admin.destroyInactivity');
         });
     });
 });

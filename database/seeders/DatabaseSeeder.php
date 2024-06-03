@@ -38,5 +38,6 @@ class DatabaseSeeder extends Seeder
         \App\Models\Report::factory(20)->create();
         \App\Models\DutyTime::factory(50)->create();
         \App\Models\AdminLog::factory(20)->create();
+        \App\Models\Inactivity::factory(10)->create();
     }
 }

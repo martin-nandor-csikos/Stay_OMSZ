@@ -16,6 +16,12 @@
                         </x-primary-button>
                     </a>
 
+                    <a href="#inactivities-block">
+                        <x-primary-button>
+                            {{ __('Inaktivitások') }}
+                        </x-primary-button>
+                    </a>
+
                     <a href="#registrated-users-block">
                         <x-primary-button>
                             {{ __('Regisztrált felhasználók') }}

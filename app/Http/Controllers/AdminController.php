@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Report;
 use App\Models\DutyTime;
+use App\Models\Inactivity;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Hash;
@@ -63,11 +64,25 @@ class AdminController extends Controller
             ->orderBy('admin_logs.created_at', 'desc')
             ->get();
 
+        $inactivities = DB::table('inactivities')
+            ->join('users', 'users.id', '=', 'inactivities.user_id')
+            ->select(
+                'users.charactername',
+                'inactivities.begin',
+                'inactivities.end',
+                'inactivities.reason',
+                'inactivities.id',
+                'inactivities.accepted',
+            )
+            ->orderBy('inactivities.created_at', 'desc')
+            ->get();
+
         return view('admin.view_admin', [
             'users' => $users,
             'userStats' => $userStats,
             'closedUserStats' => $closedUserStats,
             'admin_logs' => $admin_logs,
+            'inactivities' => $inactivities,
         ]);
     }
 
@@ -337,6 +352,59 @@ class AdminController extends Controller
             return Redirect::route('admin.viewUserDuty', $user)->with('successful-user-duty-deletion', 'A felhasználó szolgálatának törlése sikeres.');
         } catch (\Throwable $th) {
             return Redirect::route('admin.viewUserDuty', $user)->with('unsuccessful-user-duty-deletion', 'A felhasználó szolgálatának törlése sikertelen.');
+        }
+    }
+
+    public function destroyInactivity(string $id)
+    {
+        $inactivity = Inactivity::findOrFail($id);
+        $user = $inactivity->user_id;
+        try {
+            $charactername = DB::table('users')
+                ->join('inactivities', 'inactivities.user_id', '=', 'users.id')
+                ->select('users.charactername')
+                ->where('user_id', '=', $user)
+                ->get();
+
+            $inactivity->delete();
+
+            DB::table('admin_logs')->insert(
+                ['user_id' => Auth::user()->id, 'didWhat' => 'Kitörölte a(z) ' . $charactername[0]->charactername  . ' (Inaktivitás ID: ' . $id . ') felhasználó inaktivitási kérelmét']
+            );
+            
+            return Redirect::route('admin.index')->with('destroyinactivity-success', 'Az inaktivitási kérelem sikeresen törölve.');
+        } catch (\Throwable $th) {
+            return Redirect::route('admin.index')->with('destroyinactivity-failed', 'Az inaktivitási kérelem törlése meghiúsult.');
+        }
+    }
+
+    public function updateInactivity($id)
+    {
+        try {
+            $inactivity = Inactivity::findOrFail($id);
+            if ($inactivity->accepted == 1) {
+                DB::table('inactivities')
+                    ->where('id', $id)
+                    ->update(['accepted' => 0]);
+
+                DB::table('admin_logs')->insert([
+                    'user_id' => Auth::user()->id,
+                    'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (1 --> 0)'
+                ]);
+            } else {
+                DB::table('inactivities')
+                    ->where('id', $id)
+                    ->update(['accepted' => 1]);
+
+                DB::table('admin_logs')->insert([
+                    'user_id' => Auth::user()->id,
+                    'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (0 --> 1)'
+                ]);
+            }
+            
+            return Redirect::route('admin.index')->with('updateinactivity-success', 'Az inaktivitási kérelem sikeresen frissítve.');
+        } catch (\Throwable $th) {
+            return Redirect::route('admin.index')->with('updateinactivity-failed', 'Az inaktivitási kérelem frissítése meghiúsult.');
         }
     }
 }

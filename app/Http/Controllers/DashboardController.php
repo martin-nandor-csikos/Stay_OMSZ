@@ -132,7 +132,7 @@ class DashboardController extends Controller
         }
 
         $minimumDutyTime = 500;
-        $minimumReportCount = 15;
+        $minimumReportCount = 10;
 
         return view('dashboard', [
             'topReports' => $topReports,

@@ -24,6 +24,10 @@
                         {{ __('Szolgálatok') }}
                     </x-nav-link>
 
+                    <x-nav-link :href="route('inactivity.index')" :active="request()->routeIs('inactivity.index') || request()->routeIs('inactivity.create')">
+                        {{ __('Inaktivitás') }}
+                    </x-nav-link>
+
                     @if (Auth::user()->isAdmin)
                         <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index') || request()->routeIs('admin.editUser') || request()->routeIs('admin.viewUserReports') || request()->routeIs('admin.viewUserDuty') || request()->routeIs('admin.userRegistrationPage') || request()->routeIs('admin.viewClosedUserReports') || request()->routeIs('admin.viewClosedUserDuty')">
                             {{ __('Admin panel') }}
@@ -91,6 +95,10 @@
 
             <x-responsive-nav-link :href="route('duty_time.index')" :active="request()->routeIs('duty_time.index') || request()->routeIs('duty_time.create')">
                 {{ __('Szolgálatok') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('inactivity.index')" :active="request()->routeIs('inactivity.index') || request()->routeIs('inactivity.create')">
+                {{ __('Inaktivitás') }}
             </x-responsive-nav-link>
 
             @if (Auth::user()->isAdmin)
