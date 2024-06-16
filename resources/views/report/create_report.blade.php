@@ -24,15 +24,15 @@
                 $('#diagnosis').val(checkedValues || '');
 
                 let checkboxPrices = {
-                    'vizs': 30000,
-                    'kot': 40000,
-                    'gip': 50000,
-                    'gyogy': 40000,
-                    'kav': 30000,
-                    'as': 40000,
-                    'ss': 50000,
-                    'emb': 30000,
-                    'th': 250000
+                    'vizs': 20000,
+                    'kot': 30000,
+                    'gip': 35000,
+                    'gyogy': 30000,
+                    'kav': 20000,
+                    'as': 30000,
+                    'ss': 35000,
+                    'emb': 20000,
+                    'th': 150000
                 };
 
                 price = 0;
