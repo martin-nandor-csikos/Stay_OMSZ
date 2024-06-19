@@ -59,6 +59,10 @@ Route::middleware('auth')->group(function () {
     // Admin
     Route::middleware('isAdmin')->group(function () {
         Route::prefix('admin')->group(function () {
+            // Ajax routes
+            Route::get('/weekly-stats', [AdminController::class, 'getWeeklyStats'])->name('admin.weeklyStats');
+
+            
             Route::get('/', [AdminController::class, 'index'])->name('admin.index');
 
             Route::get('/felhasznalo-frissites/{id}', [AdminController::class, 'editUser'])->name('admin.editUser');
