@@ -4,31 +4,31 @@
             <div class="p-6 text-gray-900 view-reports-padding">
                 <p class="top5">Ugrás a táblához</p>
                 <div class="d-flex justify-content-around">
-                    <a href="#weekly-stats-block">
+                    <a href="#heti-statisztika">
                         <x-primary-button>
                             {{ __('Heti statisztika') }}
                         </x-primary-button>
                     </a>
 
-                    <a href="#closed-weekly-stats-block">
+                    <a href="#elozo-het">
                         <x-primary-button>
                             {{ __('Előző hét (lezárt)') }}
                         </x-primary-button>
                     </a>
 
-                    <a href="#inactivities-block">
+                    <a href="#inaktivitasok">
                         <x-primary-button>
                             {{ __('Inaktivitások') }}
                         </x-primary-button>
                     </a>
 
-                    <a href="#registrated-users-block">
+                    <a href="#regisztralt-felhasznalok">
                         <x-primary-button>
                             {{ __('Regisztrált felhasználók') }}
                         </x-primary-button>
                     </a>
 
-                    <a href="#admin-logs-block">
+                    <a href="#admin-logok">
                         <x-primary-button>
                             {{ __('Admin logok') }}
                         </x-primary-button>
