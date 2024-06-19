@@ -19,15 +19,9 @@ use Illuminate\Support\Facades\Cache;
 
 class AdminController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
+    /*
+    public function getWeeklyStats()
     {
-        $users = DB::table('users')
-            ->select('users.id', 'users.charactername', 'users.username', 'users.created_at', 'users.isAdmin', 'users.canGiveAdmin')
-            ->get();
-
         $userStats = DB::table('users')
             ->leftJoin('reports', 'users.id', '=', 'reports.user_id')
             ->select(
@@ -41,6 +35,29 @@ class AdminController extends Controller
             ->groupBy('users.id', 'users.charactername')
             ->get();
 
+        return response()->json($userStats);
+    }
+    */
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $userStats = DB::table('users')
+            ->leftJoin('reports', 'users.id', '=', 'reports.user_id')
+            ->select(
+                'users.id',
+                'users.charactername',
+                DB::raw('COALESCE(count(reports.user_id), 0) as reportCount'),
+                DB::raw('COALESCE((SELECT MAX(reports.created_at) FROM reports WHERE reports.user_id = users.id), "-") as lastReportDate'),
+                DB::raw('COALESCE((SELECT SUM(duty_times.minutes) FROM duty_times WHERE duty_times.user_id = users.id), 0) as dutyMinuteSum'),
+                DB::raw('COALESCE((SELECT MAX(duty_times.end) FROM duty_times WHERE duty_times.user_id = users.id), "-") as lastDutyDate')
+            )
+            ->groupBy('users.id', 'users.charactername')
+            ->orderBy('reportCount', 'DESC')
+            ->get();
+
         $closedUserStats = DB::table('reports_closed')
             ->join('users_closed', 'users_closed.id', '=', 'reports_closed.user_id')
             ->select(
@@ -52,16 +69,7 @@ class AdminController extends Controller
                 DB::raw('COALESCE((SELECT MAX(duty_times_closed.end) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), "-") as lastDutyDate'),
             )
             ->groupBy('users_closed.id', 'users_closed.charactername')
-            ->get();
-
-        $admin_logs = DB::table('admin_logs')
-            ->join('users', 'users.id', '=', 'admin_logs.user_id')
-            ->select(
-                'users.charactername',
-                'admin_logs.didWhat',
-                'admin_logs.created_at',
-            )
-            ->orderBy('admin_logs.created_at', 'desc')
+            ->orderBy('reportCount', 'DESC')
             ->get();
 
         $inactivities = DB::table('inactivities')
@@ -76,6 +84,22 @@ class AdminController extends Controller
             )
             ->orderBy('inactivities.created_at', 'desc')
             ->get();
+
+        $users = DB::table('users')
+            ->select('users.id', 'users.charactername', 'users.username', 'users.created_at', 'users.isAdmin', 'users.canGiveAdmin')
+            ->orderBy('users.charactername', 'ASC')
+            ->get();
+
+        $admin_logs = DB::table('admin_logs')
+            ->join('users', 'users.id', '=', 'admin_logs.user_id')
+            ->select(
+                'users.charactername',
+                'admin_logs.didWhat',
+                'admin_logs.created_at',
+            )
+            ->orderBy('admin_logs.created_at', 'desc')
+            ->get();
+
 
         return view('admin.view_admin', [
             'users' => $users,
@@ -99,11 +123,11 @@ class AdminController extends Controller
 
             DB::delete('DELETE FROM reports');
             DB::delete('DELETE FROM duty_times');
-        });
 
-        DB::table('admin_logs')->insert(
-            ['user_id' => Auth::user()->id, 'didWhat' => 'Lezárta a hetet']
-        );
+            DB::table('admin_logs')->insert(
+                ['user_id' => Auth::user()->id, 'didWhat' => 'Lezárta a hetet']
+            );
+        });
 
         return Redirect::route('admin.index')->with('close-success', 'A hét sikeresen lezárva.');
     }
