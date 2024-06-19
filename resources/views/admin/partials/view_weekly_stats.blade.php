@@ -1,4 +1,4 @@
-<div class="py-12" id="weekly-stats-block">
+<div class="py-12" id="heti-statisztika">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 text-gray-900 view-reports-padding">
@@ -31,7 +31,7 @@
                             @if ($userStat->lastReportDate != '-')
                                 <td>{{ \Illuminate\Support\Carbon::parse($userStat->lastReportDate)->format('Y.m.d H:i') }}</td>
                                 <td>
-                                    <form action="{{ route('admin.viewUserReports', $userStat->id) }}" method="get">
+                                    <form action="{{ route('admin.viewUserReports', $userStat->id) }}" method="get" target="blank">
                                         <x-primary-button>
                                             {{ __('Jelentések') }}
                                         </x-primary-button>
@@ -45,7 +45,7 @@
                             @if ($userStat->lastDutyDate != '-')
                                 <td>{{ \Illuminate\Support\Carbon::parse($userStat->lastDutyDate)->format('Y.m.d H:i') }}</td>
                                 <td>
-                                    <form action="{{ route('admin.viewUserDuty', $userStat->id) }}" method="get">
+                                    <form action="{{ route('admin.viewUserDuty', $userStat->id) }}" method="get" target="blank">
                                         <x-primary-button>
                                             {{ __('Szolgálatok') }}
                                         </x-primary-button>
@@ -63,3 +63,55 @@
         </div>
     </div>
 </div>
+
+<!--
+<script>
+$(document).ready(function () {
+    function fetchWeeklyStats() {
+        $.ajax({
+            url: "{{ route('admin.weeklyStats') }}",
+            method: "GET",
+            success: function (data) {
+                updateWeeklyStats(data);
+            }
+        });
+    }
+
+    function updateWeeklyStats(userStats) {
+        let tbody = $('#weekly-stats tbody');
+        tbody.empty();
+
+        userStats.forEach((userStat, index) => {
+            let lastReportDate = userStat.lastReportDate !== '-' ? new Date(userStat.lastReportDate).toLocaleString('hu-HU') : '-';
+            let lastDutyDate = userStat.lastDutyDate !== '-' ? new Date(userStat.lastDutyDate).toLocaleString('hu-HU') : '-';
+
+            let row = `
+                <tr>
+                    <th scope="row">${index + 1}</th>
+                    <td>${userStat.charactername}</td>
+                    <td>${userStat.reportCount}</td>
+                    <td>${lastReportDate}</td>
+                    <td>
+                        <form action="{{ route('admin.viewUserReports', $userStat->id) }}" method="get">
+                            <x-primary-button>{{ __('Jelentések') }}</x-primary-button>
+                        </form>
+                    </td>
+                    <td>${userStat.dutyMinuteSum}</td>
+                    <td>${lastDutyDate}</td>
+                    <td>
+                        <form action="/admin/view-user-duty/${userStat.id}" method="get">
+                            <x-primary-button>{{ __('Szolgálatok') }}</x-primary-button>
+                        </form>
+                    </td>
+                </tr>
+                `;
+
+            tbody.append(row);
+        });
+    }
+
+    setInterval(fetchWeeklyStats, 5000);
+    fetchWeeklyStats();
+});
+</script>
+-->

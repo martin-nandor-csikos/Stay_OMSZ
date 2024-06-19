@@ -1,4 +1,4 @@
-<div class="py-12" id="closed-weekly-stats-block">
+<div class="py-12" id="elozo-het">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 text-gray-900 view-reports-padding">
@@ -25,7 +25,7 @@
                             @if ($closedUserStat->lastReportDate != '-')
                                 <td>{{ \Illuminate\Support\Carbon::parse($closedUserStat->lastReportDate)->format('Y.m.d H:i') }}</td>
                                 <td>
-                                    <form action="{{ route('admin.viewClosedUserReports', $closedUserStat->id) }}" method="get">
+                                    <form action="{{ route('admin.viewClosedUserReports', $closedUserStat->id) }}" method="get" target="blank">
                                         <x-primary-button>
                                             {{ __('Jelentések') }}
                                         </x-primary-button>
@@ -39,7 +39,7 @@
                             @if ($closedUserStat->lastDutyDate != '-')
                                 <td>{{ \Illuminate\Support\Carbon::parse($closedUserStat->lastDutyDate)->format('Y.m.d H:i') }}</td>
                                 <td>
-                                    <form action="{{ route('admin.viewClosedUserDuty', $closedUserStat->id) }}" method="get">
+                                    <form action="{{ route('admin.viewClosedUserDuty', $closedUserStat->id) }}" method="get" target="blank">
                                         <x-primary-button>
                                             {{ __('Szolgálatok') }}
                                         </x-primary-button>
