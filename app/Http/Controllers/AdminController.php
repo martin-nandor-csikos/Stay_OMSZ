@@ -109,8 +109,6 @@ class AdminController extends Controller
             }
         }
 
-        var_dump($closedUserStats);
-
         return view('admin.view_admin', [
             'users' => $users,
             'userStats' => $userStats,

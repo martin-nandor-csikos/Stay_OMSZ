@@ -46,7 +46,7 @@
                                 <th scope="col">Ettől</th>
                                 <th scope="col">Eddig</th>
                                 <th scope="col">Indok</th>
-                                <th scope="col">Elfogadva?</th>
+                                <th scope="col">Státusz</th>
                                 <th scope="col">Törlés</th>
                             </tr>
                         </thead>
