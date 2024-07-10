@@ -31,7 +31,7 @@
                             @if ($userStat->lastReportDate != '-')
                                 <td>{{ \Illuminate\Support\Carbon::parse($userStat->lastReportDate)->format('Y.m.d H:i') }}</td>
                                 <td>
-                                    <form action="{{ route('admin.viewUserReports', $userStat->id) }}" method="get" target="blank">
+                                    <form action="{{ route('admin.viewUserReports', $userStat->id) }}" method="get" target="_blank_{{ $loop->iteration }}">
                                         <x-primary-button>
                                             {{ __('Jelentések') }}
                                         </x-primary-button>
@@ -45,7 +45,7 @@
                             @if ($userStat->lastDutyDate != '-')
                                 <td>{{ \Illuminate\Support\Carbon::parse($userStat->lastDutyDate)->format('Y.m.d H:i') }}</td>
                                 <td>
-                                    <form action="{{ route('admin.viewUserDuty', $userStat->id) }}" method="get" target="blank">
+                                    <form action="{{ route('admin.viewUserDuty', $userStat->id) }}" method="get" target="_blank_{{ $loop->iteration }}">
                                         <x-primary-button>
                                             {{ __('Szolgálatok') }}
                                         </x-primary-button>

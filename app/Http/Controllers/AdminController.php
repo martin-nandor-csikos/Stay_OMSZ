@@ -58,15 +58,15 @@ class AdminController extends Controller
             ->orderBy('reportCount', 'DESC')
             ->get();
 
-        $closedUserStats = DB::table('reports_closed')
-            ->join('users_closed', 'users_closed.id', '=', 'reports_closed.user_id')
+        $closedUserStats = DB::table('users_closed')
+            ->leftJoin('reports_closed', 'users_closed.id', '=', 'reports_closed.user_id')
             ->select(
                 'users_closed.id',
                 'users_closed.charactername',
                 DB::raw('COALESCE(count(reports_closed.user_id), 0) as reportCount'),
                 DB::raw('COALESCE((SELECT MAX(reports_closed.created_at) FROM reports_closed WHERE reports_closed.user_id = users_closed.id), "-") as lastReportDate'),
                 DB::raw('COALESCE((SELECT SUM(duty_times_closed.minutes) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), 0) as dutyMinuteSum'),
-                DB::raw('COALESCE((SELECT MAX(duty_times_closed.end) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), "-") as lastDutyDate'),
+                DB::raw('COALESCE((SELECT MAX(duty_times_closed.end) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), "-") as lastDutyDate')
             )
             ->groupBy('users_closed.id', 'users_closed.charactername')
             ->orderBy('reportCount', 'DESC')
@@ -108,6 +108,8 @@ class AdminController extends Controller
                 break;
             }
         }
+
+        var_dump($closedUserStats);
 
         return view('admin.view_admin', [
             'users' => $users,
