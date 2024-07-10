@@ -1,3 +1,11 @@
+@if ($waitingForAnswerInInactivites == true)
+<script>
+    window.onload = function() {
+        alert("Új inaktivitási kérelem érkezett! (Válaszra vár)");
+    }
+</script>
+@endif
+
 <div class="py-12" id="inaktivitasok">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -12,9 +20,10 @@
                             <th scope="col">Ettől</th>
                             <th scope="col">Eddig</th>
                             <th scope="col">Indok</th>
-                            <th scope="col">Elfogadva?</th>
+                            <th scope="col">Státusz</th>
                             <th scope="col">Folyamatban?</th>
                             <th scope="col">Elfogadás</th>
+                            <th scope="col">Elutasítás</th>
                             <th scope="col">Törlés</th>
                         </tr>
                     </thead>
@@ -27,29 +36,33 @@
                             <td>{{ \Illuminate\Support\Carbon::parse($inactivity->begin)->format('Y.m.d') }}</td>
                             <td>{{ \Illuminate\Support\Carbon::parse($inactivity->end)->format('Y.m.d') }}</td>
                             <td>{{ $inactivity->reason }}</td>
-                            @if ($inactivity->accepted == 1)
-                                <td>I</td>
+                            @if ($inactivity->status == 1)
+                                <td>Elfogadva</td>
+                            @elseif ($inactivity->status == 2)
+                                <td>Elutasítva</td>
                             @else
-                                <td>N</td>
+                                <td>Válaszra vár</td>
                             @endif
 
-                            @if (\Illuminate\Support\Carbon::now()->between($inactivity->begin, $inactivity->end) && $inactivity->accepted == 1)
-                                <td>I</td>
+                            @if (\Illuminate\Support\Carbon::now()->between($inactivity->begin, $inactivity->end) && $inactivity->status == 1)
+                                <td>Igen</td>
                             @else
-                                <td>N</td>
+                                <td>Nem</td>
                             @endif
                             <td>
-                                <form action="{{ route('admin.updateInactivity', $inactivity->id) }}" method="POST">
+                                <form action="{{ route('admin.acceptInactivity', $inactivity->id) }}" method="POST">
                                     @csrf
-                                    @if ($inactivity->accepted == 0)
-                                        <x-primary-button>
-                                            {{ __('Elfogadás') }}
-                                        </x-primary-button>
-                                    @else
-                                        <x-primary-button>
-                                            {{ __('Visszavonás') }}
-                                        </x-primary-button>
-                                    @endif
+                                    <x-primary-button>
+                                        {{ __('Elfogadás') }}
+                                    </x-primary-button>
+                                </form>
+                            </td>
+                            <td>
+                                <form action="{{ route('admin.denyInactivity', $inactivity->id) }}" method="POST">
+                                    @csrf
+                                    <x-primary-button>
+                                        {{ __('Elutasítás') }}
+                                    </x-primary-button>
                                 </form>
                             </td>
                             <td>

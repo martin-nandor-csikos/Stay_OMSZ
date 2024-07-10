@@ -80,7 +80,7 @@ class AdminController extends Controller
                 'inactivities.end',
                 'inactivities.reason',
                 'inactivities.id',
-                'inactivities.accepted',
+                'inactivities.status',
             )
             ->orderBy('inactivities.created_at', 'desc')
             ->get();
@@ -101,12 +101,21 @@ class AdminController extends Controller
             ->get();
 
 
+        $waitingForAnswerInInactivites = false;
+        foreach ($inactivities as $inactivity) {
+            if ($inactivity->status == 0) {
+                $waitingForAnswerInInactivites = true;
+                break;
+            }
+        }
+
         return view('admin.view_admin', [
             'users' => $users,
             'userStats' => $userStats,
             'closedUserStats' => $closedUserStats,
             'admin_logs' => $admin_logs,
             'inactivities' => $inactivities,
+            'waitingForAnswerInInactivites' => $waitingForAnswerInInactivites,
         ]);
     }
 
@@ -402,33 +411,75 @@ class AdminController extends Controller
         }
     }
 
-    public function updateInactivity($id)
+    public function acceptInactivity($id)
     {
         try {
             $inactivity = Inactivity::findOrFail($id);
-            if ($inactivity->accepted == 1) {
+
+            // 0 --> Válaszra vár
+            // 1 --> Elfogadva
+            // 2 --> Elutasítva
+
+            if ($inactivity->status == 0) {
                 DB::table('inactivities')
                     ->where('id', $id)
-                    ->update(['accepted' => 0]);
+                    ->update(['status' => 1]);
 
                 DB::table('admin_logs')->insert([
                     'user_id' => Auth::user()->id,
-                    'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (1 --> 0)'
+                    'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (Válaszra vár --> Elfogadva)'
                 ]);
-            } else {
+            }
+            if ($inactivity->status == 2) {
                 DB::table('inactivities')
                     ->where('id', $id)
-                    ->update(['accepted' => 1]);
+                    ->update(['status' => 1]);
 
                 DB::table('admin_logs')->insert([
                     'user_id' => Auth::user()->id,
-                    'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (0 --> 1)'
+                    'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (Elutasítva --> Elfogadva)'
                 ]);
             }
             
-            return Redirect::route('admin.index')->with('updateinactivity-success', 'Az inaktivitási kérelem sikeresen frissítve.');
+            return Redirect::route('admin.index')->with('updateinactivity-success', 'Az inaktivitási kérelem sikeresen elfogadva.');
         } catch (\Throwable $th) {
-            return Redirect::route('admin.index')->with('updateinactivity-failed', 'Az inaktivitási kérelem frissítése meghiúsult.');
+            return Redirect::route('admin.index')->with('updateinactivity-failed', 'Az inaktivitási kérelem elfogadása meghiúsult.');
+        }
+    }
+
+    public function denyInactivity($id)
+    {
+        try {
+            $inactivity = Inactivity::findOrFail($id);
+
+            // 0 --> Válaszra vár
+            // 1 --> Elfogadva
+            // 2 --> Elutasítva
+
+            if ($inactivity->status == 0) {
+                DB::table('inactivities')
+                    ->where('id', $id)
+                    ->update(['status' => 2]);
+
+                DB::table('admin_logs')->insert([
+                    'user_id' => Auth::user()->id,
+                    'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (Válaszra vár --> Elutasítva)'
+                ]);
+            }
+            if ($inactivity->status == 1) {
+                DB::table('inactivities')
+                    ->where('id', $id)
+                    ->update(['status' => 2]);
+
+                DB::table('admin_logs')->insert([
+                    'user_id' => Auth::user()->id,
+                    'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (Elfogadva --> Elutasítva)'
+                ]);
+            }
+            
+            return Redirect::route('admin.index')->with('updateinactivity-success', 'Az inaktivitási kérelem sikeresen elutasítva.');
+        } catch (\Throwable $th) {
+            return Redirect::route('admin.index')->with('updateinactivity-failed', 'Az inaktivitási kérelem elutasítása meghiúsult.');
         }
     }
 }

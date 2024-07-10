@@ -16,7 +16,7 @@ class InactivityController extends Controller
     public function index(Request $request)
     {
         $inactivities = DB::table('inactivities')
-            ->select('id', 'begin', 'end', 'reason', 'accepted')
+            ->select('id', 'begin', 'end', 'reason', 'status')
             ->where('user_id', '=', $request->user()->id)
             ->get();
 

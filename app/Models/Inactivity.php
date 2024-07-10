@@ -19,7 +19,7 @@ class Inactivity extends Model
         'end',
         'user_id',
         'reason',
-        'accepted',
+        'status',
     ];
 
     protected $casts = [

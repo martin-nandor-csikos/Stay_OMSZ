@@ -57,10 +57,12 @@
                                 <td>{{ \Illuminate\Support\Carbon::parse($inactivity->begin)->format('Y.m.d') }}</td>
                                 <td>{{ \Illuminate\Support\Carbon::parse($inactivity->end)->format('Y.m.d') }}</td>
                                 <td>{{ $inactivity->reason }}</td>
-                                @if ($inactivity->accepted == 1)
-                                    <td><input type="checkbox" name="accepted" checked disabled class="rounded text-indigo-600 shadow-sm focus:ring-indigo-500 form-check-input"></td>
+                                @if ($inactivity->status == 1)
+                                    <td>Elfogadva</td>
+                                @elseif ($inactivity->status == 2)
+                                    <td>Elutasítva</td>
                                 @else
-                                    <td><input type="checkbox" name="accepted" disabled class="rounded text-indigo-600 shadow-sm focus:ring-indigo-500 form-check-input"></td>
+                                    <td>Válaszra vár</td>
                                 @endif
                                 <td>
                                     <form action="{{ route('inactivity.delete', $inactivity->id) }}" method="post">

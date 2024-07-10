@@ -83,7 +83,8 @@ Route::middleware('auth')->group(function () {
 
             Route::post('/het-lezaras', [AdminController::class, 'closeWeek'])->name('admin.closeWeek');
 
-            Route::post('/inaktivitas-elfogadas/{id}', [AdminController::class, 'updateInactivity'])->name('admin.updateInactivity');
+            Route::post('/inaktivitas-elfogadas/{id}', [AdminController::class, 'acceptInactivity'])->name('admin.acceptInactivity');
+            Route::post('/inaktivitas-elutasitas/{id}', [AdminController::class, 'denyInactivity'])->name('admin.denyInactivity');
             Route::delete('/admin-inaktivitas-torles/{id}', [AdminController::class, 'destroyInactivity'])->name('admin.destroyInactivity');
         });
     });

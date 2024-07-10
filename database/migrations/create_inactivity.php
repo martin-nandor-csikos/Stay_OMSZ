@@ -17,7 +17,7 @@ return new class extends Migration
             $table->date('begin');
             $table->date('end');
             $table->string('reason');
-            $table->boolean('accepted')->default('0');
+            $table->integer('status')->default('0');
             $table->timestamps();
         });
     }
