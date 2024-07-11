@@ -50,20 +50,28 @@
                                 <td>Nem</td>
                             @endif
                             <td>
+                                @if ($inactivity->status == 1)
+                                -
+                                @else
                                 <form action="{{ route('admin.acceptInactivity', $inactivity->id) }}" method="POST">
                                     @csrf
                                     <x-primary-button>
                                         {{ __('Elfogadás') }}
                                     </x-primary-button>
                                 </form>
+                                @endif
                             </td>
                             <td>
+                                @if ($inactivity->status == 2)
+                                -
+                                @else
                                 <form action="{{ route('admin.denyInactivity', $inactivity->id) }}" method="POST">
                                     @csrf
                                     <x-primary-button>
                                         {{ __('Elutasítás') }}
                                     </x-primary-button>
                                 </form>
+                                @endif
                             </td>
                             <td>
                                 <form action="{{ route('admin.destroyInactivity', $inactivity->id) }}" method="post">
