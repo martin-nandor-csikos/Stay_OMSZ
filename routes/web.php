@@ -61,8 +61,11 @@ Route::middleware('auth')->group(function () {
     Route::middleware('isAdmin')->group(function () {
         Route::prefix('admin')->group(function () {
             // Ajax routes
-            Route::get('/weekly-stats', [AdminController::class, 'getWeeklyStats'])->name('admin.weeklyStats');
-
+            Route::get('/weekly-stats', [AdminController::class, 'getWeeklyStatsTable'])->name('admin.weeklyStats');
+            Route::get('/closed-week-stats', [AdminController::class, 'getClosedWeekStatsTable'])->name('admin.closedWeekStats');
+            Route::get('/inactivities', [AdminController::class, 'getInactivitiesTable'])->name('admin.inactivities');
+            Route::get('/registrated-users', [AdminController::class, 'getRegistratedUsersTable'])->name('admin.registratedUsers');
+            Route::get('/admin-logs', [AdminController::class, 'getAdminLogsTable'])->name('admin.adminLogs');
             
             Route::get('/', [AdminController::class, 'index'])->name('admin.index');
 

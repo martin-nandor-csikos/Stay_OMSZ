@@ -12,39 +12,13 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
-
 
 
 class AdminController extends Controller
 {
-    /*
-    public function getWeeklyStats()
+    public function getWeeklyStatsQuery()
     {
-        $userStats = DB::table('users')
-            ->leftJoin('reports', 'users.id', '=', 'reports.user_id')
-            ->select(
-                'users.id',
-                'users.charactername',
-                DB::raw('COALESCE(count(reports.user_id), 0) as reportCount'),
-                DB::raw('COALESCE((SELECT MAX(reports.created_at) FROM reports WHERE reports.user_id = users.id), "-") as lastReportDate'),
-                DB::raw('COALESCE((SELECT SUM(duty_times.minutes) FROM duty_times WHERE duty_times.user_id = users.id), 0) as dutyMinuteSum'),
-                DB::raw('COALESCE((SELECT MAX(duty_times.end) FROM duty_times WHERE duty_times.user_id = users.id), "-") as lastDutyDate')
-            )
-            ->groupBy('users.id', 'users.charactername')
-            ->get();
-
-        return response()->json($userStats);
-    }
-    */
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
-    {
-        $userStats = DB::table('users')
+        return DB::table('users')
             ->leftJoin('reports', 'users.id', '=', 'reports.user_id')
             ->select(
                 'users.id',
@@ -57,8 +31,20 @@ class AdminController extends Controller
             ->groupBy('users.id', 'users.charactername')
             ->orderBy('reportCount', 'DESC')
             ->get();
+    }
 
-        $closedUserStats = DB::table('users_closed')
+    public function getWeeklyStatsTable()
+    {
+        $userStats = $this->getWeeklyStatsQuery();
+
+        return view('admin.partials.view_weekly_stats', [
+            'userStats' => $userStats,
+        ]);
+    }
+
+    public function getClosedWeekStatsQuery()
+    {
+        return DB::table('users_closed')
             ->leftJoin('reports_closed', 'users_closed.id', '=', 'reports_closed.user_id')
             ->select(
                 'users_closed.id',
@@ -71,8 +57,20 @@ class AdminController extends Controller
             ->groupBy('users_closed.id', 'users_closed.charactername')
             ->orderBy('reportCount', 'DESC')
             ->get();
+    }
 
-        $inactivities = DB::table('inactivities')
+    public function getClosedWeekStatsTable()
+    {
+        $closedUserStats = $this->getClosedWeekStatsQuery();
+
+        return view('admin.partials.view_closed_week_stats', [
+            'closedUserStats' => $closedUserStats,
+        ]);
+    }
+
+    public function getInactivitiesQuery()
+    {
+        return DB::table('inactivities')
             ->join('users', 'users.id', '=', 'inactivities.user_id')
             ->select(
                 'users.charactername',
@@ -84,13 +82,46 @@ class AdminController extends Controller
             )
             ->orderBy('inactivities.created_at', 'desc')
             ->get();
+    }
 
-        $users = DB::table('users')
+    public function getInactivitiesTable()
+    {
+        $inactivities = $this->getInactivitiesQuery();
+
+        $waitingForAnswerInInactivites = false;
+        foreach ($inactivities as $inactivity) {
+            if ($inactivity->status == 0) {
+                $waitingForAnswerInInactivites = true;
+                break;
+            }
+        }
+
+        return view('admin.partials.view_inactivities', [
+            'inactivities' => $inactivities,
+            'waitingForAnswerInInactivites' => $waitingForAnswerInInactivites,
+        ]);
+    }
+
+    public function getRegistratedUsersQuery()
+    {
+        return DB::table('users')
             ->select('users.id', 'users.charactername', 'users.username', 'users.created_at', 'users.isAdmin', 'users.canGiveAdmin')
             ->orderBy('users.charactername', 'ASC')
             ->get();
+    }
 
-        $admin_logs = DB::table('admin_logs')
+    public function getRegistratedUsersTable()
+    {
+        $users = $this->getRegistratedUsersQuery();
+
+        return view('admin.partials.view_registrated_users', [
+            'users' => $users,
+        ]);
+    }
+
+    public function getAdminLogsQuery()
+    {
+        return DB::table('admin_logs')
             ->join('users', 'users.id', '=', 'admin_logs.user_id')
             ->select(
                 'users.charactername',
@@ -99,7 +130,27 @@ class AdminController extends Controller
             )
             ->orderBy('admin_logs.created_at', 'desc')
             ->get();
+    }
 
+    public function getAdminLogsTable()
+    {
+        $admin_logs = $this->getAdminLogsQuery();
+
+        return view('admin.partials.view_admin_logs', [
+            'admin_logs' => $admin_logs,
+        ]);
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $userStats = $this->getWeeklyStatsQuery();
+        $closedUserStats = $this->getClosedWeekStatsQuery();
+        $inactivities = $this->getInactivitiesQuery();
+        $users = $this->getRegistratedUsersQuery();
+        $admin_logs = $this->getAdminLogsQuery();
 
         $waitingForAnswerInInactivites = false;
         foreach ($inactivities as $inactivity) {

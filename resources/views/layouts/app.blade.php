@@ -21,6 +21,16 @@
         <link href="https://cdn.datatables.net/v/dt/dt-2.0.8/r-3.0.2/datatables.css" rel="stylesheet">
         <script src="https://cdn.datatables.net/v/dt/dt-2.0.8/r-3.0.2/datatables.js"></script>
         <script src="js/report_checkbox.js"></script>
+        <script>
+            window.routes = {
+                weeklyStats: "{{ route('admin.weeklyStats') }}",
+                closedWeekStats: "{{ route('admin.closedWeekStats') }}",
+                inactivities: "{{ route('admin.inactivities') }}",
+                registratedUsers: "{{ route('admin.registratedUsers') }}",
+                adminLogs: "{{ route('admin.adminLogs') }}",
+            };
+        </script>
+        
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">

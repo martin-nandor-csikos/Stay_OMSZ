@@ -8,11 +8,13 @@
     @include('admin.partials.sessions')
 
     @include('admin.partials.header_navigation')
-    @include('admin.partials.view_weekly_stats')
-    @include('admin.partials.view_closed_week_stats')
-    @include('admin.partials.view_inactivities')
-    @include('admin.partials.view_registrated_users')
-    @include('admin.partials.view_admin_logs')
+    <div id="weekly-stats-table">@include('admin.partials.view_weekly_stats')</div>
+    <div id="closed-week-stats-table">@include('admin.partials.view_closed_week_stats')</div>
+    <div id="inactivities-table">@include('admin.partials.view_inactivities')</div>
+    <div id="registrated-users-table">@include('admin.partials.view_registrated_users')</div>
+    <div id="admin-logs-table">@include('admin.partials.view_admin_logs')</div>
+
+    <script src="js/admin_ajax.js"></script>
 
     <script>
         var table = new DataTable('#registered-users', {
