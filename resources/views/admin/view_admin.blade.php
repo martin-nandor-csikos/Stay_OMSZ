@@ -18,6 +18,7 @@
     @include('admin.partials.sessions')
 
     @include('admin.partials.header_navigation')
+    @include('admin.partials.set_values')
     <div id="weekly-stats-table">@include('admin.partials.view_weekly_stats')</div>
     <div id="closed-week-stats-table">@include('admin.partials.view_closed_week_stats')</div>
     <div id="inactivities-table">@include('admin.partials.view_inactivities')</div>

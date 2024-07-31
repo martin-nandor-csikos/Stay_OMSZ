@@ -80,6 +80,8 @@ Route::middleware('auth')->group(function () {
             Route::delete('/jelentes-torles/{id}', [AdminController::class, 'deleteReport'])->name('admin.deleteReport');
             Route::get('/szolgalatok/{id}', [AdminController::class, 'viewUserDuty'])->name('admin.viewUserDuty');
             Route::delete('/szolgalat-torles/{id}', [AdminController::class, 'deleteDutyTime'])->name('admin.deleteDutyTime');
+            Route::post('/szolgalat-ido-frissites', [AdminController::class, 'setDutyTime'])->name('admin.setDutyTime');
+            Route::post('/jelentes-szam-frissites', [AdminController::class, 'setReportAmount'])->name('admin.setReportAmount');
 
             Route::get('/lezart-jelentesek/{id}', [AdminController::class, 'viewClosedUserReports'])->name('admin.viewClosedUserReports');
             Route::get('/lezart-szolgalatok/{id}', [AdminController::class, 'viewClosedUserDuty'])->name('admin.viewClosedUserDuty');

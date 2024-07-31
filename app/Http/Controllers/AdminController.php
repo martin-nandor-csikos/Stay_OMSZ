@@ -14,9 +14,66 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
-
 class AdminController extends Controller
 {
+    private $dutyTime;
+    private $reportAmount;
+
+    public function getDutyTime()
+    {
+        return $this->dutyTime;
+    }
+
+    public function getReportAmount()
+    {
+        return $this->reportAmount;
+    }
+
+    public function setDutyTime(Request $request)
+    {
+        try {
+            $newDutyTime = $request->dutyTime;
+            $oldDutyTime = $this->dutyTime;
+
+            if ($newDutyTime > 0) {
+                $this->dutyTime = $newDutyTime;
+            }
+
+            DB::table('admin_logs')->insert(
+                ['user_id' => Auth::user()->id, 'didWhat' => 'Frissitette a minimum heti szolgálati időt (' . $oldDutyTime . ' --> ' . $newDutyTime . ')']
+            );
+
+            return Redirect::route('admin.index')->with('dutytime-update-success', 'Az új minimum heti szolgálati idő sikeresen beállitva');
+        } catch (\Exception $e) {
+            return Redirect::route('admin.index')->with('dutytime-update-failed', 'Az új minimum heti szolgálati idő beállitása sikertelen');
+        }
+    }
+
+    public function setReportAmount(Request $request)
+    {
+        $newReportAmount = $request->reportAmount;
+        if ($newReportAmount > 0) {
+            $this->reportAmount = $newReportAmount;
+        }
+
+        try {
+            $newReportAmount = $request->reportAmount;
+            $oldReportAmount = $this->reportAmount;
+
+            if ($newReportAmount > 0) {
+                $this->reportAmount = $newReportAmount;
+            }
+
+            DB::table('admin_logs')->insert(
+                ['user_id' => Auth::user()->id, 'didWhat' => 'Frissitette a minimum heti jelentés számot (' . $oldReportAmount . ' --> ' . $newReportAmount . ')']
+            );
+
+            return Redirect::route('admin.index')->with('reportamount-update-success', 'Az új minimum heti jelentés szám sikeresen beállitva');
+        } catch (\Exception $e) {
+            return Redirect::route('admin.index')->with('reportamount-update-failed', 'Az új minimum heti jelentés szám beállitása sikertelen');
+        }
+    }
+
     public function getWeeklyStatsQuery()
     {
         return DB::table('users')
@@ -168,6 +225,8 @@ class AdminController extends Controller
             'admin_logs' => $admin_logs,
             'inactivities' => $inactivities,
             'waitingForAnswerInInactivites' => $waitingForAnswerInInactivites,
+            'reportAmount' => $this->getReportAmount(),
+            'dutyTime' => $this->getDutyTime(),
         ]);
     }
 
@@ -210,7 +269,7 @@ class AdminController extends Controller
 
             DB::table('admin_logs')->insert(
                     ['user_id' => Auth::user()->id, 'didWhat' => 'Lezárta a hetet']
-                );
+            );
         } catch (\Exception $e) {
             DB::rollBack();
             
