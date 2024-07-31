@@ -5,6 +5,9 @@ $(document).ready(function () {
             method: "GET",
             success: function (data) {
                 $(targetId).html(data);
+            },
+            complete: function (data) {
+                setTimeout(fetchData, 3000);
             }
         });
     }
@@ -34,5 +37,5 @@ $(document).ready(function () {
     }
 
     updateAllData();
-    setInterval(updateAllData, 3000);
+    setTimeout(updateAllData, 3000);
 });
