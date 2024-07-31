@@ -36,7 +36,7 @@ class DatabaseSeeder extends Seeder
 
         \App\Models\Lock::factory()->create([
             'name' => 'close_week',
-            'isLocked' => false,
+            'isLocked' => 0,
         ]);
 
         \App\Models\User::factory(20)->create();

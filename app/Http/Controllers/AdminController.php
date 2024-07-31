@@ -173,12 +173,12 @@ class AdminController extends Controller
 
     public function closeWeek()
     {
-        $getLock = DB::table('locks')
+        $lockCloseWeek = DB::table('locks')
             ->where('name', 'close_week')
-            ->where('isLocked', false)
-            ->update(['isLocked' => true]);
+            ->where('isLocked', 0)
+            ->update(['isLocked' => 1]);
 
-        if ($getLock == 0) {
+        if ($lockCloseWeek == 0) {
             return Redirect::route('admin.index')->with('close-failed', 'A hét lezárása sikertelen. Művelet már folyamatban van.');
         }
 
@@ -192,7 +192,7 @@ class AdminController extends Controller
         if ($currentWeekReports->count() == 0 && $currentWeekDuties->count() == 0) {
             DB::table('locks')
                 ->where('name', 'close_week')
-                ->update(['isLocked' => false]);
+                ->update(['isLocked' => 0]);
             return Redirect::route('admin.index')->with('close-failed', 'A hét lezárása sikertelen. Üres a jelenlegi hét.');
         }
 
@@ -216,14 +216,14 @@ class AdminController extends Controller
             
             DB::table('locks')
                 ->where('name', 'close_week')
-                ->update(['isLocked' => false]);
+                ->update(['isLocked' => 0]);
 
             return Redirect::route('admin.index')->with('close-failed', 'A hét lezárása sikertelen.');
         }
 
         DB::table('locks')
         ->where('name', 'close_week')
-        ->update(['isLocked' => false]);
+        ->update(['isLocked' => 0]);
         
         return Redirect::route('admin.index')->with('close-success', 'A hét sikeresen lezárva.');
     }

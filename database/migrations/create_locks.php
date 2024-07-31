@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('locks', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->boolean('isLocked');
+            $table->tinyInteger('isLocked')->default(0);
             $table->timestamps();
         });
     }
