@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
             'charactername' => 'Dr. Pietro Burns',
             'username' => 'nonadmin',
             'password' => bcrypt('12345678'),
-            'isAdmin' => 1,
+            'isAdmin' => 0,
             'canGiveAdmin' => 0,
         ]);
 

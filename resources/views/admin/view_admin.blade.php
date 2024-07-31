@@ -5,6 +5,16 @@
         </h2>
     </x-slot>
 
+    <script>
+        window.routes = {
+            weeklyStats: "{{ route('admin.weeklyStats') }}",
+            closedWeekStats: "{{ route('admin.closedWeekStats') }}",
+            inactivities: "{{ route('admin.inactivities') }}",
+            registratedUsers: "{{ route('admin.registratedUsers') }}",
+            adminLogs: "{{ route('admin.adminLogs') }}",
+        };
+    </script>
+
     @include('admin.partials.sessions')
 
     @include('admin.partials.header_navigation')

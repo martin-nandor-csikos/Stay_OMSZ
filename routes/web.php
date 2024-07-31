@@ -32,6 +32,9 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/fooldal', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Ajax
+    Route::get('/dashboard', [DashboardController::class, 'getDashboardTable'])->name('dashboardTable');
 
     // Profile
     Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -23,11 +23,7 @@
         <script src="js/report_checkbox.js"></script>
         <script>
             window.routes = {
-                weeklyStats: "{{ route('admin.weeklyStats') }}",
-                closedWeekStats: "{{ route('admin.closedWeekStats') }}",
-                inactivities: "{{ route('admin.inactivities') }}",
-                registratedUsers: "{{ route('admin.registratedUsers') }}",
-                adminLogs: "{{ route('admin.adminLogs') }}",
+                dashboard: "{{ route('dashboardTable') }}",
             };
         </script>
         
