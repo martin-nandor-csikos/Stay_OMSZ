@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Report;
 use App\Models\DutyTime;
 use App\Models\Inactivity;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Hash;
@@ -172,7 +173,30 @@ class AdminController extends Controller
 
     public function closeWeek()
     {
-        DB::transaction(function () {
+        $getLock = DB::table('locks')
+            ->where('name', 'close_week')
+            ->where('isLocked', false)
+            ->update(['isLocked' => true]);
+
+        if ($getLock == 0) {
+            return Redirect::route('admin.index')->with('close-failed', 'A hét lezárása sikertelen. Művelet már folyamatban van.');
+        }
+
+        $currentWeekReports = DB::table('reports')
+            ->select('reports.id')
+            ->get();
+        $currentWeekDuties = DB::table('duty_times')
+            ->select('duty_times.id')
+            ->get();
+
+        if ($currentWeekReports->count() == 0 && $currentWeekDuties->count() == 0) {
+            DB::table('locks')
+                ->where('name', 'close_week')
+                ->update(['isLocked' => false]);
+            return Redirect::route('admin.index')->with('close-failed', 'A hét lezárása sikertelen. Üres a jelenlegi hét.');
+        }
+
+        try {
             DB::delete('DELETE FROM reports_closed');
             DB::delete('DELETE FROM duty_times_closed');
             DB::delete('DELETE FROM users_closed');
@@ -185,10 +209,22 @@ class AdminController extends Controller
             DB::delete('DELETE FROM duty_times');
 
             DB::table('admin_logs')->insert(
-                ['user_id' => Auth::user()->id, 'didWhat' => 'Lezárta a hetet']
-            );
-        });
+                    ['user_id' => Auth::user()->id, 'didWhat' => 'Lezárta a hetet']
+                );
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            DB::table('locks')
+                ->where('name', 'close_week')
+                ->update(['isLocked' => false]);
 
+            return Redirect::route('admin.index')->with('close-failed', 'A hét lezárása sikertelen.');
+        }
+
+        DB::table('locks')
+        ->where('name', 'close_week')
+        ->update(['isLocked' => false]);
+        
         return Redirect::route('admin.index')->with('close-success', 'A hét sikeresen lezárva.');
     }
 

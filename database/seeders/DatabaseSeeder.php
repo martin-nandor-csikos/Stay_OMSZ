@@ -34,6 +34,11 @@ class DatabaseSeeder extends Seeder
             'canGiveAdmin' => 0,
         ]);
 
+        \App\Models\Lock::factory()->create([
+            'name' => 'close_week',
+            'isLocked' => false,
+        ]);
+
         \App\Models\User::factory(20)->create();
         \App\Models\Report::factory(20)->create();
         \App\Models\DutyTime::factory(50)->create();

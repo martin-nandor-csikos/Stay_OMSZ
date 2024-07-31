@@ -40,6 +40,12 @@
     </div>
 @endsession
 
+@session('close-failed')
+    <div class="alert alert-danger" role="alert">
+        {{ session('close-failed') }}
+    </div>
+@endsession
+
 @session('updateinactivity-success')
     <div class="alert alert-success" role="alert">
         {{ session('updateinactivity-success') }}
