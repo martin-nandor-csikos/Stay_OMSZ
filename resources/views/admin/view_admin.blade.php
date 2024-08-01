@@ -24,42 +24,42 @@
     <div id="registrated-users-table">@include('admin.partials.view_registrated_users')</div>
     <div id="admin-logs-table">@include('admin.partials.view_admin_logs')</div>
 
-    <script src="js/admin_ajax.js"></script>
+    {{-- <script src="js/admin_ajax.js"></script> --}}
 
     <script>
         var table = new DataTable('#registered-users', {
             language: {
                 url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
-                responsive: true,
             },
+            responsive: true,
         });
 
         var table1 = new DataTable('#weekly-stats', {
             language: {
                 url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
-                responsive: true,
             },
+            responsive: true,
         });
 
         var table2 = new DataTable('#closed-weekly-stats', {
             language: {
                 url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
-                responsive: true,
             },
+            responsive: true,
         });
 
         var table3 = new DataTable('#admin-logs', {
             language: {
                 url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
-                responsive: true,
             },
+            responsive: true,
         });
 
         var table4 = new DataTable('#inactivities', {
             language: {
                 url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
-                responsive: true,
             },
+            responsive: true,
         });
    </script>
 </x-app-layout>
