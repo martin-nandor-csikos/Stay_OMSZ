@@ -5,17 +5,21 @@ $(document).ready(function () {
             method: "GET",
             success: function (data) {
                 $(targetId).html(data);
+            },
+            complete: function () {
+                setTimeout(function () {
+                    fetchData(url, targetId);
+                }, 3000);
             }
         });
     }
 
-    var route = "{{ route('admin.dashboardTable') }}";
     var target = "#dashboard-table";
 
     function updateAllData() {
-        fetchData(route, target);
+        fetchData(window.routes.dashboard, target);
     }
 
     updateAllData();
-    setInterval(updateAllData, 3000);
+    setTimeout(updateAllData, 10000);
 });

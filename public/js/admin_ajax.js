@@ -6,8 +6,10 @@ $(document).ready(function () {
             success: function (data) {
                 $(targetId).html(data);
             },
-            complete: function (data) {
-                setTimeout(fetchData, 3000);
+            complete: function () {
+                setTimeout(function () {
+                    fetchData(url, targetId);
+                }, 3000);
             }
         });
     }
