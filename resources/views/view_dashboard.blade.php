@@ -2,14 +2,14 @@
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="row">
             <div class="col-md-6 col-sm-12">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900 view-reports-padding">
+                <div class="bg-gray-50 dark:bg-gray-700 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 text-gray-900 dark:text-gray-200 view-reports-padding">
                         <p class="top5">Top 5 jelentésíró a héten</p>
 
                         @if ($topReports->isEmpty())
                         <p>Még senki nem csinált semmit :(</p>
                         @else
-                        <table class="table table-striped table-hover">
+                        <table class="table table-striped table-dark table-hover">
                             <thead>
                                 <tr>
                                     <th scope="col">#</th>
@@ -32,8 +32,8 @@
                 </div>
             </div>
             <div class="col-md-6 col-12">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900 view-reports-padding">
+                <div class="bg-gray-50 dark:bg-gray-700 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 text-gray-900 dark:text-gray-200 view-reports-padding">
                         <p class="top5">Statisztikák</p>
                         <p><b>Jelentéseid száma:</b> {{ $reportCount }}</p>
                         @if ($minimumReportCount - $reportCount > 0)
