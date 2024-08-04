@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <script>
+    {{-- <script>
         window.routes = {
             weeklyStats: "{{ route('admin.weeklyStats') }}",
             closedWeekStats: "{{ route('admin.closedWeekStats') }}",
@@ -13,16 +13,16 @@
             registratedUsers: "{{ route('admin.registratedUsers') }}",
             adminLogs: "{{ route('admin.adminLogs') }}",
         };
-    </script>
+    </script> --}}
 
     @include('admin.partials.sessions')
 
     @include('admin.partials.header_navigation')
-    <div id="weekly-stats-table">@include('admin.partials.view_weekly_stats')</div>
-    <div id="closed-week-stats-table">@include('admin.partials.view_closed_week_stats')</div>
-    <div id="inactivities-table">@include('admin.partials.view_inactivities')</div>
-    <div id="registrated-users-table">@include('admin.partials.view_registrated_users')</div>
-    <div id="admin-logs-table">@include('admin.partials.view_admin_logs')</div>
+    @include('admin.partials.view_weekly_stats')
+    @include('admin.partials.view_closed_week_stats')
+    @include('admin.partials.view_inactivities')
+    @include('admin.partials.view_registrated_users')
+    @include('admin.partials.view_admin_logs')
 
     {{-- <script src="js/admin_ajax.js"></script> --}}
 

@@ -514,7 +514,7 @@ class AdminController extends Controller
 
                 DB::table('admin_logs')->insert([
                     'user_id' => Auth::user()->id,
-                    'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (Válaszra vár --> Elfogadva)'
+                    'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (Válaszra vár -> Elfogadva)'
                 ]);
             }
             if ($inactivity->status == 2) {
@@ -524,7 +524,7 @@ class AdminController extends Controller
 
                 DB::table('admin_logs')->insert([
                     'user_id' => Auth::user()->id,
-                    'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (Elutasítva --> Elfogadva)'
+                    'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (Elutasítva -> Elfogadva)'
                 ]);
             }
             

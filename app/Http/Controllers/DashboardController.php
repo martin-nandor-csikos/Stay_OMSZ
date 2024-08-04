@@ -128,8 +128,8 @@ class DashboardController extends Controller
             $minutesUntilTopDutyTime = $topDutyTime[0]->topDutyTime - $dutyMinuteSum[0]->dutyMinuteSum;
         }
 
-        $minimumDutyTime = 500;
-        $minimumReportCount = 10;
+        $minimumDutyTime = 800;
+        $minimumReportCount = 15;
 
         return view('view_dashboard', [
             'topReports' => $topReports,
@@ -267,8 +267,8 @@ class DashboardController extends Controller
             $minutesUntilTopDutyTime = $topDutyTime[0]->topDutyTime - $dutyMinuteSum[0]->dutyMinuteSum;
         }
 
-        $minimumDutyTime = 500;
-        $minimumReportCount = 10;
+        $minimumDutyTime = 800;
+        $minimumReportCount = 15;
 
         return view('dashboard', [
             'topReports' => $topReports,

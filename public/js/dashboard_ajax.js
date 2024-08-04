@@ -9,7 +9,7 @@ $(document).ready(function () {
             complete: function () {
                 setTimeout(function () {
                     fetchData(url, targetId);
-                }, 3000);
+                }, 10000);
             }
         });
     }

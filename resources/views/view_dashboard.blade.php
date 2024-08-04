@@ -60,7 +60,7 @@
                                 <p><i>(<b>Megvan</b> a minimum szolgálati időd)</i></p>
                             @endif
                         @endif
-                        <p>Ennyi időt kell még szolgálatban lenned, hogy első legyél: <b>{{ $minutesUntilTopDutyTime }}</b> perc</p>
+                        <p>Ennyi időt kell még szolgálatban lenned, hogy első legyél: <b>{{ $minutesUntilTopDutyTime }} perc</b></p>
                         
                         <br>
 
