@@ -51,7 +51,7 @@
 
                         @if ($dutyMinuteSum == null)
                             <p><b>Szolgálati idő:</b> 0 perc</p>
-                            <p><i>(Minimum szolgálati időhöz <b>500 perc</b> kell még)</i></p>
+                            <p><i>(Minimum szolgálati időhöz <b>{{ $minimumDutyTime }} perc</b> kell még)</i></p>
                         @else
                             <p><b>Szolgálati idő:</b> {{ $dutyMinuteSum }} perc</p>
                             @if ($minimumDutyTime - $dutyMinuteSum > 0)
