@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
             {{ __('Inaktivitási kérelmek') }}
         </h2>
     </x-slot>
@@ -25,8 +25,8 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 view-reports-padding">
+            <div class="bg-gray-50 dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100 view-reports-padding">
                     <div class="row" style="margin-bottom: 20px">
                         <div class="col-md-4"></div>
                         <div class="col-md-4 d-flex justify-content-center new-report">
@@ -39,7 +39,7 @@
                         <div class="col-md-4"></div>
                     </div>
 
-                    <table class="table table-striped table-hover view-reports">
+                    <table class="display view-reports" id="inactivities">
                         <thead>
                             <tr>
                                 <th scope="col">#</th>
@@ -81,4 +81,13 @@
             </div>
         </div>
     </div>
+
+    <script>
+        var inactivitiesTable = new DataTable('#inactivities', {
+            language: {
+                url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
+            },
+            responsive: true,
+        });
+    </script>
 </x-app-layout>

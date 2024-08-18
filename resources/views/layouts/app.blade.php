@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -34,7 +34,7 @@
 
             <!-- Page Heading -->
             @if (isset($header))
-                <header class="bg-gray-50 dark:bg-gray-900 shadow">
+                <header class="bg-gray-50 dark:bg-gray-800 shadow">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
@@ -42,11 +42,11 @@
             @endif
 
             <!-- Page Content -->
-            <main class="dark:bg-gray-800">
+            <main class="dark:bg-gray-900">
                 {{ $slot }}
             </main>
 
-            <footer class="bg-gray-100 dark:bg-gray-800">
+            <footer class="bg-gray-100 dark:bg-gray-900">
                 <p class="footer-text dark:text-gray-100">&copy; 2024 MateLUL <em>(Hibajelentésért keress fel Discordon, @nortman_jenkins)</em></p>
             </footer>
         </div>

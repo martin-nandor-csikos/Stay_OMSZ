@@ -8,10 +8,10 @@
 
 <div class="py-12" id="inaktivitasok">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6 text-gray-900 view-reports-padding">
+        <div class="bg-gray-50 dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-6 text-gray-900 dark:text-gray-100 view-reports-padding">
                 <p class="top5">Inaktivitások</p>
-                <table class="table table-striped table-hover view-reports" id="inactivities">
+                <table class="display view-reports" id="inactivities">
                     <thead>
                         <tr>
                             <th scope="col">#</th>
