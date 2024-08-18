@@ -13,22 +13,19 @@
 
         <!-- CSS/Bootstrap -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-        
+
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
         <link href="https://cdn.datatables.net/v/dt/dt-2.0.8/r-3.0.2/datatables.css" rel="stylesheet">
         <script src="https://cdn.datatables.net/v/dt/dt-2.0.8/r-3.0.2/datatables.js"></script>
-        <script src="js/report_checkbox.js"></script>
         <script>
             window.routes = {
                 dashboard: "{{ route('dashboardTable') }}",
             };
         </script>
-        
     </head>
-    <body class="font-sans antialiased">
+    <body class="font-sans antialiased dark:bg-gray-900 hidden">
         <div class="min-h-screen bg-gray-100">
             @include('layouts.navigation')
 
@@ -47,7 +44,7 @@
             </main>
 
             <footer class="bg-gray-100 dark:bg-gray-900">
-                <p class="footer-text dark:text-gray-100">&copy; 2024 MateLUL <em>(Hibajelentésért keress fel Discordon, @nortman_jenkins)</em></p>
+                <div class="footer-text dark:text-gray-100">&copy; 2024 MateLUL <em>(Hibajelentésért keress fel Discordon, @nortman_jenkins)</em></div>
             </footer>
         </div>
     </body>

@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body.hidden {
+    display: none;
+}
+
 .logo {
     width: 200px;
 }
@@ -10,21 +14,112 @@
     width: 50px;
 }
 
-.create-report {
-    margin-top: 50px !important;
-    width: 400px;
-    display: block;
-    margin: auto;
+.top5 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    font-weight: bold;
 }
 
-.view-reports {
-    padding: 0px;
-    margin-top: 30px;
+.errorCode {
+    text-align: center;
+    font-weight: bold;
+    font-size: 25px;
+}
+
+.label {
+    font-size: 16px !important;
+}
+
+.reportCheckbox {
+    display: flex;
+    margin: 10px;
+}
+
+.checkbox-wrapper {
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.checkbox {
+    margin-bottom: 10px;
+}
+
+.dt-input {
+    padding-right: 30px !important;
+    margin-right: 10px !important;
+}
+
+/* Footer staying at the bottom of the page */
+main, .login-panel {
+    min-height: 90vh !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+}
+
+footer {
+    min-height: 40px !important;
+}
+
+.footer-text {
+    text-align: center;
+}
+
+.alert-success {
+    text-align: center;
+}
+
+.alert-danger {
+    text-align: center;
 }
 
 @media screen and (max-width: 640px) {
     .view-reports {
-        overflow: auto;
-        display: inline-block;
+        overflow: auto !important;
+        display: inline-block !important;
+    }
+
+    .stats {
+        margin-top: 40px;
+    }
+
+    .view-reports-padding {
+        padding: 0px !important;
+    }
+
+    .new-report {
+        margin-top: 10px !important;
+        margin-bottom: 10px !important;
+    }
+
+    p {
+        margin: 10px !important;
+    }
+
+    .checkbox-wrapper {
+        margin-bottom: 20px;
+    }
+
+    footer {
+        margin-bottom: 30px;
+    }
+
+    .d-flex {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .d-flex a {
+        margin-bottom: 10px;
+    }
+}
+
+@media screen and (min-width: 992px) {
+    .create-report {
+        width: 700px !important;
     }
 }

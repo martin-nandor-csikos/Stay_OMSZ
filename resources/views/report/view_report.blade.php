@@ -72,11 +72,13 @@
     </div>
 
     <script>
-        var reportsTable = new DataTable('#reports', {
-            language: {
-                url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
-            },
-            responsive: true,
+        $(function() {
+            var reportsTable = new DataTable('#reports', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
+                },
+                responsive: true,
+            });
         });
     </script>
 </x-app-layout>

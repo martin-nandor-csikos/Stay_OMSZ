@@ -130,6 +130,8 @@ class DashboardController extends Controller
 
         $minimumDutyTime = 800;
         $minimumReportCount = 15;
+        $minimumDoubleRankupDutyTime = 1800;
+        $minimumDoubleRankupReportCount = 40;
 
         return view('view_dashboard', [
             'topReports' => $topReports,
@@ -141,6 +143,8 @@ class DashboardController extends Controller
             'minutesUntilTopDutyTime' => $minutesUntilTopDutyTime,
             'minimumDutyTime' => $minimumDutyTime,
             'minimumReportCount' => $minimumReportCount,
+            'minimumDoubleRankupDutyTime' => $minimumDoubleRankupDutyTime,
+            'minimumDoubleRankupReportCount' => $minimumDoubleRankupReportCount,
             'sumDutyTime'=> $sumDutyTime[0]->sumDutyTime,
         ]);
     }
@@ -269,6 +273,8 @@ class DashboardController extends Controller
 
         $minimumDutyTime = 800;
         $minimumReportCount = 15;
+        $minimumDoubleRankupDutyTime = 1800;
+        $minimumDoubleRankupReportCount = 40;
 
         return view('dashboard', [
             'topReports' => $topReports,
@@ -280,6 +286,8 @@ class DashboardController extends Controller
             'minutesUntilTopDutyTime' => $minutesUntilTopDutyTime,
             'minimumDutyTime' => $minimumDutyTime,
             'minimumReportCount' => $minimumReportCount,
+            'minimumDoubleRankupDutyTime' => $minimumDoubleRankupDutyTime,
+            'minimumDoubleRankupReportCount' => $minimumDoubleRankupReportCount,
             'sumDutyTime'=> $sumDutyTime[0]->sumDutyTime,
         ]);
     }

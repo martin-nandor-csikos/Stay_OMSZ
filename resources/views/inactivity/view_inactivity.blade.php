@@ -64,7 +64,9 @@
                                 @else
                                     <td>Válaszra vár</td>
                                 @endif
+
                                 <td>
+                                    @if ($inactivity->status != 1)
                                     <form action="{{ route('inactivity.delete', $inactivity->id) }}" method="post">
                                         @csrf
                                         @method('DELETE')
@@ -72,6 +74,9 @@
                                             {{ __('Törlés') }}
                                         </x-primary-button>
                                     </form>
+                                    @else
+                                    <p>-</p>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -83,11 +88,13 @@
     </div>
 
     <script>
-        var inactivitiesTable = new DataTable('#inactivities', {
-            language: {
-                url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
-            },
-            responsive: true,
+        $(function() {
+            var inactivitiesTable = new DataTable('#inactivities', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
+                },
+                responsive: true,
+            });
         });
     </script>
 </x-app-layout>

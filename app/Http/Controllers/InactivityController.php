@@ -76,9 +76,13 @@ class InactivityController extends Controller
     {
         try {
             $inactivity = Inactivity::findOrFail($id);
-            $inactivity->delete();
+
+            // 1 --> Elfogadva
+            if ($inactivity->status != 1) {
+                $inactivity->delete();
             
-            return to_route('inactivity.index')->with('successful-deletion', 'Az inaktivitás törlése sikeres.');
+                return to_route('inactivity.index')->with('successful-deletion', 'Az inaktivitás törlése sikeres.');
+            }
         } catch (\Throwable $th) {
             return to_route('inactivity.index')->with('unsuccessful-deletion', 'Az inaktivitás törlése sikertelen.');
         }

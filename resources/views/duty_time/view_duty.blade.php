@@ -69,11 +69,13 @@
     </div>
 
     <script>
-        var dutiesTable = new DataTable('#duties', {
-            language: {
-                url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
-            },
-            responsive: true,
+        $(function() {
+            var dutiesTable = new DataTable('#duties', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
+                },
+                responsive: true,
+            });
         });
     </script>
 </x-app-layout>
