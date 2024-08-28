@@ -4,7 +4,7 @@
             <div class="col-md-6 col-sm-12">
                 <div class="bg-gray-50 dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900 dark:text-gray-200 view-reports-padding">
-                        <p class="top5">Top 5 jelentésíró a héten</p>
+                        <p class="top5 text-lg">Top 5 jelentésíró a héten</p>
 
                         @if ($topReports->isEmpty())
                         <p>Még senki nem csinált semmit :(</p>
@@ -34,7 +34,7 @@
             <div class="col-md-6 col-12 stats">
                 <div class="bg-gray-50 dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900 dark:text-gray-200 view-reports-padding">
-                        <p class="top5">Statisztikák</p>
+                        <p class="top5 text-lg">Statisztikák</p>
                         <p class="text-xl my-1"><b>Jelentéseid száma:</b> {{ $reportCount }} darab</p>
                         @if ($minimumReportCount - $reportCount > 0)
                             <p class="text-lg"><i>(Minimum jelentés számhoz <b>{{ $minimumReportCount - $reportCount }} darab</b> kell még)</i></p>
@@ -83,6 +83,33 @@
                         @else
                             <p>Az OMSZ eddig összesen <b>{{ $sumDutyTime }} percet</b> töltött szolgálatban.</p>
                         @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row my-5">
+            <div class="col-md-12 col-sm-12">
+                <div class="bg-gray-50 dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 text-gray-900 dark:text-gray-200 view-reports-padding">
+                        <p class="top5 text-lg">Felhívások</p>
+
+                        @foreach ($discordAnnouncements as $discordAnnouncement)
+                        <div class="p-6 my-4 bg-gray-100 dark:bg-gray-700">
+                            <p class="text-base">{{ $discordAnnouncement["time"] }}</p>
+                            <p class="text-xl my-1">{{ $discordAnnouncement["author"] }}</p>
+                            <p class="text-lg mx-4">{!! $discordAnnouncement['message'] !!}</p>
+                            @if (isset($discordAnnouncement["images"]))
+                            <div class="row">
+                                @foreach ($discordAnnouncement["images"] as $discordAnnouncementImage)
+                                    <a href="{{ $discordAnnouncementImage }}" target="_blank" class="col-md-4 col-sm-12 my-3">
+                                        <img src="{{ $discordAnnouncementImage }}" alt="Discord felhivások kép" class="border-solid border-1">
+                                    </a>
+                                @endforeach
+                            </div>
+                            @endif
+                        </div>
+                        @endforeach
                     </div>
                 </div>
             </div>

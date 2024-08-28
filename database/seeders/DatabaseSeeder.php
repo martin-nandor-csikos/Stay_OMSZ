@@ -39,6 +39,16 @@ class DatabaseSeeder extends Seeder
             'isLocked' => 0,
         ]);
 
+        \App\Models\Variable::factory()->create([
+            'var_name' => 'mb_mention_id',
+            'var_value' => '<@&1240409405850390599>',
+        ]);
+
+        \App\Models\Variable::factory()->create([
+            'var_name' => 'mb_mention_id',
+            'var_value' => '<@&1240409405850390599>',
+        ]);
+
         \App\Models\User::factory(20)->create();
         \App\Models\Report::factory(20)->create();
         \App\Models\DutyTime::factory(50)->create();
