@@ -31,8 +31,9 @@
                 {{ $slot }}
             </div>
         </div>
-            <footer class="bg-gray-100 dark:bg-gray-900">
-                <p class="footer-text dark:text-gray-100">&copy; 2024 MateLUL <em>(Hibajelentésért keress fel Discordon, @nortman_jenkins)</em></p>
-            </footer>
+        
+        <footer class="bg-gray-100 dark:bg-gray-900">
+            <div class="footer-text dark:text-gray-100">&copy; 2024 MateLUL <em>(Hibajelentésért keress fel Discordon, @nortman_jenkins)</em></div>
+        </footer>
     </body>
 </html>
