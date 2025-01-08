@@ -5,6 +5,7 @@
         </h2>
     </x-slot>
 
+    
     <div id="dashboard-table">@include('view_dashboard')</div>
 
     {{-- <script src="js/dashboard_ajax.js"></script> --}}
