@@ -38,13 +38,13 @@
                         <p class="text-xl my-1"><b>Jelentéseid száma:</b> {{ $reportCount }} darab</p>
                         @if ($minimumReportCount - $reportCount > 0)
                             <p class="text-lg"><i>(Minimum jelentés számhoz <b>{{ $minimumReportCount - $reportCount }} darab</b> kell még)</i></p>
-                            <p class="text-lg"><i>(Dupla héthez <b>{{ $minimumDoubleRankupReportCount - $reportCount }} darab</b> jelentés kell még)</i></p>
+                            <p class="text-lg"><i>(Bónuszhoz <b>{{ $minimumDoubleRankupReportCount - $reportCount }} darab</b> jelentés kell még)</i></p>
                         @else
                             <p class="text-lg"><i>(<b>Megvan</b> a minimum jelentés számod)</i></p>
                             @if ($minimumDoubleRankupReportCount - $reportCount > 0)
-                                <p class="text-lg"><i>(Dupla héthez <b>{{ $minimumDoubleRankupReportCount - $reportCount }} darab</b> jelentés kell még)</i></p>
+                                <p class="text-lg"><i>(Bónuszhoz <b>{{ $minimumDoubleRankupReportCount - $reportCount }} darab</b> jelentés kell még)</i></p>
                             @else
-                                <p class="text-lg"><i>(<b>Megvan</b> a dupla héthez a jelentés számod)</i></p>
+                                <p class="text-lg"><i>(<b>Megvan</b> a bónuszhoz a jelentés számod)</i></p>
                             @endif
                         @endif
 
@@ -58,18 +58,18 @@
                         @if ($dutyMinuteSum == null)
                             <p class="text-xl my-1"><b>Szolgálati idő:</b> 0 perc</p>
                             <p class="text-lg"><i>(Minimum szolgálati időhöz <b>{{ $minimumDutyTime }} perc</b> kell még)</i></p>
-                            <p class="text-lg"><i>(Dupla héthez <b>{{ $minimumDoubleRankupDutyTime }} perc</b> kell még)</i></p>
+                            <p class="text-lg"><i>(Bónuszhoz <b>{{ $minimumDoubleRankupDutyTime }} perc</b> kell még)</i></p>
                         @else
                             <p class="text-xl my-1"><b>Szolgálati idő:</b> {{ $dutyMinuteSum }} perc</p>
                             @if ($minimumDutyTime - $dutyMinuteSum > 0)
                                 <p class="text-lg"><i>(Minimum szolgálati időhöz <b>{{ $minimumDutyTime - $dutyMinuteSum }} perc</b> kell még)</i></p>
-                                <p class="text-lg"><i>(Dupla héthez <b>{{ $minimumDoubleRankupDutyTime - $dutyMinuteSum }} perc</b> kell még)</i></p>
+                                <p class="text-lg"><i>(Bónuszhoz <b>{{ $minimumDoubleRankupDutyTime - $dutyMinuteSum }} perc</b> kell még)</i></p>
                             @else
                                 <p class="text-lg"><i>(<b>Megvan</b> a minimum szolgálati időd)</i></p>
                                 @if ($minimumDoubleRankupDutyTime - $dutyMinuteSum > 0)
-                                    <p class="text-lg"><i>(Dupla héthez <b>{{ $minimumDoubleRankupDutyTime - $dutyMinuteSum }} perc</b> kell még)</i></p>
+                                    <p class="text-lg"><i>(A bónuszhoz <b>{{ $minimumDoubleRankupDutyTime - $dutyMinuteSum }} perc</b> kell még)</i></p>
                                 @else
-                                    <p class="text-lg"><i>(<b>Megvan</b> a dupla héthez a szolgálati időd)</i></p>
+                                    <p class="text-lg"><i>(<b>Megvan</b> a bónuszhoz a szolgálati időd)</i></p>
                                 @endif
                             @endif
                         @endif
@@ -88,6 +88,7 @@
             </div>
         </div>
 
+        @if ($discordAnnouncements != null)
         <div class="row my-5">
             <div class="col-md-12 col-sm-12">
                 <div class="bg-gray-50 dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -114,6 +115,7 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 </div>
 

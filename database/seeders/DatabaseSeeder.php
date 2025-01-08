@@ -20,14 +20,14 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         \App\Models\User::factory()->create([
-            'charactername' => 'Dr. Mac Burns',
+            'charactername' => 'Teszt Elek',
             'username' => 'admin',
             'password' => bcrypt('12345678'),
             'isAdmin' => 1,
             'canGiveAdmin' => 1,
         ]);
         \App\Models\User::factory()->create([
-            'charactername' => 'Dr. Pietro Burns',
+            'charactername' => 'Elek Róbert',
             'username' => 'nonadmin',
             'password' => bcrypt('12345678'),
             'isAdmin' => 0,
@@ -49,10 +49,12 @@ class DatabaseSeeder extends Seeder
             'var_value' => '<@&1240409405850390599>',
         ]);
 
+        /*
         \App\Models\User::factory(20)->create();
         \App\Models\Report::factory(20)->create();
         \App\Models\DutyTime::factory(50)->create();
         \App\Models\AdminLog::factory(20)->create();
         \App\Models\Inactivity::factory(10)->create();
+        */
     }
 }

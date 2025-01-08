@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('var_name');
             $table->string('var_value');
+            $table->timestamps();
         });
     }
 

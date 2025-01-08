@@ -44,7 +44,7 @@
             </main>
 
             <footer class="bg-gray-100 dark:bg-gray-900">
-                <div class="footer-text dark:text-gray-100">&copy; 2024 MateLUL <em>(Hibajelentésért keress fel Discordon, @nortman_jenkins)</em></div>
+                <div class="footer-text dark:text-gray-100">&copy; 2024-2025 Csíkos Martin Nándor <em>(az oldal nem kötődik a valóságos Országos Mentőszolgálathoz, semmilyen formában.)</em></div>
             </footer>
         </div>
     </body>

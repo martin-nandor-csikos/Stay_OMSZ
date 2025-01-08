@@ -300,8 +300,11 @@ class DashboardController extends Controller
         $minimumReportCount = 15;
         $minimumDoubleRankupDutyTime = 1800;
         $minimumDoubleRankupReportCount = 40;
+        $discordAnnouncements = null;
 
-        $discordAnnouncements = $this->getDiscordAnnouncements();
+        if (env('DISCORD_BOT_TOKEN') != "" && env('DISCORD_GUILD_ID') != "") {
+            $discordAnnouncements = $this->getDiscordAnnouncements();
+        }
 
         return view('dashboard', [
             'topReports' => $topReports,
