@@ -17,8 +17,8 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-        <link href="https://cdn.datatables.net/v/dt/dt-2.0.8/r-3.0.2/datatables.css" rel="stylesheet">
-        <script src="https://cdn.datatables.net/v/dt/dt-2.0.8/r-3.0.2/datatables.js"></script>
+        <link href="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.3.2/b-3.2.4/b-colvis-3.2.4/b-html5-3.2.4/r-3.0.5/datatables.min.css" rel="stylesheet" integrity="sha384-F5W6Z/wXr1Yp234N+6pgySIq43ZUeyKmEt1+bXv0MY6IC7RCULxOWcRFYeJc+V5b" crossorigin="anonymous">
+        <script src="https://cdn.datatables.net/v/dt/jszip-3.10.1/dt-2.3.2/b-3.2.4/b-colvis-3.2.4/b-html5-3.2.4/r-3.0.5/datatables.min.js" integrity="sha384-WTotflUg0Ci3bGemidvn/UBWvJum6xXUEDqpf6hDlcMiIqIYwK0DEzYyFv96akX1" crossorigin="anonymous"></script>
         <script>
             window.routes = {
                 dashboard: "{{ route('dashboardTable') }}",
@@ -44,7 +44,7 @@
             </main>
 
             <footer class="bg-gray-100 dark:bg-gray-900">
-                <div class="footer-text dark:text-gray-100">&copy; 2024 MateLUL <em>(Hibajelentésért keress fel Discordon, @nortman_jenkins)</em></div>
+                <div class="footer-text dark:text-gray-100">&copy; 2024-2025 MateLUL <em>(Hibajelentésért keress fel Discordon, @matelul)</em></div>
             </footer>
         </div>
     </body>
