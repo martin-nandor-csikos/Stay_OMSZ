@@ -39,12 +39,22 @@
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
                 },
+                layout: {
+                    topStart: {
+                        buttons: ['excel', 'csv']
+                    }
+                },
                 responsive: true,
             });
 
             var table2 = new DataTable('#closed-weekly-stats', {
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
+                },
+                layout: {
+                    topStart: {
+                        buttons: ['excel', 'csv']
+                    }
                 },
                 responsive: true,
             });
@@ -53,12 +63,22 @@
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
                 },
+                layout: {
+                    topStart: {
+                        buttons: ['excel', 'csv']
+                    }
+                },
                 responsive: true,
             });
 
             var table4 = new DataTable('#inactivities', {
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
+                },
+                layout: {
+                    topStart: {
+                        buttons: ['excel', 'csv']
+                    }
                 },
                 responsive: true,
             });
