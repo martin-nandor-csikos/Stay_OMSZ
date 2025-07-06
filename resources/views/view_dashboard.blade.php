@@ -49,7 +49,7 @@
                         @endif
 
                         @if ($lastReportDate != '-')
-                            <p><b>Utolsó felvitt jelentésed:</b> {{ \Illuminate\Support\Carbon::parse($lastReportDate)->format('Y.m.d H:i') }} </p>                                
+                            <p><b>Utolsó felvitt jelentésed:</b> {{ \Illuminate\Support\Carbon::parse($lastReportDate)->format('Y.m.d H:i') }} </p>
                         @endif
                         <p>Az összes leadott jelentés <b>{{ $userReportPercentage }}%</b>-át te adtad le.</p>
 
@@ -74,7 +74,7 @@
                             @endif
                         @endif
                         <p>Ennyi időt kell még szolgálatban lenned, hogy első legyél: <b>{{ $minutesUntilTopDutyTime }} perc</b></p>
-                        
+
                         <br>
 
                         <p class="text-lg"><b>OMSZ jelentések száma:</b> {{ $allReportCount }} darab</p>
@@ -96,9 +96,9 @@
 
                         @foreach ($discordAnnouncements as $discordAnnouncement)
                         <div class="p-6 my-4 bg-gray-100 dark:bg-gray-700">
-                            <p class="text-base">{{ $discordAnnouncement["time"] }}</p>
-                            <p class="text-xl my-1">{{ $discordAnnouncement["author"] }}</p>
-                            <p class="text-lg mx-4">{!! $discordAnnouncement['message'] !!}</p>
+                            <p class="text-base italic float-right">{{ $discordAnnouncement["time"] }}</p>
+                            <p class="text-xl my-1 font-bold">{{ $discordAnnouncement["author"] }}</p>
+                            <p class="text-lg mx-5">{!! $discordAnnouncement['message'] !!}</p>
                             @if (isset($discordAnnouncement["images"]))
                             <div class="row">
                                 @foreach ($discordAnnouncement["images"] as $discordAnnouncementImage)
