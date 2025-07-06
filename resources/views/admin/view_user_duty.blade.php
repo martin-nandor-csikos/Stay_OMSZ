@@ -77,6 +77,22 @@
             language: {
                 url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
             },
+            layout: {
+                topStart: {
+                    buttons: [
+                        {
+                            extend: 'excel',
+                            filename: 'szolgalatok_{{ $charactername }}',
+                            exportOptions: { columns: [0, 1, 2, 3] }
+                        },
+                        {
+                            extend: 'csv',
+                            filename: 'szolgalatok_{{ $charactername }}',
+                            exportOptions: { columns: [0, 1, 2, 3] }
+                        }
+                    ]
+                }
+            },
             responsive: true,
         });
     </script>

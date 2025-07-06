@@ -32,6 +32,22 @@
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
                 },
+                layout: {
+                    topStart: {
+                        buttons: [
+                            {
+                                extend: 'excel',
+                                filename: 'regisztralt_felhasznalok_' + '{{ $currentDay }}',
+                                exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+                            },
+                            {
+                                extend: 'csv',
+                                filename: 'regisztralt_felhasznalok_' + '{{ $currentDay }}',
+                                exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+                            }
+                        ]
+                    }
+                },
                 responsive: true,
             });
 
@@ -41,7 +57,18 @@
                 },
                 layout: {
                     topStart: {
-                        buttons: ['excel', 'csv']
+                        buttons: [
+                            {
+                                extend: 'excel',
+                                filename: 'heti_statisztika_' + '{{ $firstDayOfWeek }}_{{ $lastDayOfWeek }}',
+                                exportOptions: { columns: [0, 1, 2, 3, 5, 6] }
+                            },
+                            {
+                                extend: 'csv',
+                                filename: 'heti_statisztika_' + '{{ $firstDayOfWeek }}_{{ $lastDayOfWeek }}',
+                                exportOptions: { columns: [0, 1, 2, 3, 5, 6] }
+                            }
+                        ]
                     }
                 },
                 responsive: true,
@@ -53,7 +80,18 @@
                 },
                 layout: {
                     topStart: {
-                        buttons: ['excel', 'csv']
+                        buttons: [
+                            {
+                                extend: 'excel',
+                                filename: 'heti_statisztika_' + '{{ $firstDayOfPreviousWeek }}_{{ $lastDayOfPreviousWeek }}',
+                                exportOptions: { columns: [0, 1, 2, 3, 5, 6] }
+                            },
+                            {
+                                extend: 'csv',
+                                filename: 'heti_statisztika_' + '{{ $firstDayOfPreviousWeek }}_{{ $lastDayOfPreviousWeek }}',
+                                exportOptions: { columns: [0, 1, 2, 3, 5, 6] }
+                            }
+                        ]
                     }
                 },
                 responsive: true,
@@ -65,7 +103,18 @@
                 },
                 layout: {
                     topStart: {
-                        buttons: ['excel', 'csv']
+                        buttons: [
+                            {
+                                extend: 'excel',
+                                filename: 'admin_logok_' + '{{ $currentDay }}',
+                                exportOptions: { columns: [0, 1, 2, 3] }
+                            },
+                            {
+                                extend: 'csv',
+                                filename: 'admin_logok_' + '{{ $currentDay }}',
+                                exportOptions: { columns: [0, 1, 2, 3] }
+                            }
+                        ]
                     }
                 },
                 responsive: true,
@@ -77,7 +126,18 @@
                 },
                 layout: {
                     topStart: {
-                        buttons: ['excel', 'csv']
+                        buttons: [
+                            {
+                                extend: 'excel',
+                                filename: 'inaktivitasok_' + '{{ $currentDay }}',
+                                exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] }
+                            },
+                            {
+                                extend: 'csv',
+                                filename: 'inaktivitasok_' + '{{ $currentDay }}',
+                                exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] }
+                            }
+                        ]
                     }
                 },
                 responsive: true,

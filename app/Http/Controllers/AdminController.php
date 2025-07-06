@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 
 class AdminController extends Controller
@@ -153,6 +154,14 @@ class AdminController extends Controller
         $users = $this->getRegistratedUsersQuery();
         $admin_logs = $this->getAdminLogsQuery();
 
+        $firstDayOfWeek = Carbon::today()->copy()->startOfWeek(Carbon::MONDAY)->toDateString();
+        $lastDayOfWeek = Carbon::today()->copy()->endOfWeek(Carbon::SUNDAY)->toDateString();
+
+        $firstDayOfPreviousWeek = Carbon::today()->copy()->subWeek()->startOfWeek(Carbon::MONDAY)->toDateString();
+        $lastDayOfPreviousWeek = Carbon::today()->copy()->subWeek()->endOfWeek(Carbon::SUNDAY)->toDateString();
+
+        $currentDay = Carbon::today()->toDateString();
+
         $waitingForAnswerInInactivites = false;
         foreach ($inactivities as $inactivity) {
             if ($inactivity->status == 0) {
@@ -168,6 +177,11 @@ class AdminController extends Controller
             'admin_logs' => $admin_logs,
             'inactivities' => $inactivities,
             'waitingForAnswerInInactivites' => $waitingForAnswerInInactivites,
+            'firstDayOfWeek' => $firstDayOfWeek,
+            'lastDayOfWeek' => $lastDayOfWeek,
+            'firstDayOfPreviousWeek' => $firstDayOfPreviousWeek,
+            'lastDayOfPreviousWeek' => $lastDayOfPreviousWeek,
+            'currentDay' => $currentDay,
         ]);
     }
 
@@ -213,7 +227,7 @@ class AdminController extends Controller
                 );
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             DB::table('locks')
                 ->where('name', 'close_week')
                 ->update(['isLocked' => 0]);
@@ -224,7 +238,7 @@ class AdminController extends Controller
         DB::table('locks')
         ->where('name', 'close_week')
         ->update(['isLocked' => 0]);
-        
+
         return Redirect::route('admin.index')->with('close-success', 'A hét sikeresen lezárva.');
     }
 
@@ -262,7 +276,7 @@ class AdminController extends Controller
             return Redirect::route('admin.index')->with('user-not-created', 'A felhasználó regisztrációja sikertelen.');
         }
     }
-    
+
     public function viewUserReports (string $id)
     {
         $reports = DB::table('reports')
@@ -491,7 +505,7 @@ class AdminController extends Controller
             DB::table('admin_logs')->insert(
                 ['user_id' => Auth::user()->id, 'didWhat' => 'Kitörölte a(z) ' . $charactername[0]->charactername  . ' (Inaktivitás ID: ' . $id . ') felhasználó inaktivitási kérelmét']
             );
-            
+
             return Redirect::route('admin.index')->with('destroyinactivity-success', 'Az inaktivitási kérelem sikeresen törölve.');
         } catch (\Throwable $th) {
             return Redirect::route('admin.index')->with('destroyinactivity-failed', 'Az inaktivitási kérelem törlése meghiúsult.');
@@ -527,7 +541,7 @@ class AdminController extends Controller
                     'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (Elutasítva -> Elfogadva)'
                 ]);
             }
-            
+
             return Redirect::route('admin.index')->with('updateinactivity-success', 'Az inaktivitási kérelem sikeresen elfogadva.');
         } catch (\Throwable $th) {
             return Redirect::route('admin.index')->with('updateinactivity-failed', 'Az inaktivitási kérelem elfogadása meghiúsult.');
@@ -563,7 +577,7 @@ class AdminController extends Controller
                     'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (Elfogadva --> Elutasítva)'
                 ]);
             }
-            
+
             return Redirect::route('admin.index')->with('updateinactivity-success', 'Az inaktivitási kérelem sikeresen elutasítva.');
         } catch (\Throwable $th) {
             return Redirect::route('admin.index')->with('updateinactivity-failed', 'Az inaktivitási kérelem elutasítása meghiúsult.');

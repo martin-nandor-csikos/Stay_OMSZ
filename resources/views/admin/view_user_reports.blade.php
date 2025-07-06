@@ -81,6 +81,22 @@
             language: {
                 url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
             },
+            layout: {
+                topStart: {
+                    buttons: [
+                        {
+                            extend: 'excel',
+                            filename: 'jelentesek_{{ $charactername }}',
+                            exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+                        },
+                        {
+                            extend: 'csv',
+                            filename: 'jelentesek_{{ $charactername }}',
+                            exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+                        }
+                    ]
+                }
+            },
             responsive: true,
         });
     </script>
