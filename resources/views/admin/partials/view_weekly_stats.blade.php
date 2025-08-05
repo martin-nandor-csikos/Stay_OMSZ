@@ -5,7 +5,7 @@
                 <p class="top5">Heti statisztika</p>
                 <form action="{{ route('admin.closeWeek') }}" method="post">
                     @csrf
-                    <x-primary-button onclick="return confirm('Ez egy visszafordíthatatlan esemény. Biztosan le akarod zárni a hetet?')" id="close-week-button">
+                    <x-primary-button onclick="return confirm('Ez egy visszafordíthatatlan esemény. Biztosan le akarod zárni a hetet?')" class="admin-button">
                         {{ __('Hét lezárása') }}
                     </x-primary-button>
                 </form>

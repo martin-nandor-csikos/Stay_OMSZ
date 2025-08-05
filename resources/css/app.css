@@ -82,7 +82,7 @@ footer {
         overflow: auto !important;
     }
 
-    #close-week-button {
+    .admin-button {
         margin: 20px;
     }
 

@@ -3,7 +3,7 @@
         <div class="bg-gray-50 dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 text-gray-900 dark:text-gray-100 view-reports-padding">
                 <p class="top5">Regisztrált felhasználók</p>
-                <form action="{{ route('admin.userRegistrationPage') }}" method="get" style="margin-bottom: 20px">
+                <form action="{{ route('admin.userRegistrationPage') }}" method="get" class="admin-button">
                     <x-primary-button>
                         {{ __('Új felhasználó regisztrálása') }}
                     </x-primary-button>
