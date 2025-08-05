@@ -44,6 +44,7 @@ body.hidden {
 
 .checkbox {
     margin-bottom: 10px;
+    width: fit-content;
 }
 
 .dt-input {
@@ -79,7 +80,10 @@ footer {
 @media screen and (max-width: 640px) {
     .view-reports {
         overflow: auto !important;
-        display: inline-block !important;
+    }
+
+    #close-week-button {
+        margin: 20px;
     }
 
     .stats {
