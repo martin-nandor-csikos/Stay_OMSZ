@@ -6,7 +6,13 @@ RUN apk add --no-cache \
     mariadb-connector-c-dev \
     nodejs \
     npm \
-    && docker-php-ext-install pdo pdo_mysql pdo_sqlite
+    redis \
+    autoconf \
+    g++ \
+    make \
+    && docker-php-ext-install pdo pdo_mysql pdo_sqlite \
+    && pecl install redis \
+    && docker-php-ext-enable redis
 # Set workdir
 WORKDIR /var/www/html
 # Copy application files
