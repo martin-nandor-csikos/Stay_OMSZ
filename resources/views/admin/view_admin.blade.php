@@ -48,7 +48,7 @@
                         ]
                     }
                 },
-                responsive: true,
+                scrollX: true,
             });
 
             var table1 = new DataTable('#weekly-stats', {
@@ -71,7 +71,7 @@
                         ]
                     }
                 },
-                responsive: true,
+                scrollX: true,
             });
 
             var table2 = new DataTable('#closed-weekly-stats', {
@@ -94,7 +94,7 @@
                         ]
                     }
                 },
-                responsive: true,
+                scrollX: true,
             });
 
             var table3 = new DataTable('#admin-logs', {
@@ -117,7 +117,7 @@
                         ]
                     }
                 },
-                responsive: true,
+                scrollX: true,
             });
 
             var table4 = new DataTable('#inactivities', {
@@ -140,7 +140,7 @@
                         ]
                     }
                 },
-                responsive: true,
+                scrollX: true,
             });
         });
    </script>

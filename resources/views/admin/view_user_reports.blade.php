@@ -97,7 +97,7 @@
                     ]
                 }
             },
-            responsive: true,
+            scrollX: true,
         });
     </script>
 </x-app-layout>
