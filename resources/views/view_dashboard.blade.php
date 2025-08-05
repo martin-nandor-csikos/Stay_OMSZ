@@ -97,8 +97,8 @@
                         @foreach ($discordAnnouncements as $discordAnnouncement)
                         <div class="p-6 my-4 bg-gray-100 dark:bg-gray-700">
                             <p class="text-base italic float-right">{{ $discordAnnouncement["time"] }}</p>
-                            <p class="text-xl my-1 font-bold">{{ $discordAnnouncement["author"] }}</p>
-                            <p class="text-lg mx-5">{!! $discordAnnouncement['message'] !!}</p>
+                            <p class="text-xl my-2 font-bold">{{ $discordAnnouncement["author"] }}</p>
+                            <p class="text-lg mx-3">{!! $discordAnnouncement['message'] !!}</p>
                             @if (isset($discordAnnouncement["images"]))
                             <div class="row">
                                 @foreach ($discordAnnouncement["images"] as $discordAnnouncementImage)
