@@ -1,3 +1,8 @@
+<script>
+    const checkboxPrices = @json($prices);
+</script>
+@vite('resources/js/report_checkbox.js')
+
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -20,15 +25,15 @@
                         <!-- Price -->
                         <div>
                             <x-input-label for="price" :value="__('Ár ($)')" class="price-currency" />
-                            <x-text-input id="price" class="block mt-1 w-full" type="number" name="price" value="0" required autofocus autocomplete="price" max="300000" min="0" />
+                            <x-text-input id="price" class="block mt-1 w-full bg-gray-100 dark:bg-gray-500 dark:text-white cursor-not-allowed" type="number" name="price" value="0" required autofocus autocomplete="price" max="300000" min="0" readonly />
                             <x-input-error :messages="$errors->get('price')" class="mt-2" />
                         </div>
 
                         <!-- Diagnosis -->
                         <div class="mt-4">
                             <x-input-label for="diagnosis" :value="__('Diagnózis')" />
-                            <x-text-input id="diagnosis" class="block mt-1 w-full" type="text" name="diagnosis" required autofocus autocomplete="diagnosis" />
-                            
+                            <x-text-input id="diagnosis" class="block mt-1 w-full  bg-gray-100 dark:bg-gray-500 dark:text-white cursor-not-allowed" type="text" name="diagnosis" required autofocus autocomplete="diagnosis" readonly />
+
                             <div class="mt-4">
                                 <div class="row">
                                     <div class="col-md-4 col-sm-12 checkbox-wrapper">
@@ -71,7 +76,7 @@
                                         <div class="form-check form-check-inline checkbox">
                                             <input type="checkbox" id="th" name="th" value="TH" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                                             <label for="th"> TH</label><br>
-                                        </div>        
+                                        </div>
                                     </div>
                                 </div>
                             </div>
