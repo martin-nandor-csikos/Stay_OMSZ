@@ -12,7 +12,7 @@ class ReportController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-    { 
+    {
         $reports = DB::table('reports')
             ->select('id', 'price', 'diagnosis', 'withWho', 'img', 'created_at')
             ->where('user_id', '=', $request->user()->id)
@@ -28,7 +28,15 @@ class ReportController extends Controller
      */
     public function create()
     {
-        return view('report.create_report');
+        $prices = DB::table('prices')
+            ->select('diagnosis_name', 'price')
+            ->get()
+            ->pluck('price', 'diagnosis_name')
+            ->toArray();
+
+        return view('report.create_report', [
+            'prices' => $prices,
+        ]);
     }
 
     /**
@@ -64,12 +72,12 @@ class ReportController extends Controller
         $report['diagnosis'] = $request->diagnosis;
         $report['withWho'] = $request->withWho;
         $report['img'] = $request->img;
-        
+
         $createdReport = Report::create($report);
 
         return redirect()->route('reports.create')->with('successful-creation', 'A jelentés beadása sikeres.');
     }
-    
+
     /**
      * Show the form for editing the specified resource.
      */
@@ -110,7 +118,7 @@ class ReportController extends Controller
             'img.max' => 'A kép URL-je maximum 100 karakterből állhat.',
             'img.unique' => 'Ezt a képet már feltöltötted.',
         ]);
-        
+
         $oldReport = Report::findOrFail($report->id);
         $oldReport->price = $report->price;
         $oldReport->diagnosis = $report->diagnosis;
@@ -131,7 +139,7 @@ class ReportController extends Controller
         try {
             $report = Report::findOrFail($id);
             $report->delete();
-            
+
             return to_route('reports.index')->with('successful-deletion', 'A jelentés törlése sikeres.');
         } catch (\Throwable $th) {
             return to_route('reports.index')->with('unsuccessful-deletion', 'A jelentés törlése sikertelen.');
