@@ -43,12 +43,12 @@ class InactivityController extends Controller
             'end' => ['required', 'date', 'after_or_equal:begin'],
             'reason' => ['required', 'string', 'max:255'],
         ], [
-            'begin.required' => 'Az inaktivitás kezdete nem lehet üres.',
+            'begin.required' => 'Az inaktivitás kezdete mező nem lehet üres.',
             'begin.date' => 'Az inaktivitás kezdete érvényes dátum kell legyen.',
 
             'end.required' => 'Az inaktivitás vége nem lehet üres.',
             'end.date' => 'Az inaktivitás vége érvényes dátum kell legyen.',
-            'end.after_or_equal' => 'Az inaktivitás vége nem lehet hamarabb, mint az inaktivitás kezdete.',
+            'end.after_or_equal' => 'Az inaktivitás vége nem lehet korábbi, mint a kezdete.',
 
             'reason.required' => 'Az indok mező nem lehet üres.',
             'reason.string' => 'Az indok csak szöveg lehet.',
@@ -80,7 +80,7 @@ class InactivityController extends Controller
             // 1 --> Elfogadva
             if ($inactivity->status != 1) {
                 $inactivity->delete();
-            
+
                 return to_route('inactivity.index')->with('successful-deletion', 'Az inaktivitás törlése sikeres.');
             }
         } catch (\Throwable $th) {

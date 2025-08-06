@@ -45,15 +45,15 @@ class DutyTimeController extends Controller
             'begin' => ['required', 'date', 'before_or_equal:' . now(), 'after_or_equal:' . $oneDayAgo],
             'end' => ['required', 'date', 'after_or_equal:begin', 'before_or_equal:' . now()],
         ], [
-            'begin.required' => 'A kezdés ideje nem lehet üres.',
+            'begin.required' => 'A kezdés ideje mező nem lehet üres.',
             'begin.date' => 'A kezdés érvényes dátum kell legyen.',
-            'begin.before_or_equal' => 'A kezdési idő nem lehet későbbi, mint a jelenlegi idő.',
+            'begin.before_or_equal' => 'Nem adhatsz meg későbbi kezdeti időpontot, mint a mostani.',
             'begin.after_or_equal' => 'Maximum 24 óra szolgálatot veszünk figyelembe.',
 
-            'end.required' => 'A leadás ideje nem lehet üres.',
+            'end.required' => 'A leadás ideje mező nem lehet üres.',
             'end.date' => 'A leadás érvényes dátum kell legyen.',
-            'end.after_or_equal' => 'A leadási idő nem lehet hamarabb, mint a kezdési idő.',
-            'end.before_or_equal' => 'A leadási idő nem lehet későbbi, mint a jelenlegi idő.',
+            'end.after_or_equal' => 'Hamarabb akarod leadni a szolgálatot, mint ahogy elkezdted.',
+            'end.before_or_equal' => 'Nem adhatsz meg későbbi leadási időpontot, mint a mostani.',
         ]);
 
         $begin = new DateTime($request->begin);
@@ -63,7 +63,7 @@ class DutyTimeController extends Controller
         $duty['begin'] = $begin->format('Y-m-d H:i:s');
         $duty['end'] = $end->format('Y-m-d H:i:s');
         $duty['user_id'] = $id;
-        
+
         $interval = $begin->diff($end);
         $minutes = $interval->days * 24 * 60 + $interval->h * 60 + $interval->i;
 
@@ -80,7 +80,7 @@ class DutyTimeController extends Controller
         try {
             $duty = DutyTime::findOrFail($id);
             $duty->delete();
-            
+
             return to_route('duty_time.index')->with('successful-deletion', 'A szolgálat törlése sikeres.');
         } catch (\Throwable $th) {
             return to_route('duty_time.index')->with('unsuccessful-deletion', 'A szolgálat törlése sikertelen.');
