@@ -9,18 +9,6 @@ $(document).ready(function() {
 
         $('#diagnosis').val(checkedValues || '');
 
-        let checkboxPrices = {
-            'vizs': 20000,
-            'kot': 30000,
-            'gip': 35000,
-            'gyogy': 30000,
-            'kav': 20000,
-            'as': 30000,
-            'ss': 35000,
-            'emb': 20000,
-            'th': 150000
-        };
-
         price = 0;
 
         $.each(checkboxPrices, function (id, amount) {
