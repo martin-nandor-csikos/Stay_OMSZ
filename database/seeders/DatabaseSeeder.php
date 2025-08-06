@@ -39,9 +39,49 @@ class DatabaseSeeder extends Seeder
             'isLocked' => 0,
         ]);
 
-        \App\Models\Variable::factory()->create([
-            'var_name' => 'mb_mention_id',
-            'var_value' => '<@&1240409405850390599>',
+        \App\Models\Price::factory()->create([
+            'diagnosis_name' => 'vizs',
+            'price' => 20000,
+        ]);
+
+        \App\Models\Price::factory()->create([
+            'diagnosis_name' => 'kot',
+            'price' => 30000,
+        ]);
+
+        \App\Models\Price::factory()->create([
+            'diagnosis_name' => 'gip',
+            'price' => 35000,
+        ]);
+
+        \App\Models\Price::factory()->create([
+            'diagnosis_name' => 'gyogy',
+            'price' => 30000,
+        ]);
+
+        \App\Models\Price::factory()->create([
+            'diagnosis_name' => 'kav',
+            'price' => 20000,
+        ]);
+
+        \App\Models\Price::factory()->create([
+            'diagnosis_name' => 'as',
+            'price' => 30000,
+        ]);
+
+        \App\Models\Price::factory()->create([
+            'diagnosis_name' => 'ss',
+            'price' => 35000,
+        ]);
+
+        \App\Models\Price::factory()->create([
+            'diagnosis_name' => 'emb',
+            'price' => 20000,
+        ]);
+
+        \App\Models\Price::factory()->create([
+            'diagnosis_name' => 'th',
+            'price' => 150000,
         ]);
 
         \App\Models\User::factory(20)->create();
