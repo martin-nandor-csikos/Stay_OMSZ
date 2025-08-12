@@ -3,79 +3,78 @@
 namespace App\Http\Controllers;
 
 use App\Models\Report;
+use App\Http\Controllers\TicketServiceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * @var TicketServiceController
+     */
+    protected $ticketServiceController;
+
+    /**
+     * ReportController constructor.
+     */
+    public function __construct()
+    {
+        $this->ticketServiceController = new TicketServiceController();
+    }
+
+    /**
+     * Display the view for the reports index page.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\View\View
      */
     public function index(Request $request)
     {
-        $reports = DB::table('reports')
-            ->select('id', 'price', 'diagnosis', 'withWho', 'img', 'created_at')
-            ->where('user_id', '=', $request->user()->id)
-            ->get();
+        $userReports = $this->getUserReports($request->user()->id);
 
-        return view('report.view_report', [
-            'reports' => $reports,
+        // Format the created_at date for each report
+        foreach ($userReports as $report) {
+            $report->created_at = \Illuminate\Support\Carbon::parse($report->created_at)->format('Y.m.d H:i');
+        }
+
+        return view('report.view_reports', [
+            'userReports' => $userReports,
         ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Display the view for creating a new report.
+     *
+     * @return \Illuminate\View\View
      */
-    public function create()
+    public function create_report_view()
     {
-        $prices = DB::table('prices')
-            ->select('diagnosis_name', 'price')
-            ->get()
-            ->pluck('price', 'diagnosis_name')
-            ->toArray();
+        $services = $this->ticketServiceController->getServicesQuery();
 
         return view('report.create_report', [
-            'prices' => $prices,
+            'services' => $services
         ]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store the newly created report in the database.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request)
+    public function store_new_report(Request $request)
     {
-        $validatedData = $request->validate([
-            'price' => ['required', 'integer', 'max:300000', 'min:0'],
-            'diagnosis' => ['required', 'string'],
-            'withWho' => ['nullable', 'string'],
-            'img' => ['required', 'url', 'unique:reports'],
-        ], [
-            'price.required' => 'Az ár nem lehet üres.',
-            'price.integer' => 'Az árnak egy pozitív egész számnak kell lennie.',
-            'price.max' => 'Az ár maximum $300.000 lehet.',
-            'price.min' => 'Az ár minimum $0 lehet.',
-
-            'diagnosis.required' => 'A diagnózis nem lehet üres.',
-            'diagnosis.string' => 'A diagnózis csak szöveg lehet.',
-            'diagnosis.max' => 'A diagnózis maximum 100 karakterből állhat.',
-
-            'withWho.string' => 'A társ mezőben csak szöveg lehet.',
-
-            'img.required' => 'A kép megadása kötelező.',
-            'img.url' => 'A képnek érvényes URL-nek kell lennie.',
-            'img.max' => 'A kép URL-je maximum 100 karakterből állhat.',
-            'img.unique' => 'Ezt a képet már feltöltötted.',
-        ]);
+        $this->validateReport($request);
 
         $report['user_id'] = $request->user()->id;
-        $report['price'] = $request->price;
-        $report['diagnosis'] = $request->diagnosis;
+        $report['price'] = $request->cost;
+        $report['diagnosis'] = $request->services;
         $report['withWho'] = $request->withWho;
         $report['img'] = $request->img;
 
-        $createdReport = Report::create($report);
+        Report::create($report);
 
-        return redirect()->route('reports.create')->with('successful-creation', 'A jelentés beadása sikeres.');
+        return redirect()->route('reports.create_report_view')->with('successful-creation', 'A jelentés beadása sikeres.');
     }
 
     /**
@@ -91,12 +90,16 @@ class ReportController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified report
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Report $report
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, Report $report)
+    public function update_report(Request $request, Report $report)
     {
         /*
-        $validatedData = $request->validate([
+        $request->validate([
             'price' => ['required', 'integer', 'max:300000', 'min:0'],
             'diagnosis' => ['required', 'string'],
             'withWho' => ['nullable', 'string'],
@@ -130,11 +133,13 @@ class ReportController extends Controller
         */
     }
 
-
     /**
-     * Remove the specified resource from storage.
+     * Delete the specified report.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy($id)
+    public function delete_report($id)
     {
         try {
             $report = Report::findOrFail($id);
@@ -144,5 +149,50 @@ class ReportController extends Controller
         } catch (\Throwable $th) {
             return to_route('reports.index')->with('unsuccessful-deletion', 'A jelentés törlése sikertelen.');
         }
+    }
+
+    /**
+     * Get the reports for the authenticated user.
+     *
+     * @param int $userId
+     * @return \Illuminate\Support\Collection
+     */
+    private function getUserReports($userId)
+    {
+        return DB::table('reports')
+            ->select('id', 'price', 'diagnosis', 'withWho', 'img', 'created_at')
+            ->where('user_id', '=', $userId)
+            ->get();
+    }
+
+    /**
+     * Validate the report input data.
+     *
+     * @param \Illuminate\Http\Request $request
+     */
+    private function validateReport(Request $request)
+    {
+        $request->validate([
+            'cost' => ['required', 'integer', 'max:300000', 'min:0'],
+            'services' => ['required', 'string'],
+            'withWho' => ['nullable', 'string'],
+            'img' => ['required', 'url', 'unique:reports'],
+        ], [
+            'cost.required' => 'Az ár nem lehet üres.',
+            'cost.integer' => 'Az árnak egy pozitív egész számnak kell lennie.',
+            'cost.max' => 'Az ár maximum $300.000 lehet.',
+            'cost.min' => 'Az ár minimum $0 lehet.',
+
+            'services.required' => 'A diagnózis nem lehet üres.',
+            'services.string' => 'A diagnózis csak szöveg lehet.',
+            'services.max' => 'A diagnózis maximum 100 karakterből állhat.',
+
+            'withWho.string' => 'A társ mezőben csak szöveg lehet.',
+
+            'img.required' => 'A kép megadása kötelező.',
+            'img.url' => 'A képnek érvényes URL-nek kell lennie.',
+            'img.max' => 'A kép URL-je maximum 100 karakterből állhat.',
+            'img.unique' => 'Ezt a képet már feltöltötted.',
+        ]);
     }
 }

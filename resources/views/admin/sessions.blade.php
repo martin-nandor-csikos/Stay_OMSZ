@@ -69,3 +69,15 @@
         {{ session('destroyinactivity-failed') }}
     </div>
 @endsession
+
+@session('service-price-updated')
+    <div class="alert alert-success" role="alert">
+        {{ session('service-price-updated') }}
+    </div>
+@endsession
+
+@session('service-price-not-updated')
+    <div class="alert alert-danger" role="alert">
+        {{ session('service-price-not-updated') }}
+    </div>
+@endsession

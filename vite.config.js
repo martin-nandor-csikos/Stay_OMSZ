@@ -8,6 +8,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/js/report_checkbox.js',
+                'resources/js/confirm_week_closure.js',
             ],
             refresh: true,
         }),

@@ -15,20 +15,23 @@
         };
     </script> --}}
 
-    @include('admin.partials.sessions')
+    @include('admin.sessions')
 
-    @include('admin.partials.header_navigation')
-    @include('admin.partials.view_weekly_stats')
-    @include('admin.partials.view_closed_week_stats')
-    @include('admin.partials.view_inactivities')
-    @include('admin.partials.view_registrated_users')
-    @include('admin.partials.view_admin_logs')
+    @include('admin.header_navigation')
+    @include('admin.weekly_stats.weekly_stats_table')
+    @include('admin.weekly_stats.closed_week_stats_table')
+    @include('admin.inactivities.inactivities_table')
+    @include('admin.users.registered_users_table')
+    @include('admin.ticket_services.update_ticket_services')
+    @include('admin.admin_logs.admin_logs_table')
+
+    {{-- <script src="js/admin.js"></script> --}}
 
     {{-- <script src="js/admin_ajax.js"></script> --}}
 
     <script>
         $(function() {
-            var table = new DataTable('#registered-users', {
+            var registeredUsers = new DataTable('#registered-users', {
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
                 },
@@ -51,7 +54,7 @@
                 scrollX: true,
             });
 
-            var table1 = new DataTable('#weekly-stats', {
+            var weeklyStats = new DataTable('#weekly-stats', {
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
                 },
@@ -74,7 +77,7 @@
                 scrollX: true,
             });
 
-            var table2 = new DataTable('#closed-weekly-stats', {
+            var closedWeeklyStats = new DataTable('#closed-weekly-stats', {
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
                 },
@@ -97,7 +100,7 @@
                 scrollX: true,
             });
 
-            var table3 = new DataTable('#admin-logs', {
+            var adminLogs = new DataTable('#admin-logs', {
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
                 },
@@ -120,7 +123,7 @@
                 scrollX: true,
             });
 
-            var table4 = new DataTable('#inactivities', {
+            var inactivities = new DataTable('#inactivities', {
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
                 },

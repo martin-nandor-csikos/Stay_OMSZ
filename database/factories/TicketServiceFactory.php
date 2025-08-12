@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Model>
  */
-class PriceFactory extends Factory
+class TicketServiceFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -17,8 +17,8 @@ class PriceFactory extends Factory
     public function definition(): array
     {
         return [
-            'diagnosis_name' => fake()->text(),
-            'price' => fake()->randomDigitNotNull(),
+            'service_name' => fake()->text(),
+            'cost' => fake()->randomDigitNotNull(),
         ];
     }
 }

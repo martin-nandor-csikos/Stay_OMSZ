@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Price extends Model
+class TicketService extends Model
 {
     use HasFactory;
 
@@ -15,7 +15,7 @@ class Price extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'diagnosis_name',
-        'price'
+        'service_name',
+        'cost'
     ];
 }

@@ -1,3 +1,5 @@
+@vite('resources/js/confirm_week_closure.js')
+
 <div class="py-12" id="heti-statisztika">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-gray-50 dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -5,7 +7,7 @@
                 <p class="top5">Heti statisztika</p>
                 <form action="{{ route('admin.closeWeek') }}" method="post">
                     @csrf
-                    <x-primary-button onclick="return confirm('Ez egy visszafordíthatatlan esemény. Biztosan le akarod zárni a hetet?')" class="admin-button">
+                    <x-primary-button onclick="confirmWeekClosure(event);" class="admin-button">
                         {{ __('Hét lezárása') }}
                     </x-primary-button>
                 </form>

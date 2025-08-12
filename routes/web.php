@@ -10,7 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DutyTimeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\InactivityController;
-
+use App\Http\Controllers\TicketServiceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,7 +32,7 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/fooldal', [DashboardController::class, 'index'])->name('dashboard');
-    
+
     // Ajax
     Route::get('/dashboard', [DashboardController::class, 'getDashboardTable'])->name('dashboardTable');
 
@@ -44,9 +44,9 @@ Route::middleware('auth')->group(function () {
 
     // Reports
     Route::get('/jelentesek', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('/uj-jelentes', [ReportController::class, 'create'])->name('reports.create');
-    Route::post('/uj-jelentes', [ReportController::class, 'store'])->name('reports.store');
-    Route::delete('/jelentes-torles/{id}', [ReportController::class, 'destroy'])->name('reports.delete');
+    Route::get('/uj-jelentes', [ReportController::class, 'create_report_view'])->name('reports.create_report_view');
+    Route::post('/uj-jelentes', [ReportController::class, 'store_new_report'])->name('reports.store_new_report');
+    Route::delete('/jelentes-torles/{id}', [ReportController::class, 'delete_report'])->name('reports.delete_report');
 
     // Duty
     Route::get('/szolgalatok', [DutyTimeController::class, 'index'])->name('duty_time.index');
@@ -69,7 +69,7 @@ Route::middleware('auth')->group(function () {
             // Route::get('/inactivities', [AdminController::class, 'getInactivitiesTable'])->name('admin.inactivities');
             // Route::get('/registrated-users', [AdminController::class, 'getRegistratedUsersTable'])->name('admin.registratedUsers');
             // Route::get('/admin-logs', [AdminController::class, 'getAdminLogsTable'])->name('admin.adminLogs');
-            
+
             Route::get('/', [AdminController::class, 'index'])->name('admin.index');
 
             Route::get('/felhasznalo-frissites/{id}', [AdminController::class, 'editUser'])->name('admin.editUser');
@@ -93,6 +93,8 @@ Route::middleware('auth')->group(function () {
             Route::post('/inaktivitas-elfogadas/{id}', [AdminController::class, 'acceptInactivity'])->name('admin.acceptInactivity');
             Route::post('/inaktivitas-elutasitas/{id}', [AdminController::class, 'denyInactivity'])->name('admin.denyInactivity');
             Route::delete('/admin-inaktivitas-torles/{id}', [AdminController::class, 'destroyInactivity'])->name('admin.destroyInactivity');
+
+            Route::post('/diagnozis-ar-frissites', [TicketServiceController::class, 'updateServiceCosts'])->name('admin.updateServiceCosts');
         });
     });
 });

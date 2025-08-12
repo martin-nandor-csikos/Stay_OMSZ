@@ -39,49 +39,49 @@ class DatabaseSeeder extends Seeder
             'isLocked' => 0,
         ]);
 
-        \App\Models\Price::factory()->create([
-            'diagnosis_name' => 'vizs',
-            'price' => 20000,
+        \App\Models\TicketService::factory()->create([
+            'service_name' => 'VIZS',
+            'cost' => 20000,
         ]);
 
-        \App\Models\Price::factory()->create([
-            'diagnosis_name' => 'kot',
-            'price' => 30000,
+        \App\Models\TicketService::factory()->create([
+            'service_name' => 'KÖT',
+            'cost' => 30000,
         ]);
 
-        \App\Models\Price::factory()->create([
-            'diagnosis_name' => 'gip',
-            'price' => 35000,
+        \App\Models\TicketService::factory()->create([
+            'service_name' => 'GIP',
+            'cost' => 35000,
         ]);
 
-        \App\Models\Price::factory()->create([
-            'diagnosis_name' => 'gyogy',
-            'price' => 30000,
+        \App\Models\TicketService::factory()->create([
+            'service_name' => 'GYÓGY',
+            'cost' => 30000,
         ]);
 
-        \App\Models\Price::factory()->create([
-            'diagnosis_name' => 'kav',
-            'price' => 20000,
+        \App\Models\TicketService::factory()->create([
+            'service_name' => 'KAV',
+            'cost' => 20000,
         ]);
 
-        \App\Models\Price::factory()->create([
-            'diagnosis_name' => 'as',
-            'price' => 30000,
+        \App\Models\TicketService::factory()->create([
+            'service_name' => 'ÁS',
+            'cost' => 30000,
         ]);
 
-        \App\Models\Price::factory()->create([
-            'diagnosis_name' => 'ss',
-            'price' => 35000,
+        \App\Models\TicketService::factory()->create([
+            'service_name' => 'SS',
+            'cost' => 35000,
         ]);
 
-        \App\Models\Price::factory()->create([
-            'diagnosis_name' => 'emb',
-            'price' => 20000,
+        \App\Models\TicketService::factory()->create([
+            'service_name' => 'EMB',
+            'cost' => 20000,
         ]);
 
-        \App\Models\Price::factory()->create([
-            'diagnosis_name' => 'th',
-            'price' => 150000,
+        \App\Models\TicketService::factory()->create([
+            'service_name' => 'TH',
+            'cost' => 150000,
         ]);
 
         \App\Models\User::factory(20)->create();

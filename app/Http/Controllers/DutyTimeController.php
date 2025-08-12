@@ -41,7 +41,7 @@ class DutyTimeController extends Controller
         $endDate = Carbon::parse($request->end);
         $oneDayAgo = $endDate->subDays(1);
 
-        $validatedData = $request->validate([
+        $request->validate([
             'begin' => ['required', 'date', 'before_or_equal:' . now(), 'after_or_equal:' . $oneDayAgo],
             'end' => ['required', 'date', 'after_or_equal:begin', 'before_or_equal:' . now()],
         ], [
@@ -67,7 +67,7 @@ class DutyTimeController extends Controller
         $interval = $begin->diff($end);
         $minutes = $interval->days * 24 * 60 + $interval->h * 60 + $interval->i;
 
-        $createdDuty = DutyTime::create(array_merge($duty, ['minutes' => $minutes]));
+        DutyTime::create(array_merge($duty, ['minutes' => $minutes]));
 
         return redirect()->route('duty_time.create')->with('successful-creation', 'A szolgálat felvitele sikeres.');
     }

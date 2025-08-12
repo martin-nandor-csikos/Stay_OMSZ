@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Report;
 use App\Models\DutyTime;
 use App\Models\Inactivity;
+use App\Http\Controllers\TicketServiceController;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
@@ -15,9 +16,21 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
-
 class AdminController extends Controller
 {
+    /**
+     * @var TicketServiceController
+     */
+    protected $ticketServiceController;
+
+    /**
+     * AdminController constructor.
+     */
+    public function __construct()
+    {
+        $this->ticketServiceController = new TicketServiceController();
+    }
+
     public function getWeeklyStatsQuery()
     {
         return DB::table('users')
@@ -33,15 +46,6 @@ class AdminController extends Controller
             ->groupBy('users.id', 'users.charactername')
             ->orderBy('reportCount', 'DESC')
             ->get();
-    }
-
-    public function getWeeklyStatsTable()
-    {
-        $userStats = $this->getWeeklyStatsQuery();
-
-        return view('admin.partials.view_weekly_stats', [
-            'userStats' => $userStats,
-        ]);
     }
 
     public function getClosedWeekStatsQuery()
@@ -61,15 +65,6 @@ class AdminController extends Controller
             ->get();
     }
 
-    public function getClosedWeekStatsTable()
-    {
-        $closedUserStats = $this->getClosedWeekStatsQuery();
-
-        return view('admin.partials.view_closed_week_stats', [
-            'closedUserStats' => $closedUserStats,
-        ]);
-    }
-
     public function getInactivitiesQuery()
     {
         return DB::table('inactivities')
@@ -86,39 +81,12 @@ class AdminController extends Controller
             ->get();
     }
 
-    public function getInactivitiesTable()
-    {
-        $inactivities = $this->getInactivitiesQuery();
-
-        $waitingForAnswerInInactivites = false;
-        foreach ($inactivities as $inactivity) {
-            if ($inactivity->status == 0) {
-                $waitingForAnswerInInactivites = true;
-                break;
-            }
-        }
-
-        return view('admin.partials.view_inactivities', [
-            'inactivities' => $inactivities,
-            'waitingForAnswerInInactivites' => $waitingForAnswerInInactivites,
-        ]);
-    }
-
     public function getRegistratedUsersQuery()
     {
         return DB::table('users')
             ->select('users.id', 'users.charactername', 'users.username', 'users.created_at', 'users.isAdmin', 'users.canGiveAdmin')
             ->orderBy('users.charactername', 'ASC')
             ->get();
-    }
-
-    public function getRegistratedUsersTable()
-    {
-        $users = $this->getRegistratedUsersQuery();
-
-        return view('admin.partials.view_registrated_users', [
-            'users' => $users,
-        ]);
     }
 
     public function getAdminLogsQuery()
@@ -134,15 +102,6 @@ class AdminController extends Controller
             ->get();
     }
 
-    public function getAdminLogsTable()
-    {
-        $admin_logs = $this->getAdminLogsQuery();
-
-        return view('admin.partials.view_admin_logs', [
-            'admin_logs' => $admin_logs,
-        ]);
-    }
-
     /**
      * Display a listing of the resource.
      */
@@ -153,6 +112,7 @@ class AdminController extends Controller
         $inactivities = $this->getInactivitiesQuery();
         $users = $this->getRegistratedUsersQuery();
         $admin_logs = $this->getAdminLogsQuery();
+        $ticketServices = $this->ticketServiceController->getServicesQuery();
 
         $firstDayOfWeek = Carbon::today()->copy()->startOfWeek(Carbon::MONDAY)->toDateString();
         $lastDayOfWeek = Carbon::today()->copy()->endOfWeek(Carbon::SUNDAY)->toDateString();
@@ -170,12 +130,13 @@ class AdminController extends Controller
             }
         }
 
-        return view('admin.view_admin', [
+        return view('admin.admin_page', [
             'users' => $users,
             'userStats' => $userStats,
             'closedUserStats' => $closedUserStats,
             'admin_logs' => $admin_logs,
             'inactivities' => $inactivities,
+            'ticketServices' => $ticketServices,
             'waitingForAnswerInInactivites' => $waitingForAnswerInInactivites,
             'firstDayOfWeek' => $firstDayOfWeek,
             'lastDayOfWeek' => $lastDayOfWeek,
@@ -187,15 +148,6 @@ class AdminController extends Controller
 
     public function closeWeek()
     {
-        $lockCloseWeek = DB::table('locks')
-            ->where('name', 'close_week')
-            ->where('isLocked', 0)
-            ->update(['isLocked' => 1]);
-
-        if ($lockCloseWeek == 0) {
-            return Redirect::route('admin.index')->with('close-failed', 'A hét lezárása sikertelen. Művelet már folyamatban van.');
-        }
-
         $currentWeekReports = DB::table('reports')
             ->select('reports.id')
             ->get();
@@ -203,11 +155,19 @@ class AdminController extends Controller
             ->select('duty_times.id')
             ->get();
 
+        // If there are no reports and duties, return with failure
         if ($currentWeekReports->count() == 0 && $currentWeekDuties->count() == 0) {
-            DB::table('locks')
-                ->where('name', 'close_week')
-                ->update(['isLocked' => 0]);
             return Redirect::route('admin.index')->with('close-failed', 'A hét lezárása sikertelen. Üres a jelenlegi hét.');
+        }
+
+        $lockCloseWeek = DB::table('locks')
+            ->where('name', 'close_week')
+            ->where('isLocked', 0)
+            ->update(['isLocked' => 1]);
+
+        // If somebody is already closing the week, return with failure
+        if ($lockCloseWeek == 0) {
+            return Redirect::route('admin.index')->with('close-failed', 'A hét lezárása sikertelen. Művelet már folyamatban van.');
         }
 
         try {
@@ -375,7 +335,7 @@ class AdminController extends Controller
 
         // Check if username was changed, if not, then don't validate for unique
         if ($usernameCheck) {
-            $validatedData = $request->validate([
+            $request->validate([
                 'username' => ['string', 'max:255', 'unique:users'],
             ], [
                 'username.string' => 'A felhasználónév nem lehet üres.',
@@ -383,7 +343,7 @@ class AdminController extends Controller
                 'username.max' => 'Túl hosszú a felhasználónév.',
             ]);
         } else {
-            $validatedData = $request->validate([
+            $request->validate([
                 'username' => ['string', 'max:255'],
             ], [
                 'username.string' => 'A felhasználónév nem lehet üres.',
@@ -391,7 +351,7 @@ class AdminController extends Controller
             ]);
         }
 
-        $validatedData = $request->validate([
+        $request->validate([
             'charactername' => ['string', 'max:255'],
         ], [
             'charactername.string' => 'Az IC név nem lehet üres.',

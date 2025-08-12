@@ -1,26 +1,25 @@
 // When the checkboxes are checked, update the value of price and diagnosis
-
 $(document).ready(function() {
     $('input[type=checkbox]').click(function () {
-        let price = parseFloat($('#price').val()) || 0;
-        let checkedValues = $('input[type=checkbox]:checked').map(function () {
+        let totalCost = parseFloat($('#cost').val()) || 0;
+        let checkedServices = $('input[type=checkbox]:checked').map(function () {
             return this.value;
         }).get().join(', ');
 
-        $('#diagnosis').val(checkedValues || '');
+        $('#services').val(checkedServices || '');
 
-        price = 0;
+        totalCost = 0;
 
-        $.each(checkboxPrices, function (id, amount) {
-            if ($('#' + id).is(':checked')) {
-                if ((price + amount) >= 300000) {
-                    price = 300000;
+        $.each(services, function (service_name, service_cost) {
+            if ($('#' + service_name).is(':checked')) {
+                if ((totalCost + service_cost) >= 300000) {
+                    totalCost = 300000;
                 } else {
-                    price += amount;
+                    totalCost += service_cost;
                 }
             }
         });
 
-        $('#price').val(price);
+        $('#cost').val(totalCost);
     });
 });

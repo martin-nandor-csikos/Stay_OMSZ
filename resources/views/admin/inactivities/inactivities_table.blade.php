@@ -1,7 +1,6 @@
 @if ($waitingForAnswerInInactivites == true)
 <script>
     window.onload = function() {
-        //alert("Új inaktivitási kérelem érkezett! (Válaszra vár)");
         Swal.fire({
             text: 'Új inaktivitási kérelem érkezett! (Válaszra vár)',
             icon: 'info',

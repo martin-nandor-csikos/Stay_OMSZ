@@ -5,17 +5,7 @@
         </h2>
     </x-slot>
 
-    @session('successful-deletion')
-        <div class="alert alert-success" role="alert">
-            {{ session('successful-deletion') }}
-        </div>
-    @endsession
-
-    @session('unsuccessful-deletion')
-        <div class="alert alert-danger" role="alert">
-            {{ session('unsuccessful-deletion') }}
-        </div>
-    @endsession
+    @include('report.sessions')
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -24,7 +14,7 @@
                     <div class="row" style="margin-bottom: 20px">
                         <div class="col-md-4"></div>
                         <div class="col-md-4 d-flex justify-content-center new-report">
-                            <a href="{{ route('reports.create') }}">
+                            <a href="{{ route('reports.create_report_view') }}">
                                 <x-primary-button>
                                         {{ __('Új jelentés felvétele') }}
                                 </x-primary-button>
@@ -37,7 +27,7 @@
                             <tr>
                                 <th scope="col">#</th>
                                 <th scope="col">Ár ($)</th>
-                                <th scope="col">Diagnózis</th>
+                                <th scope="col">Ellátások</th>
                                 <th scope="col">Társaid</th>
                                 <th scope="col">Kép</th>
                                 <th scope="col">Felvéve</th>
@@ -45,16 +35,16 @@
                             </tr>
                         </thead>
                         <tbody>
-                        @foreach ($reports as $report)
+                        @foreach ($userReports as $report)
                             <tr>
                                 <th scope="row">{{ $loop->iteration }}</th>
                                 <td>{{ $report->price }}</td>
                                 <td>{{ $report->diagnosis }}</td>
                                 <td>{{ $report->withWho }}</td>
                                 <td><a href="{{ $report->img }}" target="blank">{{ $report->img }}</a></td>
-                                <td>{{ \Illuminate\Support\Carbon::parse($report->created_at)->format('Y.m.d H:i') }}</td>
+                                <td>{{ $report->created_at }}</td>
                                 <td>
-                                    <form action="{{ route('reports.delete', $report->id) }}" method="post">
+                                    <form action="{{ route('reports.delete_report', $report->id) }}" method="post">
                                         @csrf
                                         @method('DELETE')
                                         <x-primary-button>
