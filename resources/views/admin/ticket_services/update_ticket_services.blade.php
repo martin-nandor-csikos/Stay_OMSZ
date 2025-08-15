@@ -6,10 +6,13 @@
                 <form method="POST" action="{{ route('admin.updateServiceCosts') }}">
                     @csrf
                     <div class="grid gap-4 mx-4">
-                        @foreach($ticketServices as $name => $cost)
+                        @foreach ($ticketServices as $name => $cost)
                             <div>
                                 <x-input-label for="{{ $name }}_cost" :value="$name" />
-                                <x-text-input type="number" name="{{ $name }}_cost" id="{{ $name }}_cost" value="{{ $cost }}" class="rounded border-gray-300 dark:bg-gray-900 dark:text-white" required min="1" max="300000" />
+                                <x-text-input type="number" name="{{ $name }}_cost"
+                                    id="{{ $name }}_cost" value="{{ $cost }}"
+                                    class="rounded border-gray-300 dark:bg-gray-900 dark:text-white" required
+                                    min="1" max="300000" />
                                 <x-input-error :messages="$errors->get($name . '_cost')" class="mt-2" />
                             </div>
                         @endforeach

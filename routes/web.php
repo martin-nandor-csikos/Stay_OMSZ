@@ -3,7 +3,6 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\DashboardController;
@@ -24,7 +23,7 @@ use App\Http\Controllers\TicketServiceController;
 */
 
 Route::get('/', function () {
-    if(Auth::check()) {
+    if (Auth::check()) {
         return redirect()->route('dashboard');
     }
     return view('auth.login');
@@ -44,21 +43,21 @@ Route::middleware('auth')->group(function () {
 
     // Reports
     Route::get('/jelentesek', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('/uj-jelentes', [ReportController::class, 'create_report_view'])->name('reports.create_report_view');
-    Route::post('/uj-jelentes', [ReportController::class, 'store_new_report'])->name('reports.store_new_report');
-    Route::delete('/jelentes-torles/{id}', [ReportController::class, 'delete_report'])->name('reports.delete_report');
+    Route::get('/uj-jelentes', [ReportController::class, 'createReportView'])->name('reports.createReportView');
+    Route::post('/uj-jelentes', [ReportController::class, 'storeNewReport'])->name('reports.storeNewReport');
+    Route::delete('/jelentes-torles/{id}', [ReportController::class, 'deleteReport'])->name('reports.deleteReport');
 
     // Duty
     Route::get('/szolgalatok', [DutyTimeController::class, 'index'])->name('duty_time.index');
-    Route::get('/uj-szolgalat', [DutyTimeController::class, 'create'])->name('duty_time.create');
-    Route::post('/uj-szolgalat', [DutyTimeController::class, 'store'])->name('duty_time.store');
-    Route::delete('/szolgalat-torles/{id}', [DutyTimeController::class, 'destroy'])->name('duty_time.delete');
+    Route::get('/uj-szolgalat', [DutyTimeController::class, 'createDutyView'])->name('duty_time.createDutyView');
+    Route::post('/uj-szolgalat', [DutyTimeController::class, 'stostoreNewDutyre'])->name('duty_time.storeNewDuty');
+    Route::delete('/szolgalat-torles/{id}', [DutyTimeController::class, 'deleteDuty'])->name('duty_time.deleteDuty');
 
     // Inactivity
     Route::get('/inaktivitas', [InactivityController::class, 'index'])->name('inactivity.index');
-    Route::get('/uj-inaktivitas', [InactivityController::class, 'create'])->name('inactivity.create');
-    Route::post('/uj-inaktivitas', [InactivityController::class, 'store'])->name('inactivity.store');
-    Route::delete('/inaktivitas-torles/{id}', [InactivityController::class, 'destroy'])->name('inactivity.delete');
+    Route::get('/uj-inaktivitas', [InactivityController::class, 'createInactivityView'])->name('inactivity.createInactivityView');
+    Route::post('/uj-inaktivitas', [InactivityController::class, 'storeNewInactivity'])->name('inactivity.storeNewInactivity');
+    Route::delete('/inaktivitas-torles/{id}', [InactivityController::class, 'deleteInactivity'])->name('inactivity.deleteInactivity');
 
     // Admin
     Route::middleware('isAdmin')->group(function () {
@@ -90,14 +89,13 @@ Route::middleware('auth')->group(function () {
 
             Route::post('/het-lezaras', [AdminController::class, 'closeWeek'])->name('admin.closeWeek');
 
-            Route::post('/inaktivitas-elfogadas/{id}', [AdminController::class, 'acceptInactivity'])->name('admin.acceptInactivity');
-            Route::post('/inaktivitas-elutasitas/{id}', [AdminController::class, 'denyInactivity'])->name('admin.denyInactivity');
-            Route::delete('/admin-inaktivitas-torles/{id}', [AdminController::class, 'destroyInactivity'])->name('admin.destroyInactivity');
+            Route::post('/inaktivitas-elfogadas/{id}', [InactivityController::class, 'acceptInactivity'])->name('admin.acceptInactivity');
+            Route::post('/inaktivitas-elutasitas/{id}', [InactivityController::class, 'declineInactivity'])->name('admin.declineInactivity');
+            Route::delete('/admin-inaktivitas-torles/{id}', [InactivityController::class, 'deleteInactivityAsAdmin'])->name('admin.deleteInactivityAsAdmin');
 
-            Route::post('/diagnozis-ar-frissites', [TicketServiceController::class, 'updateServiceCosts'])->name('admin.updateServiceCosts');
+            Route::post('/ellatas-ar-frissites', [TicketServiceController::class, 'updateServiceCosts'])->name('admin.updateServiceCosts');
         });
     });
 });
 
-
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

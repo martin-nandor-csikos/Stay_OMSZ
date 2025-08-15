@@ -1,14 +1,14 @@
-function confirmWeekClosure(event) {
+function swalConfirmDecision(event, title, text, confirmButtonText, cancelButtonText) {
     event.preventDefault();
     Swal.fire({
-        title: 'Hét lezárása',
-        text: "Ez egy visszafordíthatatlan esemény. Biztosan le akarod zárni a hetet?",
+        title: title,
+        text: text,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
-        confirmButtonText: 'Lezárás',
+        confirmButtonText: confirmButtonText,
         cancelButtonColor: '#d33',
-        cancelButtonText: 'Mégse',
+        cancelButtonText: cancelButtonText,
     }).then((result) => {
         if (result.isConfirmed) {
             event.target.form.submit();
@@ -16,4 +16,4 @@ function confirmWeekClosure(event) {
     });
 }
 
-window.confirmWeekClosure = confirmWeekClosure;
+window.swalConfirmDecision = swalConfirmDecision;

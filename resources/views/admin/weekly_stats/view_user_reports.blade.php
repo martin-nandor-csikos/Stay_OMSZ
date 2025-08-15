@@ -40,27 +40,30 @@
                             </tr>
                         </thead>
                         <tbody>
-                        @foreach ($reports as $report)
-                            <tr>
-                                <th scope="row">{{ $loop->iteration }}</th>
-                                <td>{{ $report->price }}</td>
-                                <td>{{ $report->diagnosis }}</td>
-                                <td>{{ $report->withWho }}</td>
-                                <td><a href="{{ $report->img }}" target="blank">{{ $report->img }}</a></td>
-                                <td>{{ \Illuminate\Support\Carbon::parse($report->created_at)->format('Y.m.d H:i') }}</td>
-                                @if (!request()->routeIs('admin.viewClosedUserReports'))
-                                    <td>
-                                        <form action="{{ route('admin.deleteReport', $report->id) }}" method="post">
-                                            @csrf
-                                            @method('DELETE')
-                                            <x-primary-button onclick="return confirm('Ez egy visszafordíthatatlan esemény. Biztos törölni akarod?')">
-                                                {{ __('Törlés') }}
-                                            </x-primary-button>
-                                        </form>
+                            @foreach ($reports as $report)
+                                <tr>
+                                    <th scope="row">{{ $loop->iteration }}</th>
+                                    <td>{{ $report->price }}</td>
+                                    <td>{{ $report->diagnosis }}</td>
+                                    <td>{{ $report->withWho }}</td>
+                                    <td><a href="{{ $report->img }}" target="blank">{{ $report->img }}</a></td>
+                                    <td>{{ \Illuminate\Support\Carbon::parse($report->created_at)->format('Y.m.d H:i') }}
                                     </td>
-                                @endif
-                            </tr>
-                        @endforeach
+                                    @if (!request()->routeIs('admin.viewClosedUserReports'))
+                                        <td>
+                                            <form action="{{ route('admin.deleteReport', $report->id) }}"
+                                                method="post">
+                                                @csrf
+                                                @method('DELETE')
+                                                <x-primary-button
+                                                    onclick="return confirm('Ez egy visszafordíthatatlan esemény. Biztos törölni akarod?')">
+                                                    {{ __('Törlés') }}
+                                                </x-primary-button>
+                                            </form>
+                                        </td>
+                                    @endif
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
 
@@ -83,16 +86,19 @@
             },
             layout: {
                 topStart: {
-                    buttons: [
-                        {
+                    buttons: [{
                             extend: 'excel',
                             filename: 'jelentesek_{{ $charactername }}',
-                            exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+                            exportOptions: {
+                                columns: [0, 1, 2, 3, 4, 5]
+                            }
                         },
                         {
                             extend: 'csv',
                             filename: 'jelentesek_{{ $charactername }}',
-                            exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+                            exportOptions: {
+                                columns: [0, 1, 2, 3, 4, 5]
+                            }
                         }
                     ]
                 }

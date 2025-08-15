@@ -1,4 +1,10 @@
-@vite('resources/js/confirm_week_closure.js')
+@vite('resources/js/swalConfirmDecision.js')
+
+<script>
+    function confirmWeekClosure(event) {
+        swalConfirmDecision(event, "Hét lezárása", "Biztos le akarod zárni a hetet?", "Lezárás", "Mégse");
+    }
+</script>
 
 <div class="py-12" id="heti-statisztika">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -25,40 +31,44 @@
                         </tr>
                     </thead>
                     <tbody>
-                    @foreach ($userStats as $userStat)
-                        <tr>
-                            <th scope="row">{{ $loop->iteration }}</th>
-                            <td>{{ $userStat->charactername }}</td>
-                            <td>{{ $userStat->reportCount }}</td>
-                            @if ($userStat->lastReportDate != '-')
-                                <td>{{ \Illuminate\Support\Carbon::parse($userStat->lastReportDate)->format('Y.m.d H:i') }}</td>
-                                <td>
-                                    <form action="{{ route('admin.viewUserReports', $userStat->id) }}" method="get" target="_blank_{{ $loop->iteration }}">
-                                        <x-primary-button>
-                                            {{ __('Jelentések') }}
-                                        </x-primary-button>
-                                    </form>
-                                </td>
-                            @else
-                                <td>-</td>
-                                <td>-</td>
-                            @endif
-                            <td>{{ $userStat->dutyMinuteSum }}</td>
-                            @if ($userStat->lastDutyDate != '-')
-                                <td>{{ \Illuminate\Support\Carbon::parse($userStat->lastDutyDate)->format('Y.m.d H:i') }}</td>
-                                <td>
-                                    <form action="{{ route('admin.viewUserDuty', $userStat->id) }}" method="get" target="_blank_{{ $loop->iteration }}">
-                                        <x-primary-button>
-                                            {{ __('Szolgálatok') }}
-                                        </x-primary-button>
-                                    </form>
-                                </td>
-                            @else
-                                <td>-</td>
-                                <td>-</td>
-                            @endif
-                        </tr>
-                    @endforeach
+                        @foreach ($userStats as $userStat)
+                            <tr>
+                                <th scope="row">{{ $loop->iteration }}</th>
+                                <td>{{ $userStat->charactername }}</td>
+                                <td>{{ $userStat->reportCount }}</td>
+                                @if ($userStat->lastReportDate != '-')
+                                    <td>{{ \Illuminate\Support\Carbon::parse($userStat->lastReportDate)->format('Y.m.d H:i') }}
+                                    </td>
+                                    <td>
+                                        <form action="{{ route('admin.viewUserReports', $userStat->id) }}"
+                                            method="get" target="_blank_{{ $loop->iteration }}">
+                                            <x-primary-button>
+                                                {{ __('Jelentések') }}
+                                            </x-primary-button>
+                                        </form>
+                                    </td>
+                                @else
+                                    <td>-</td>
+                                    <td>-</td>
+                                @endif
+                                <td>{{ $userStat->dutyMinuteSum }}</td>
+                                @if ($userStat->lastDutyDate != '-')
+                                    <td>{{ \Illuminate\Support\Carbon::parse($userStat->lastDutyDate)->format('Y.m.d H:i') }}
+                                    </td>
+                                    <td>
+                                        <form action="{{ route('admin.viewUserDuty', $userStat->id) }}" method="get"
+                                            target="_blank_{{ $loop->iteration }}">
+                                            <x-primary-button>
+                                                {{ __('Szolgálatok') }}
+                                            </x-primary-button>
+                                        </form>
+                                    </td>
+                                @else
+                                    <td>-</td>
+                                    <td>-</td>
+                                @endif
+                            </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>

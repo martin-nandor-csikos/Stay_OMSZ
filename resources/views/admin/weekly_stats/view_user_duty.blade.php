@@ -38,25 +38,29 @@
                             </tr>
                         </thead>
                         <tbody>
-                        @foreach ($dutyTimes as $dutyTime)
-                            <tr>
-                                <th scope="row">{{ $loop->iteration }}</th>
-                                <td>{{ \Illuminate\Support\Carbon::parse($dutyTime->begin)->format('Y.m.d H:i') }}</td>
-                                <td>{{ \Illuminate\Support\Carbon::parse($dutyTime->end)->format('Y.m.d H:i') }}</td>
-                                <td>{{ $dutyTime->minutes }} perc</td>
-                                @if (!request()->routeIs('admin.viewClosedUserDuty'))
-                                    <td>
-                                        <form action="{{ route('admin.deleteDutyTime', $dutyTime->id) }}" method="post">
-                                            @csrf
-                                            @method('DELETE')
-                                            <x-primary-button onclick="return confirm('Ez egy visszafordíthatatlan esemény. Biztos törölni akarod?')">
-                                                {{ __('Törlés') }}
-                                            </x-primary-button>
-                                        </form>
+                            @foreach ($dutyTimes as $dutyTime)
+                                <tr>
+                                    <th scope="row">{{ $loop->iteration }}</th>
+                                    <td>{{ \Illuminate\Support\Carbon::parse($dutyTime->begin)->format('Y.m.d H:i') }}
                                     </td>
-                                @endif
-                            </tr>
-                        @endforeach
+                                    <td>{{ \Illuminate\Support\Carbon::parse($dutyTime->end)->format('Y.m.d H:i') }}
+                                    </td>
+                                    <td>{{ $dutyTime->minutes }} perc</td>
+                                    @if (!request()->routeIs('admin.viewClosedUserDuty'))
+                                        <td>
+                                            <form action="{{ route('admin.deleteDutyTime', $dutyTime->id) }}"
+                                                method="post">
+                                                @csrf
+                                                @method('DELETE')
+                                                <x-primary-button
+                                                    onclick="return confirm('Ez egy visszafordíthatatlan esemény. Biztos törölni akarod?')">
+                                                    {{ __('Törlés') }}
+                                                </x-primary-button>
+                                            </form>
+                                        </td>
+                                    @endif
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
 
@@ -79,16 +83,19 @@
             },
             layout: {
                 topStart: {
-                    buttons: [
-                        {
+                    buttons: [{
                             extend: 'excel',
                             filename: 'szolgalatok_{{ $charactername }}',
-                            exportOptions: { columns: [0, 1, 2, 3] }
+                            exportOptions: {
+                                columns: [0, 1, 2, 3]
+                            }
                         },
                         {
                             extend: 'csv',
                             filename: 'szolgalatok_{{ $charactername }}',
-                            exportOptions: { columns: [0, 1, 2, 3] }
+                            exportOptions: {
+                                columns: [0, 1, 2, 3]
+                            }
                         }
                     ]
                 }

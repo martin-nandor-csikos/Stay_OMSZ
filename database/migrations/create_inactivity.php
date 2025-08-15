@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\InactivityStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,7 +18,7 @@ return new class extends Migration
             $table->date('begin');
             $table->date('end');
             $table->string('reason');
-            $table->integer('status')->default('0');
+            $table->string('status')->default(InactivityStatus::WaitingForApproval->value);
             $table->timestamps();
         });
     }

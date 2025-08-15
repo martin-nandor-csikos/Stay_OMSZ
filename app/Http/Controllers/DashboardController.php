@@ -14,7 +14,6 @@ class DashboardController extends Controller
      */
     protected $discordController;
 
-
     /**
      * DashboardController constructor.
      */
@@ -61,7 +60,7 @@ class DashboardController extends Controller
             'minimumReportCount' => $minimumReportCount,
             'minimumDoubleRankupDutyTime' => $minimumDoubleRankupDutyTime,
             'minimumDoubleRankupReportCount' => $minimumDoubleRankupReportCount,
-            'sumOfDutyTime'=> $sumOfDutyTime,
+            'sumOfDutyTime' => $sumOfDutyTime,
             'discordAnnouncements' => $discordAnnouncements,
         ]);
     }
@@ -73,13 +72,7 @@ class DashboardController extends Controller
      */
     private function getTop5UsersWithMostReports()
     {
-        return DB::table('reports')
-            ->join('users', 'users.id', '=', 'reports.user_id')
-            ->select('users.charactername', DB::raw('count(reports.user_id) as reportCount'))
-            ->groupBy('users.charactername')
-            ->orderBy('reportCount', 'desc')
-            ->limit(5)
-            ->get();
+        return DB::table('reports')->join('users', 'users.id', '=', 'reports.user_id')->select('users.charactername', DB::raw('count(reports.user_id) as reportCount'))->groupBy('users.charactername')->orderBy('reportCount', 'desc')->limit(5)->get();
     }
 
     /**
@@ -91,9 +84,7 @@ class DashboardController extends Controller
     private function getUserReportCount(Request $request)
     {
         $reportCount = DB::table('reports')
-            ->select(
-                DB::raw('count(reports.user_id) as reportCount'),
-            )
+            ->select(DB::raw('count(reports.user_id) as reportCount'))
             ->where('reports.user_id', '=', $request->user()->id)
             ->groupBy('reports.user_id')
             ->orderBy('reportCount', 'desc')
@@ -120,7 +111,7 @@ class DashboardController extends Controller
             ->value('reports.created_at');
 
         if ($latestReportDate === null) {
-            return "-";
+            return '-';
         }
 
         return Carbon::parse($latestReportDate)->format('Y.m.d H:i');
@@ -135,14 +126,12 @@ class DashboardController extends Controller
     private function getUserSumOfDutyTime(Request $request)
     {
         $userSumOfDutyTime = DB::table('duty_times')
-            ->select(
-                DB::raw('sum(duty_times.minutes) as dutyMinuteSum'),
-            )
+            ->select(DB::raw('sum(duty_times.minutes) as dutyMinuteSum'))
             ->where('duty_times.user_id', '=', $request->user()->id)
             ->value('dutyMinuteSum');
 
         if ($userSumOfDutyTime === null) {
-            return "0";
+            return '0';
         }
 
         return $userSumOfDutyTime;
@@ -155,11 +144,7 @@ class DashboardController extends Controller
      */
     private function getAllReportCount()
     {
-        return DB::table('reports')
-            ->select(
-                DB::raw('count(reports.id) as allReportCount'),
-            )
-            ->value('allReportCount');
+        return DB::table('reports')->select(DB::raw('count(reports.id) as allReportCount'))->value('allReportCount');
     }
 
     /**
@@ -169,14 +154,7 @@ class DashboardController extends Controller
      */
     private function getTopDutyTime()
     {
-        return DB::table('duty_times')
-            ->select(
-                DB::raw('sum(duty_times.minutes) as topDutyTime'),
-                'duty_times.user_id'
-            )
-            ->groupBy('user_id')
-            ->orderBy('topDutyTime', 'desc')
-            ->value('topDutyTime');
+        return DB::table('duty_times')->select(DB::raw('sum(duty_times.minutes) as topDutyTime'), 'duty_times.user_id')->groupBy('user_id')->orderBy('topDutyTime', 'desc')->value('topDutyTime');
     }
 
     /**
@@ -186,11 +164,7 @@ class DashboardController extends Controller
      */
     private function getSumOfDutyTime()
     {
-        return DB::table('duty_times')
-            ->select(
-                DB::raw('sum(duty_times.minutes) as sumDutyTime'),
-            )
-            ->value('sumDutyTime');
+        return DB::table('duty_times')->select(DB::raw('sum(duty_times.minutes) as sumDutyTime'))->value('sumDutyTime');
     }
 
     /**

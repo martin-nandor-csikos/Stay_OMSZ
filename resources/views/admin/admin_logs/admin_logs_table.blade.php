@@ -13,14 +13,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                    @foreach ($admin_logs as $admin_log)
-                        <tr>
-                            <th scope="row">{{ $loop->iteration }}</th>
-                            <td>{{ $admin_log->charactername }}</td>
-                            <td>{{ $admin_log->didWhat }}</td>
-                            <td>{{ \Illuminate\Support\Carbon::parse($admin_log->created_at)->format('Y.m.d H:i') }}</td>
-                        </tr>
-                    @endforeach
+                        @foreach ($admin_logs as $admin_log)
+                            <tr>
+                                <th scope="row">{{ $loop->iteration }}</th>
+                                <td>{{ $admin_log->charactername }}</td>
+                                <td>{{ $admin_log->didWhat }}</td>
+                                <td>{{ \Illuminate\Support\Carbon::parse($admin_log->created_at)->format('Y.m.d H:i') }}
+                                </td>
+                            </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>

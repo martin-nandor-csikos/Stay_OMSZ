@@ -15,19 +15,21 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 create-report">
             <div class="bg-gray-50 dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <form method="POST" action="{{ route('duty_time.store') }}">
+                    <form method="POST" action="{{ route('duty_time.storeNewDuty') }}">
                         @csrf
                         <!-- Begin -->
                         <div>
                             <x-input-label for="begin" :value="__('Felvétel')" />
-                            <x-text-input id="begin" class="block mt-1 w-full" type="datetime-local" name="begin" :value="old('begin')" required autofocus />
+                            <x-text-input id="begin" class="block mt-1 w-full" type="datetime-local" name="begin"
+                                :value="old('begin')" required autofocus />
                             <x-input-error :messages="$errors->get('begin')" class="mt-2" />
                         </div>
 
                         <!-- End -->
                         <div class="mt-4">
                             <x-input-label for="end" :value="__('Leadás')" />
-                            <x-text-input id="end" class="block mt-1 w-full" type="datetime-local" name="end" :value="old('end')" required />
+                            <x-text-input id="end" class="block mt-1 w-full" type="datetime-local" name="end"
+                                :value="old('end')" required />
                             <x-input-error :messages="$errors->get('end')" class="mt-2" />
                         </div>
 

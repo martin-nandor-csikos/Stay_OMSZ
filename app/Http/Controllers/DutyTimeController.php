@@ -7,11 +7,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use DateTime;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Redirect;
 
 class DutyTimeController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display the list of duty times for the authenticated user.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\View\View
      */
     public function index(Request $request)
     {
@@ -20,41 +24,35 @@ class DutyTimeController extends Controller
             ->where('user_id', '=', $request->user()->id)
             ->get();
 
+        foreach ($dutyTimes as $dutyTime) {
+            $dutyTime->begin = Carbon::parse($dutyTime->begin)->format('Y.m.d H:i');
+            $dutyTime->end = Carbon::parse($dutyTime->end)->format('Y.m.d H:i');
+        }
+
         return view('duty_time.view_duty', [
             'dutyTimes' => $dutyTimes,
         ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show the add duty form.
+     *
+     * @return \Illuminate\View\View
      */
-    public function create()
+    public function createDutyView()
     {
         return view('duty_time.create_duty');
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created duty
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request)
+    public function storeNewDuty(Request $request)
     {
-        $endDate = Carbon::parse($request->end);
-        $oneDayAgo = $endDate->subDays(1);
-
-        $request->validate([
-            'begin' => ['required', 'date', 'before_or_equal:' . now(), 'after_or_equal:' . $oneDayAgo],
-            'end' => ['required', 'date', 'after_or_equal:begin', 'before_or_equal:' . now()],
-        ], [
-            'begin.required' => 'A kezdés ideje mező nem lehet üres.',
-            'begin.date' => 'A kezdés érvényes dátum kell legyen.',
-            'begin.before_or_equal' => 'Nem adhatsz meg későbbi kezdeti időpontot, mint a mostani.',
-            'begin.after_or_equal' => 'Maximum 24 óra szolgálatot veszünk figyelembe.',
-
-            'end.required' => 'A leadás ideje mező nem lehet üres.',
-            'end.date' => 'A leadás érvényes dátum kell legyen.',
-            'end.after_or_equal' => 'Hamarabb akarod leadni a szolgálatot, mint ahogy elkezdted.',
-            'end.before_or_equal' => 'Nem adhatsz meg későbbi leadási időpontot, mint a mostani.',
-        ]);
+        $this->validateDuty($request);
 
         $begin = new DateTime($request->begin);
         $end = new DateTime($request->end);
@@ -64,18 +62,22 @@ class DutyTimeController extends Controller
         $duty['end'] = $end->format('Y-m-d H:i:s');
         $duty['user_id'] = $id;
 
+        // Calculate the duration in minutes
         $interval = $begin->diff($end);
         $minutes = $interval->days * 24 * 60 + $interval->h * 60 + $interval->i;
 
         DutyTime::create(array_merge($duty, ['minutes' => $minutes]));
 
-        return redirect()->route('duty_time.create')->with('successful-creation', 'A szolgálat felvitele sikeres.');
+        return redirect()->route('duty_time.createDutyView')->with('successful-creation', 'A szolgálat felvitele sikeres.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove duty from the database
+     *
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy($id)
+    public function deleteDuty($id)
     {
         try {
             $duty = DutyTime::findOrFail($id);
@@ -85,5 +87,67 @@ class DutyTimeController extends Controller
         } catch (\Throwable $th) {
             return to_route('duty_time.index')->with('unsuccessful-deletion', 'A szolgálat törlése sikertelen.');
         }
+    }
+
+    /**
+     * Delete a duty as an admin
+     *
+     * @param string $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function deleteDutyAsAdmin(string $id)
+    {
+        $duty = DutyTime::findOrFail($id);
+        $userId = $duty->user_id;
+        try {
+            $characterName = $this->getCharacterNameById($userId);
+
+            $duty->delete();
+
+            $this->logAdminAction('Kitörölte a(z) ' . $characterName . ' (Szolgálat ID: ' . $id . ') felhasználó szolgálatát');
+
+            return Redirect::route('admin.viewUserDuty', $userId)->with('successful-user-duty-deletion', 'A felhasználó szolgálatának törlése sikeres.');
+        } catch (\Throwable $th) {
+            return Redirect::route('admin.viewUserDuty', $userId)->with('unsuccessful-user-duty-deletion', 'A felhasználó szolgálatának törlése sikertelen.');
+        }
+    }
+
+    /**
+     * Get the count of duties for the current week
+     *
+     * @return int
+     */
+    public function getDutyCountForCurrentWeek()
+    {
+        return DB::table('duty_times')->select(DB::raw('count(id) as dutyCount'))->value('dutyCount');
+    }
+
+    /**
+     * Validate the duty time input.
+     *
+     * @param \Illuminate\Http\Request $request
+     */
+    private function validateDuty(Request $request)
+    {
+        $endDate = Carbon::parse($request->end);
+        $oneDayAgo = $endDate->subDays(1);
+
+        $request->validate(
+            [
+                'begin' => ['required', 'date', 'before_or_equal:' . now(), 'after_or_equal:' . $oneDayAgo],
+                'end' => ['required', 'date', 'after_or_equal:begin', 'before_or_equal:' . now()],
+            ],
+            [
+                'begin.required' => 'A kezdés ideje mező nem lehet üres.',
+                'begin.date' => 'A kezdés érvényes dátum kell legyen.',
+                'begin.before_or_equal' => 'Nem adhatsz meg későbbi kezdeti időpontot, mint a mostani.',
+                'begin.after_or_equal' => 'Maximum 24 óra szolgálatot veszünk figyelembe.',
+
+                'end.required' => 'A leadás ideje mező nem lehet üres.',
+                'end.date' => 'A leadás érvényes dátum kell legyen.',
+                'end.after_or_equal' => 'Hamarabb akarod leadni a szolgálatot, mint ahogy elkezdted.',
+                'end.before_or_equal' => 'Nem adhatsz meg későbbi leadási időpontot, mint a mostani.',
+            ],
+        );
     }
 }

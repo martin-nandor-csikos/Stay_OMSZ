@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Enums\InactivityStatus;
 use App\Models\User;
 use App\Models\Report;
-use App\Models\DutyTime;
-use App\Models\Inactivity;
 use App\Http\Controllers\TicketServiceController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\DutyTimeController;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
@@ -24,93 +25,36 @@ class AdminController extends Controller
     protected $ticketServiceController;
 
     /**
+     * @var ReportController
+     */
+    protected $reportController;
+
+    /**
+     * @var DutyTimeController
+     */
+    protected $dutyTimeController;
+
+    /**
      * AdminController constructor.
      */
     public function __construct()
     {
         $this->ticketServiceController = new TicketServiceController();
-    }
-
-    public function getWeeklyStatsQuery()
-    {
-        return DB::table('users')
-            ->leftJoin('reports', 'users.id', '=', 'reports.user_id')
-            ->select(
-                'users.id',
-                'users.charactername',
-                DB::raw('COALESCE(count(reports.user_id), 0) as reportCount'),
-                DB::raw('COALESCE((SELECT MAX(reports.created_at) FROM reports WHERE reports.user_id = users.id), "-") as lastReportDate'),
-                DB::raw('COALESCE((SELECT SUM(duty_times.minutes) FROM duty_times WHERE duty_times.user_id = users.id), 0) as dutyMinuteSum'),
-                DB::raw('COALESCE((SELECT MAX(duty_times.end) FROM duty_times WHERE duty_times.user_id = users.id), "-") as lastDutyDate')
-            )
-            ->groupBy('users.id', 'users.charactername')
-            ->orderBy('reportCount', 'DESC')
-            ->get();
-    }
-
-    public function getClosedWeekStatsQuery()
-    {
-        return DB::table('users_closed')
-            ->leftJoin('reports_closed', 'users_closed.id', '=', 'reports_closed.user_id')
-            ->select(
-                'users_closed.id',
-                'users_closed.charactername',
-                DB::raw('COALESCE(count(reports_closed.user_id), 0) as reportCount'),
-                DB::raw('COALESCE((SELECT MAX(reports_closed.created_at) FROM reports_closed WHERE reports_closed.user_id = users_closed.id), "-") as lastReportDate'),
-                DB::raw('COALESCE((SELECT SUM(duty_times_closed.minutes) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), 0) as dutyMinuteSum'),
-                DB::raw('COALESCE((SELECT MAX(duty_times_closed.end) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), "-") as lastDutyDate')
-            )
-            ->groupBy('users_closed.id', 'users_closed.charactername')
-            ->orderBy('reportCount', 'DESC')
-            ->get();
-    }
-
-    public function getInactivitiesQuery()
-    {
-        return DB::table('inactivities')
-            ->join('users', 'users.id', '=', 'inactivities.user_id')
-            ->select(
-                'users.charactername',
-                'inactivities.begin',
-                'inactivities.end',
-                'inactivities.reason',
-                'inactivities.id',
-                'inactivities.status',
-            )
-            ->orderBy('inactivities.created_at', 'desc')
-            ->get();
-    }
-
-    public function getRegistratedUsersQuery()
-    {
-        return DB::table('users')
-            ->select('users.id', 'users.charactername', 'users.username', 'users.created_at', 'users.isAdmin', 'users.canGiveAdmin')
-            ->orderBy('users.charactername', 'ASC')
-            ->get();
-    }
-
-    public function getAdminLogsQuery()
-    {
-        return DB::table('admin_logs')
-            ->join('users', 'users.id', '=', 'admin_logs.user_id')
-            ->select(
-                'users.charactername',
-                'admin_logs.didWhat',
-                'admin_logs.created_at',
-            )
-            ->orderBy('admin_logs.created_at', 'desc')
-            ->get();
+        $this->reportController = new ReportController();
+        $this->dutyTimeController = new DutyTimeController();
     }
 
     /**
-     * Display a listing of the resource.
+     * Display the admin page view with all necessary data
+     *
+     * @return \Illuminate\View\View
      */
-    public function index(Request $request)
+    public function index()
     {
         $userStats = $this->getWeeklyStatsQuery();
         $closedUserStats = $this->getClosedWeekStatsQuery();
         $inactivities = $this->getInactivitiesQuery();
-        $users = $this->getRegistratedUsersQuery();
+        $users = $this->getRegisteredUsersQuery();
         $admin_logs = $this->getAdminLogsQuery();
         $ticketServices = $this->ticketServiceController->getServicesQuery();
 
@@ -124,10 +68,19 @@ class AdminController extends Controller
 
         $waitingForAnswerInInactivites = false;
         foreach ($inactivities as $inactivity) {
-            if ($inactivity->status == 0) {
+            if ($inactivity->status == InactivityStatus::WaitingForApproval->value) {
                 $waitingForAnswerInInactivites = true;
-                break;
             }
+
+            if (Carbon::now()->between($inactivity->begin, $inactivity->end) && $inactivity->status == InactivityStatus::Accepted->value) {
+                $inactivity->inProgress = true;
+            } else {
+                $inactivity->inProgress = false;
+            }
+
+            // Reformat the begin and end dates
+            $inactivity->begin = Carbon::parse($inactivity->begin)->format('Y.m.d');
+            $inactivity->end = Carbon::parse($inactivity->end)->format('Y.m.d');
         }
 
         return view('admin.admin_page', [
@@ -146,17 +99,68 @@ class AdminController extends Controller
         ]);
     }
 
+    /**
+     * Get the weekly statistics for each user.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    private function getWeeklyStatsQuery()
+    {
+        return DB::table('users')->leftJoin('reports', 'users.id', '=', 'reports.user_id')->select('users.id', 'users.charactername', DB::raw('COALESCE(count(reports.user_id), 0) as reportCount'), DB::raw('COALESCE((SELECT MAX(reports.created_at) FROM reports WHERE reports.user_id = users.id), "-") as lastReportDate'), DB::raw('COALESCE((SELECT SUM(duty_times.minutes) FROM duty_times WHERE duty_times.user_id = users.id), 0) as dutyMinuteSum'), DB::raw('COALESCE((SELECT MAX(duty_times.end) FROM duty_times WHERE duty_times.user_id = users.id), "-") as lastDutyDate'))->groupBy('users.id', 'users.charactername')->orderBy('reportCount', 'DESC')->get();
+    }
+
+    /**
+     * Get the closed week statistics for each user.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    private function getClosedWeekStatsQuery()
+    {
+        return DB::table('users_closed')->leftJoin('reports_closed', 'users_closed.id', '=', 'reports_closed.user_id')->select('users_closed.id', 'users_closed.charactername', DB::raw('COALESCE(count(reports_closed.user_id), 0) as reportCount'), DB::raw('COALESCE((SELECT MAX(reports_closed.created_at) FROM reports_closed WHERE reports_closed.user_id = users_closed.id), "-") as lastReportDate'), DB::raw('COALESCE((SELECT SUM(duty_times_closed.minutes) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), 0) as dutyMinuteSum'), DB::raw('COALESCE((SELECT MAX(duty_times_closed.end) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), "-") as lastDutyDate'))->groupBy('users_closed.id', 'users_closed.charactername')->orderBy('reportCount', 'DESC')->get();
+    }
+
+    /**
+     * Get the inactivities
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    private function getInactivitiesQuery()
+    {
+        return DB::table('inactivities')->join('users', 'users.id', '=', 'inactivities.user_id')->select('users.charactername', 'inactivities.begin', 'inactivities.end', 'inactivities.reason', 'inactivities.id', 'inactivities.status')->orderBy('inactivities.created_at', 'desc')->get();
+    }
+
+    /**
+     * Get the registered users
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    private function getRegisteredUsersQuery()
+    {
+        return DB::table('users')->select('users.id', 'users.charactername', 'users.username', 'users.created_at', 'users.isAdmin', 'users.canGiveAdmin')->orderBy('users.charactername', 'ASC')->get();
+    }
+
+    /**
+     * Get the admin logs
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    private function getAdminLogsQuery()
+    {
+        return DB::table('admin_logs')->join('users', 'users.id', '=', 'admin_logs.user_id')->select('users.charactername', 'admin_logs.didWhat', 'admin_logs.created_at')->orderBy('admin_logs.created_at', 'desc')->get();
+    }
+
+    /**
+     * Close the current week by moving reports and duty times to closed tables and resetting the current tables.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function closeWeek()
     {
-        $currentWeekReports = DB::table('reports')
-            ->select('reports.id')
-            ->get();
-        $currentWeekDuties = DB::table('duty_times')
-            ->select('duty_times.id')
-            ->get();
+        $currentWeekReportCount = $this->reportController->getReportCountForCurrentWeek();
+        $currentWeekDutyCount = $this->dutyTimeController->getDutyCountForCurrentWeek();
 
         // If there are no reports and duties, return with failure
-        if ($currentWeekReports->count() == 0 && $currentWeekDuties->count() == 0) {
+        if ($currentWeekReportCount == 0 && $currentWeekDutyCount == 0) {
             return Redirect::route('admin.index')->with('close-failed', 'A hét lezárása sikertelen. Üres a jelenlegi hét.');
         }
 
@@ -170,52 +174,28 @@ class AdminController extends Controller
             return Redirect::route('admin.index')->with('close-failed', 'A hét lezárása sikertelen. Művelet már folyamatban van.');
         }
 
-        try {
-            DB::delete('DELETE FROM reports_closed');
-            DB::delete('DELETE FROM duty_times_closed');
-            DB::delete('DELETE FROM users_closed');
-
-            DB::insert('INSERT INTO users_closed SELECT id, charactername FROM users');
-            DB::insert('INSERT INTO reports_closed SELECT * FROM reports');
-            DB::insert('INSERT INTO duty_times_closed SELECT * FROM duty_times');
-
-            DB::delete('DELETE FROM reports');
-            DB::delete('DELETE FROM duty_times');
-
-            DB::table('admin_logs')->insert(
-                    ['user_id' => Auth::user()->id, 'didWhat' => 'Lezárta a hetet']
-                );
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            DB::table('locks')
-                ->where('name', 'close_week')
-                ->update(['isLocked' => 0]);
-
-            return Redirect::route('admin.index')->with('close-failed', 'A hét lezárása sikertelen.');
+        if ($this->moveWeeklyStatsToClosed()) {
+            return Redirect::route('admin.index')->with('close-success', 'A hét sikeresen lezárva.');
         }
-
-        DB::table('locks')
-        ->where('name', 'close_week')
-        ->update(['isLocked' => 0]);
-
-        return Redirect::route('admin.index')->with('close-success', 'A hét sikeresen lezárva.');
+        return Redirect::route('admin.index')->with('close-failed', 'A hét lezárása sikertelen.');
     }
-
 
     public function userRegistrationPage()
     {
-        return view('admin.register_user');
+        return view('admin.users.register_user');
     }
 
     public function registerUser(Request $request)
     {
-        $request->validate([
-            'charactername' => ['required', 'string', 'max:255'],
-        ], [
-            'charactername.required' => 'Az IC név nem lehet üres.',
-            'charactername.required' => 'Túl hosszú az IC név.',
-        ]);
+        $request->validate(
+            [
+                'charactername' => ['required', 'string', 'max:255'],
+            ],
+            [
+                'charactername.required' => 'Az IC név nem lehet üres.',
+                'charactername.required' => 'Túl hosszú az IC név.',
+            ],
+        );
 
         try {
             $randomUsername = Str::random(8);
@@ -227,9 +207,7 @@ class AdminController extends Controller
                 'password' => Hash::make($randomPassword),
             ]);
 
-            DB::table('admin_logs')->insert(
-                ['user_id' => Auth::user()->id, 'didWhat' => 'Regisztrált egy új felhasználót ' . $request->charactername . ' IC néven (ID: ' . $user->id . ')']
-            );
+            $this->logAdminAction('Regisztrált egy új felhasználót ' . $request->charactername . ' IC néven (ID: ' . $user->id . ')');
 
             return Redirect::route('admin.index')->with('user-created', 'A felhasználó regisztrációja sikeres. FELHASZNÁLÓNÉV: ' . $randomUsername . ', JELSZÓ: ' . $randomPassword);
         } catch (\Throwable $th) {
@@ -237,65 +215,57 @@ class AdminController extends Controller
         }
     }
 
-    public function viewUserReports (string $id)
+    public function viewUserReports(string $id)
     {
-        $reports = DB::table('reports')
-            ->join('users', 'users.id', '=', 'reports.user_id')
-            ->select('reports.id', 'reports.price', 'reports.diagnosis', 'reports.withWho', 'reports.img', 'reports.created_at', 'users.charactername')
-            ->where('user_id', '=', $id)
-            ->get();
+        $reports = $this->getUserReports($id);
+        $userCharactername = $this->getCharacterNameById($id);
 
         if ($reports->isEmpty()) {
             return Redirect::route('admin.index');
-        } else {
-            return view('admin.view_user_reports', [
-                'reports' => $reports,
-                'charactername' => $reports[0]->charactername,
-            ]);
         }
-    }
 
-    public function viewUserDuty (string $id)
-    {
-        $dutyTimes = DB::table('duty_times')
-            ->join('users', 'users.id', '=', 'duty_times.user_id')
-            ->select('duty_times.id', 'duty_times.begin', 'duty_times.end', 'duty_times.minutes', 'users.charactername')
-            ->where('user_id', '=', $id)
-            ->get();
-
-        if ($dutyTimes->isEmpty()) {
-            return Redirect::route('admin.index');
-        } else {
-            return view('admin.view_user_duty', [
-                'dutyTimes' => $dutyTimes,
-                'charactername' => $dutyTimes[0]->charactername,
-            ]);
-        }
-    }
-
-    public function viewClosedUserReports (string $id)
-    {
-        $reports = DB::table('reports_closed')
-            ->join('users_closed', 'users_closed.id', '=', 'reports_closed.user_id')
-            ->select('reports_closed.id', 'reports_closed.price', 'reports_closed.diagnosis', 'reports_closed.withWho', 'reports_closed.img', 'reports_closed.created_at', 'users_closed.charactername')
-            ->where('user_id', '=', $id)
-            ->get();
-
-        return view('admin.view_user_reports', [
+        return view('admin.weekly_stats.view_user_reports', [
             'reports' => $reports,
-            'charactername' => $reports[0]->charactername,
+            'charactername' => $userCharactername,
         ]);
     }
 
-    public function viewClosedUserDuty (string $id)
+    public function viewUserDuty(string $id)
     {
-        $dutyTimes = DB::table('duty_times_closed')
-            ->join('users_closed', 'users_closed.id', '=', 'duty_times_closed.user_id')
-            ->select('duty_times_closed.id', 'duty_times_closed.begin', 'duty_times_closed.end', 'duty_times_closed.minutes', 'users_closed.charactername')
-            ->where('user_id', '=', $id)
-            ->get();
+        $dutyTimes = DB::table('duty_times')->join('users', 'users.id', '=', 'duty_times.user_id')->select('duty_times.id', 'duty_times.begin', 'duty_times.end', 'duty_times.minutes', 'users.charactername')->where('user_id', '=', $id)->get();
 
-        return view('admin.view_user_duty', [
+        if ($dutyTimes->isEmpty()) {
+            return Redirect::route('admin.index');
+        }
+
+        return view('admin.weekly_stats.view_user_duty', [
+            'dutyTimes' => $dutyTimes,
+            'charactername' => $dutyTimes[0]->charactername,
+        ]);
+    }
+
+    /**
+     * View a previous week's reports for the given user.
+     *
+     * @param string $id
+     * @return \Illuminate\View\View
+     */
+    public function viewClosedUserReports(string $id)
+    {
+        $reportsFromClosedWeek = $this->getUserReportsFromClosedWeek($id);
+        $userCharacterName = $this->getCharacterNameById($id);
+
+        return view('admin.weekly_stats.view_user_reports', [
+            'reports' => $reportsFromClosedWeek,
+            'charactername' => $userCharacterName,
+        ]);
+    }
+
+    public function viewClosedUserDuty(string $id)
+    {
+        $dutyTimes = DB::table('duty_times_closed')->join('users_closed', 'users_closed.id', '=', 'duty_times_closed.user_id')->select('duty_times_closed.id', 'duty_times_closed.begin', 'duty_times_closed.end', 'duty_times_closed.minutes', 'users_closed.charactername')->where('user_id', '=', $id)->get();
+
+        return view('admin.weekly_stats.view_user_duty', [
             'dutyTimes' => $dutyTimes,
             'charactername' => $dutyTimes[0]->charactername,
         ]);
@@ -305,7 +275,7 @@ class AdminController extends Controller
     {
         $user = User::findOrFail($id);
 
-        return view('admin.update_user', [
+        return view('admin.users.update_user', [
             'user' => $user,
         ]);
     }
@@ -313,21 +283,17 @@ class AdminController extends Controller
     public function updateUser(Request $request, string $id)
     {
         $user = User::findOrFail($id);
-        $usernameCheck = ($request->input('username') !== $user->username);
+        $usernameCheck = $request->input('username') !== $user->username;
 
         if (Auth::user()->canGiveAdmin == 1 && Auth::user()->username != $user->username) {
             if ($request->has('admin')) {
                 if ($user->isAdmin == 0) {
-                    DB::table('admin_logs')->insert(
-                        ['user_id' => Auth::user()->id, 'didWhat' => 'Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó admin rangját (0 -> 1)']
-                    );
+                    $this->logAdminAction('Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó admin rangját (0 -> 1)');
                 }
                 $user->isAdmin = 1;
             } else {
                 if ($user->isAdmin == 1) {
-                    DB::table('admin_logs')->insert(
-                        ['user_id' => Auth::user()->id, 'didWhat' => 'Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó admin rangját (1 -> 0)']
-                    );
+                    $this->logAdminAction('Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó admin rangját (1 -> 0)');
                 }
                 $user->isAdmin = 0;
             }
@@ -335,45 +301,50 @@ class AdminController extends Controller
 
         // Check if username was changed, if not, then don't validate for unique
         if ($usernameCheck) {
-            $request->validate([
-                'username' => ['string', 'max:255', 'unique:users'],
-            ], [
-                'username.string' => 'A felhasználónév nem lehet üres.',
-                'username.unique' => 'Ez a felhasználónév már foglalt.',
-                'username.max' => 'Túl hosszú a felhasználónév.',
-            ]);
+            $request->validate(
+                [
+                    'username' => ['string', 'max:255', 'unique:users'],
+                ],
+                [
+                    'username.string' => 'A felhasználónév nem lehet üres.',
+                    'username.unique' => 'Ez a felhasználónév már foglalt.',
+                    'username.max' => 'Túl hosszú a felhasználónév.',
+                ],
+            );
         } else {
-            $request->validate([
-                'username' => ['string', 'max:255'],
-            ], [
-                'username.string' => 'A felhasználónév nem lehet üres.',
-                'username.max' => 'Túl hosszú a felhasználónév.',
-            ]);
+            $request->validate(
+                [
+                    'username' => ['string', 'max:255'],
+                ],
+                [
+                    'username.string' => 'A felhasználónév nem lehet üres.',
+                    'username.max' => 'Túl hosszú a felhasználónév.',
+                ],
+            );
         }
 
-        $request->validate([
-            'charactername' => ['string', 'max:255'],
-        ], [
-            'charactername.string' => 'Az IC név nem lehet üres.',
-            'charactername.max' => 'Túl hosszú az IC név.',
-        ]);
+        $request->validate(
+            [
+                'charactername' => ['string', 'max:255'],
+            ],
+            [
+                'charactername.string' => 'Az IC név nem lehet üres.',
+                'charactername.max' => 'Túl hosszú az IC név.',
+            ],
+        );
 
         if ($request->input('username') !== $user->username) {
             $oldusername = $user->username;
             $user->username = $request->input('username');
 
-            DB::table('admin_logs')->insert(
-                ['user_id' => Auth::user()->id, 'didWhat' => 'Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó felhasználónevét (' . $oldusername . ' -> ' . $request->input('username') . ')']
-            );
+            $this->logAdminAction('Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó felhasználónevét (' . $oldusername . ' -> ' . $request->input('username') . ')');
         }
 
         if ($request->input('charactername') !== $user->charactername) {
             $oldcharactername = $user->charactername;
             $user->charactername = $request->input('charactername');
 
-            DB::table('admin_logs')->insert(
-                ['user_id' => Auth::user()->id, 'didWhat' => 'Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó IC nevét (' . $oldcharactername . ' -> ' . $request->input('charactername') . ')']
-            );
+            $this->logAdminAction('Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó IC nevét (' . $oldcharactername . ' -> ' . $request->input('charactername') . ')');
         }
 
         try {
@@ -392,9 +363,7 @@ class AdminController extends Controller
                 $user = User::findOrFail($id);
                 $user->delete();
 
-                DB::table('admin_logs')->insert(
-                    ['user_id' => Auth::user()->id, 'didWhat' => 'Kitörölte a(z) ' . $user->charactername . ' (ID: ' . $user->id . ') felhasználót']
-                );
+                $this->logAdminAction('Kitörölte a(z) ' . $user->charactername . ' (ID: ' . $user->id . ') felhasználót');
 
                 return to_route('admin.index')->with('successful-user-deletion', 'A felhasználó törlése sikeres.');
             } catch (\Throwable $th) {
@@ -406,141 +375,75 @@ class AdminController extends Controller
     public function deleteReport(string $id)
     {
         $report = Report::findOrFail($id);
-        $user = $report->user_id;
+        $userId = $report->user_id;
         try {
-            $charactername = DB::table('users')
-                ->join('reports', 'reports.user_id', '=', 'users.id')
-                ->select('users.charactername')
-                ->where('user_id', '=', $user)
-                ->get();
+            $characterName = $this->getCharacterNameById($userId);
 
             $report->delete();
 
-            DB::table('admin_logs')->insert(
-                ['user_id' => Auth::user()->id, 'didWhat' => 'Kitörölte a(z) ' . $charactername[0]->charactername . ' (Jelentés ID: ' . $id . ') felhasználó jelentését']
-            );
+            $this->logAdminAction('Kitörölte a(z) ' . $characterName . ' (Jelentés ID: ' . $id . ') felhasználó jelentését');
 
-            return Redirect::route('admin.viewUserReports', $user)->with('successful-user-report-deletion', 'A felhasználó jelentésének törlése sikeres.');
+            return Redirect::route('admin.viewUserReports', $userId)->with('successful-user-report-deletion', 'A felhasználó jelentésének törlése sikeres.');
         } catch (\Throwable $th) {
-            return Redirect::route('admin.viewUserReports', $user)->with('unsuccessful-user-report-deletion', 'A felhasználó jelentésének törlése sikertelen.');
+            return Redirect::route('admin.viewUserReports', $userId)->with('unsuccessful-user-report-deletion', 'A felhasználó jelentésének törlése sikertelen.');
         }
     }
 
-    public function deleteDutyTime(string $id)
+    /**
+     * Log the given admin action for the current user
+     *
+     * @param string $action
+     */
+    public function logAdminAction($action)
     {
-        $duty = DutyTime::findOrFail($id);
-        $user = $duty->user_id;
-        try {
-            $charactername = DB::table('users')
-                ->join('duty_times', 'duty_times.user_id', '=', 'users.id')
-                ->select('users.charactername')
-                ->where('user_id', '=', $user)
-                ->get();
-
-            $duty->delete();
-
-            DB::table('admin_logs')->insert(
-                ['user_id' => Auth::user()->id, 'didWhat' => 'Kitörölte a(z) ' . $charactername[0]->charactername  . ' (Szolgálat ID: ' . $id . ') felhasználó szolgálatát']
-            );
-
-            return Redirect::route('admin.viewUserDuty', $user)->with('successful-user-duty-deletion', 'A felhasználó szolgálatának törlése sikeres.');
-        } catch (\Throwable $th) {
-            return Redirect::route('admin.viewUserDuty', $user)->with('unsuccessful-user-duty-deletion', 'A felhasználó szolgálatának törlése sikertelen.');
-        }
+        DB::table('admin_logs')->insert(['user_id' => Auth::user()->id, 'didWhat' => $action]);
     }
 
-    public function destroyInactivity(string $id)
+    /**
+     * Get the character name by user ID.
+     *
+     * @param int $id
+     * @return string|null
+     */
+    public function getCharacterNameById($id)
     {
-        $inactivity = Inactivity::findOrFail($id);
-        $user = $inactivity->user_id;
-        try {
-            $charactername = DB::table('users')
-                ->join('inactivities', 'inactivities.user_id', '=', 'users.id')
-                ->select('users.charactername')
-                ->where('user_id', '=', $user)
-                ->get();
-
-            $inactivity->delete();
-
-            DB::table('admin_logs')->insert(
-                ['user_id' => Auth::user()->id, 'didWhat' => 'Kitörölte a(z) ' . $charactername[0]->charactername  . ' (Inaktivitás ID: ' . $id . ') felhasználó inaktivitási kérelmét']
-            );
-
-            return Redirect::route('admin.index')->with('destroyinactivity-success', 'Az inaktivitási kérelem sikeresen törölve.');
-        } catch (\Throwable $th) {
-            return Redirect::route('admin.index')->with('destroyinactivity-failed', 'Az inaktivitási kérelem törlése meghiúsult.');
-        }
+        return DB::table('users')->select('charactername')->where('id', '=', $id)->value('charactername');
     }
 
-    public function acceptInactivity($id)
+    /**
+     * Move the weekly statistics to closed tables and reset the current tables.
+     *
+     * @return bool
+     */
+    private function moveWeeklyStatsToClosed()
     {
         try {
-            $inactivity = Inactivity::findOrFail($id);
+            DB::delete('DELETE FROM reports_closed');
+            DB::delete('DELETE FROM duty_times_closed');
+            DB::delete('DELETE FROM users_closed');
 
-            // 0 --> Válaszra vár
-            // 1 --> Elfogadva
-            // 2 --> Elutasítva
+            DB::insert('INSERT INTO users_closed SELECT id, charactername FROM users');
+            DB::insert('INSERT INTO reports_closed SELECT * FROM reports');
+            DB::insert('INSERT INTO duty_times_closed SELECT * FROM duty_times');
 
-            if ($inactivity->status == 0) {
-                DB::table('inactivities')
-                    ->where('id', $id)
-                    ->update(['status' => 1]);
+            DB::delete('DELETE FROM reports');
+            DB::delete('DELETE FROM duty_times');
 
-                DB::table('admin_logs')->insert([
-                    'user_id' => Auth::user()->id,
-                    'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (Válaszra vár -> Elfogadva)'
-                ]);
-            }
-            if ($inactivity->status == 2) {
-                DB::table('inactivities')
-                    ->where('id', $id)
-                    ->update(['status' => 1]);
+            $this->logAdminAction('Lezárta a hetet');
 
-                DB::table('admin_logs')->insert([
-                    'user_id' => Auth::user()->id,
-                    'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (Elutasítva -> Elfogadva)'
-                ]);
-            }
+            DB::table('locks')
+                ->where('name', 'close_week')
+                ->update(['isLocked' => 0]);
 
-            return Redirect::route('admin.index')->with('updateinactivity-success', 'Az inaktivitási kérelem sikeresen elfogadva.');
-        } catch (\Throwable $th) {
-            return Redirect::route('admin.index')->with('updateinactivity-failed', 'Az inaktivitási kérelem elfogadása meghiúsult.');
-        }
-    }
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
 
-    public function denyInactivity($id)
-    {
-        try {
-            $inactivity = Inactivity::findOrFail($id);
+            DB::table('locks')
+                ->where('name', 'close_week')
+                ->update(['isLocked' => 0]);
 
-            // 0 --> Válaszra vár
-            // 1 --> Elfogadva
-            // 2 --> Elutasítva
-
-            if ($inactivity->status == 0) {
-                DB::table('inactivities')
-                    ->where('id', $id)
-                    ->update(['status' => 2]);
-
-                DB::table('admin_logs')->insert([
-                    'user_id' => Auth::user()->id,
-                    'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (Válaszra vár --> Elutasítva)'
-                ]);
-            }
-            if ($inactivity->status == 1) {
-                DB::table('inactivities')
-                    ->where('id', $id)
-                    ->update(['status' => 2]);
-
-                DB::table('admin_logs')->insert([
-                    'user_id' => Auth::user()->id,
-                    'didWhat' => 'Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (Elfogadva --> Elutasítva)'
-                ]);
-            }
-
-            return Redirect::route('admin.index')->with('updateinactivity-success', 'Az inaktivitási kérelem sikeresen elutasítva.');
-        } catch (\Throwable $th) {
-            return Redirect::route('admin.index')->with('updateinactivity-failed', 'Az inaktivitási kérelem elutasítása meghiúsult.');
+            return false;
         }
     }
 }

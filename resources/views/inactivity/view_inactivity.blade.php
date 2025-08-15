@@ -1,4 +1,11 @@
 <x-app-layout>
+    @vite('resources/js/swalConfirmDecision.js')
+    <script>
+        function confirmDelete(event) {
+            swalConfirmDecision(event, "Inaktivitás törlése", "Biztos törölni akarod az inaktivitást?", "Törlés", "Mégse");
+        }
+    </script>
+
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
             {{ __('Inaktivitási kérelmek') }}
@@ -30,9 +37,9 @@
                     <div class="row" style="margin-bottom: 20px">
                         <div class="col-md-4"></div>
                         <div class="col-md-4 d-flex justify-content-center new-report">
-                            <a href="{{ route('inactivity.create') }}">
+                            <a href="{{ route('inactivity.createInactivityView') }}">
                                 <x-primary-button>
-                                        {{ __('Új inaktivitási kérelem küldése') }}
+                                    {{ __('Új inaktivitási kérelem küldése') }}
                                 </x-primary-button>
                             </a>
                         </div>
@@ -51,35 +58,30 @@
                             </tr>
                         </thead>
                         <tbody>
-                        @foreach ($inactivities as $inactivity)
-                            <tr>
-                                <th scope="row">{{ $loop->iteration }}</th>
-                                <td>{{ \Illuminate\Support\Carbon::parse($inactivity->begin)->format('Y.m.d') }}</td>
-                                <td>{{ \Illuminate\Support\Carbon::parse($inactivity->end)->format('Y.m.d') }}</td>
-                                <td>{{ $inactivity->reason }}</td>
-                                @if ($inactivity->status == 1)
-                                    <td>Elfogadva</td>
-                                @elseif ($inactivity->status == 2)
-                                    <td>Elutasítva</td>
-                                @else
-                                    <td>Válaszra vár</td>
-                                @endif
+                            @foreach ($inactivities as $inactivity)
+                                <tr>
+                                    <th scope="row">{{ $loop->iteration }}</th>
+                                    <td>{{ $inactivity->begin }}</td>
+                                    <td>{{ $inactivity->end }}</td>
+                                    <td>{{ $inactivity->reason }}</td>
+                                    <td>{{ $inactivity->status }}</td>
 
-                                <td>
-                                    @if ($inactivity->status != 1)
-                                    <form action="{{ route('inactivity.delete', $inactivity->id) }}" method="post">
-                                        @csrf
-                                        @method('DELETE')
-                                        <x-primary-button>
-                                            {{ __('Törlés') }}
-                                        </x-primary-button>
-                                    </form>
-                                    @else
-                                    <p>-</p>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
+                                    <td>
+                                        @if ($inactivity->status == \App\Enums\InactivityStatus::WaitingForApproval->value)
+                                            <form action="{{ route('inactivity.deleteInactivity', $inactivity->id) }}"
+                                                method="post">
+                                                @csrf
+                                                @method('DELETE')
+                                                <x-primary-button onclick="confirmDelete(event);">
+                                                    {{ __('Törlés') }}
+                                                </x-primary-button>
+                                            </form>
+                                        @else
+                                            <p>-</p>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>

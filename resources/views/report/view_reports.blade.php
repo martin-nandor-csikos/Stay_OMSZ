@@ -1,4 +1,11 @@
 <x-app-layout>
+    @vite('resources/js/swalConfirmDecision.js')
+    <script>
+        function confirmDelete(event) {
+            swalConfirmDecision(event, "Jelentés törlése", "Biztos törölni akarod a jelentést?", "Törlés", "Mégse");
+        }
+    </script>
+
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Jelentéseim') }}
@@ -14,9 +21,9 @@
                     <div class="row" style="margin-bottom: 20px">
                         <div class="col-md-4"></div>
                         <div class="col-md-4 d-flex justify-content-center new-report">
-                            <a href="{{ route('reports.create_report_view') }}">
+                            <a href="{{ route('reports.createReportView') }}">
                                 <x-primary-button>
-                                        {{ __('Új jelentés felvétele') }}
+                                    {{ __('Új jelentés felvétele') }}
                                 </x-primary-button>
                             </a>
                         </div>
@@ -35,25 +42,25 @@
                             </tr>
                         </thead>
                         <tbody>
-                        @foreach ($userReports as $report)
-                            <tr>
-                                <th scope="row">{{ $loop->iteration }}</th>
-                                <td>{{ $report->price }}</td>
-                                <td>{{ $report->diagnosis }}</td>
-                                <td>{{ $report->withWho }}</td>
-                                <td><a href="{{ $report->img }}" target="blank">{{ $report->img }}</a></td>
-                                <td>{{ $report->created_at }}</td>
-                                <td>
-                                    <form action="{{ route('reports.delete_report', $report->id) }}" method="post">
-                                        @csrf
-                                        @method('DELETE')
-                                        <x-primary-button>
-                                            {{ __('Törlés') }}
-                                        </x-primary-button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
+                            @foreach ($userReports as $report)
+                                <tr>
+                                    <th scope="row">{{ $loop->iteration }}</th>
+                                    <td>{{ $report->price }}</td>
+                                    <td>{{ $report->diagnosis }}</td>
+                                    <td>{{ $report->withWho }}</td>
+                                    <td><a href="{{ $report->img }}" target="blank">{{ $report->img }}</a></td>
+                                    <td>{{ $report->created_at }}</td>
+                                    <td>
+                                        <form action="{{ route('reports.deleteReport', $report->id) }}" method="post">
+                                            @csrf
+                                            @method('DELETE')
+                                            <x-primary-button onclick="confirmDelete(event);">
+                                                {{ __('Törlés') }}
+                                            </x-primary-button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>

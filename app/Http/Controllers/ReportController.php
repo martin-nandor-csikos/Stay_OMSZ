@@ -47,7 +47,7 @@ class ReportController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function create_report_view()
+    public function createReportView()
     {
         $services = $this->ticketServiceController->getServicesQuery();
 
@@ -62,7 +62,7 @@ class ReportController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store_new_report(Request $request)
+    public function storeNewReport(Request $request)
     {
         $this->validateReport($request);
 
@@ -74,7 +74,7 @@ class ReportController extends Controller
 
         Report::create($report);
 
-        return redirect()->route('reports.create_report_view')->with('successful-creation', 'A jelentés beadása sikeres.');
+        return redirect()->route('reports.createReportView')->with('successful-creation', 'A jelentés beadása sikeres.');
     }
 
     /**
@@ -84,7 +84,7 @@ class ReportController extends Controller
     {
         $report = Report::findOrFail($id);
 
-        return view('report.update_report', [
+        return view('report.updateReport', [
             'report' => $report,
         ]);
     }
@@ -96,7 +96,7 @@ class ReportController extends Controller
      * @param \App\Models\Report $report
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update_report(Request $request, Report $report)
+    public function updateReport(Request $request, Report $report)
     {
         /*
         $request->validate([
@@ -139,7 +139,7 @@ class ReportController extends Controller
      * @param int $id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function delete_report($id)
+    public function deleteReport($id)
     {
         try {
             $report = Report::findOrFail($id);
@@ -152,17 +152,43 @@ class ReportController extends Controller
     }
 
     /**
-     * Get the reports for the authenticated user.
+     * Get the reports for the given user.
      *
      * @param int $userId
      * @return \Illuminate\Support\Collection
      */
-    private function getUserReports($userId)
+    public function getUserReports($userId)
     {
         return DB::table('reports')
             ->select('id', 'price', 'diagnosis', 'withWho', 'img', 'created_at')
             ->where('user_id', '=', $userId)
             ->get();
+    }
+
+    /**
+     * Get the reports for the given user from the previous week.
+     *
+     * @param int $userId
+     * @return \Illuminate\Support\Collection
+     */
+    public function getUserReportsFromClosedWeek($userId)
+    {
+        return DB::table('reports_closed')
+            ->select('id', 'price', 'diagnosis', 'withWho', 'img', 'created_at')
+            ->where('user_id', '=', $userId)
+            ->get();
+    }
+
+    /**
+     * Get the count of reports for the current week
+     *
+     * @return int
+     */
+    public function getReportCountForCurrentWeek()
+    {
+        return DB::table('reports')
+            ->select(DB::raw('count(id) as reportCount'),)
+            ->value('reportCount');
     }
 
     /**
@@ -183,9 +209,9 @@ class ReportController extends Controller
             'cost.max' => 'Az ár maximum $300.000 lehet.',
             'cost.min' => 'Az ár minimum $0 lehet.',
 
-            'services.required' => 'A diagnózis nem lehet üres.',
-            'services.string' => 'A diagnózis csak szöveg lehet.',
-            'services.max' => 'A diagnózis maximum 100 karakterből állhat.',
+            'services.required' => 'Az ellátás mező nem lehet üres.',
+            'services.string' => 'A ellátás mezőben csak szöveg lehet.',
+            'services.max' => 'Az ellátás mező maximum 100 karakterből állhat.',
 
             'withWho.string' => 'A társ mezőben csak szöveg lehet.',
 

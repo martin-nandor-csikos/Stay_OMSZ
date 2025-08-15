@@ -37,16 +37,19 @@
                 },
                 layout: {
                     topStart: {
-                        buttons: [
-                            {
+                        buttons: [{
                                 extend: 'excel',
                                 filename: 'regisztralt_felhasznalok_' + '{{ $currentDay }}',
-                                exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+                                exportOptions: {
+                                    columns: [0, 1, 2, 3, 4, 5]
+                                }
                             },
                             {
                                 extend: 'csv',
                                 filename: 'regisztralt_felhasznalok_' + '{{ $currentDay }}',
-                                exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+                                exportOptions: {
+                                    columns: [0, 1, 2, 3, 4, 5]
+                                }
                             }
                         ]
                     }
@@ -60,16 +63,21 @@
                 },
                 layout: {
                     topStart: {
-                        buttons: [
-                            {
+                        buttons: [{
                                 extend: 'excel',
-                                filename: 'heti_statisztika_' + '{{ $firstDayOfWeek }}_{{ $lastDayOfWeek }}',
-                                exportOptions: { columns: [0, 1, 2, 3, 5, 6] }
+                                filename: 'heti_statisztika_' +
+                                    '{{ $firstDayOfWeek }}_{{ $lastDayOfWeek }}',
+                                exportOptions: {
+                                    columns: [0, 1, 2, 3, 5, 6]
+                                }
                             },
                             {
                                 extend: 'csv',
-                                filename: 'heti_statisztika_' + '{{ $firstDayOfWeek }}_{{ $lastDayOfWeek }}',
-                                exportOptions: { columns: [0, 1, 2, 3, 5, 6] }
+                                filename: 'heti_statisztika_' +
+                                    '{{ $firstDayOfWeek }}_{{ $lastDayOfWeek }}',
+                                exportOptions: {
+                                    columns: [0, 1, 2, 3, 5, 6]
+                                }
                             }
                         ]
                     }
@@ -83,16 +91,21 @@
                 },
                 layout: {
                     topStart: {
-                        buttons: [
-                            {
+                        buttons: [{
                                 extend: 'excel',
-                                filename: 'heti_statisztika_' + '{{ $firstDayOfPreviousWeek }}_{{ $lastDayOfPreviousWeek }}',
-                                exportOptions: { columns: [0, 1, 2, 3, 5, 6] }
+                                filename: 'heti_statisztika_' +
+                                    '{{ $firstDayOfPreviousWeek }}_{{ $lastDayOfPreviousWeek }}',
+                                exportOptions: {
+                                    columns: [0, 1, 2, 3, 5, 6]
+                                }
                             },
                             {
                                 extend: 'csv',
-                                filename: 'heti_statisztika_' + '{{ $firstDayOfPreviousWeek }}_{{ $lastDayOfPreviousWeek }}',
-                                exportOptions: { columns: [0, 1, 2, 3, 5, 6] }
+                                filename: 'heti_statisztika_' +
+                                    '{{ $firstDayOfPreviousWeek }}_{{ $lastDayOfPreviousWeek }}',
+                                exportOptions: {
+                                    columns: [0, 1, 2, 3, 5, 6]
+                                }
                             }
                         ]
                     }
@@ -106,16 +119,19 @@
                 },
                 layout: {
                     topStart: {
-                        buttons: [
-                            {
+                        buttons: [{
                                 extend: 'excel',
                                 filename: 'admin_logok_' + '{{ $currentDay }}',
-                                exportOptions: { columns: [0, 1, 2, 3] }
+                                exportOptions: {
+                                    columns: [0, 1, 2, 3]
+                                }
                             },
                             {
                                 extend: 'csv',
                                 filename: 'admin_logok_' + '{{ $currentDay }}',
-                                exportOptions: { columns: [0, 1, 2, 3] }
+                                exportOptions: {
+                                    columns: [0, 1, 2, 3]
+                                }
                             }
                         ]
                     }
@@ -129,16 +145,19 @@
                 },
                 layout: {
                     topStart: {
-                        buttons: [
-                            {
+                        buttons: [{
                                 extend: 'excel',
                                 filename: 'inaktivitasok_' + '{{ $currentDay }}',
-                                exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] }
+                                exportOptions: {
+                                    columns: [0, 1, 2, 3, 4, 5, 6, 7]
+                                }
                             },
                             {
                                 extend: 'csv',
                                 filename: 'inaktivitasok_' + '{{ $currentDay }}',
-                                exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] }
+                                exportOptions: {
+                                    columns: [0, 1, 2, 3, 4, 5, 6, 7]
+                                }
                             }
                         ]
                     }
@@ -146,5 +165,5 @@
                 scrollX: true,
             });
         });
-   </script>
+    </script>
 </x-app-layout>

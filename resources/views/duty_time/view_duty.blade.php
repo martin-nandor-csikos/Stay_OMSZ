@@ -1,4 +1,11 @@
 <x-app-layout>
+    @vite('resources/js/swalConfirmDecision.js')
+    <script>
+        function confirmDelete(event) {
+            swalConfirmDecision(event, "Szolgálat törlése", "Biztos törölni akarod a szolgálatot?", "Törlés", "Mégse");
+        }
+    </script>
+
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
             {{ __('Szolgálatok') }}
@@ -24,9 +31,9 @@
                     <div class="row" style="margin-bottom: 20px">
                         <div class="col-md-4"></div>
                         <div class="col-md-4 d-flex justify-content-center new-report">
-                            <a href="{{ route('duty_time.create') }}">
+                            <a href="{{ route('duty_time.createDutyView') }}">
                                 <x-primary-button>
-                                        {{ __('Új szolgálat felvétele') }}
+                                    {{ __('Új szolgálat felvétele') }}
                                 </x-primary-button>
                             </a>
                         </div>
@@ -44,23 +51,24 @@
                             </tr>
                         </thead>
                         <tbody>
-                        @foreach ($dutyTimes as $dutyTime)
-                            <tr>
-                                <th scope="row">{{ $loop->iteration }}</th>
-                                <td>{{ \Illuminate\Support\Carbon::parse($dutyTime->begin)->format('Y.m.d H:i') }}</td>
-                                <td>{{ \Illuminate\Support\Carbon::parse($dutyTime->end)->format('Y.m.d H:i') }}</td>
-                                <td>{{ $dutyTime->minutes }} perc</td>
-                                <td>
-                                    <form action="{{ route('duty_time.delete', $dutyTime->id) }}" method="post">
-                                        @csrf
-                                        @method('DELETE')
-                                        <x-primary-button>
-                                            {{ __('Törlés') }}
-                                        </x-primary-button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
+                            @foreach ($dutyTimes as $dutyTime)
+                                <tr>
+                                    <th scope="row">{{ $loop->iteration }}</th>
+                                    <td>{{ $dutyTime->begin }}</td>
+                                    <td>{{ $dutyTime->end }}</td>
+                                    <td>{{ $dutyTime->minutes }} perc</td>
+                                    <td>
+                                        <form action="{{ route('duty_time.deleteDuty', $dutyTime->id) }}"
+                                            method="post">
+                                            @csrf
+                                            @method('DELETE')
+                                            <x-primary-button onclick="confirmDelete(event);">
+                                                {{ __('Törlés') }}
+                                            </x-primary-button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>

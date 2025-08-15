@@ -17,40 +17,44 @@
                         </tr>
                     </thead>
                     <tbody>
-                    @foreach ($closedUserStats as $closedUserStat)
-                        <tr>
-                            <th scope="row">{{ $loop->iteration }}</th>
-                            <td>{{ $closedUserStat->charactername }}</td>
-                            <td>{{ $closedUserStat->reportCount }}</td>
-                            @if ($closedUserStat->lastReportDate != '-')
-                                <td>{{ \Illuminate\Support\Carbon::parse($closedUserStat->lastReportDate)->format('Y.m.d H:i') }}</td>
-                                <td>
-                                    <form action="{{ route('admin.viewClosedUserReports', $closedUserStat->id) }}" method="get" target="_blank_{{ $loop->iteration }}">
-                                        <x-primary-button>
-                                            {{ __('Jelentések') }}
-                                        </x-primary-button>
-                                    </form>
-                                </td>
-                            @else
-                                <td>-</td>
-                                <td>-</td>
-                            @endif
-                            <td>{{ $closedUserStat->dutyMinuteSum }}</td>
-                            @if ($closedUserStat->lastDutyDate != '-')
-                                <td>{{ \Illuminate\Support\Carbon::parse($closedUserStat->lastDutyDate)->format('Y.m.d H:i') }}</td>
-                                <td>
-                                    <form action="{{ route('admin.viewClosedUserDuty', $closedUserStat->id) }}" method="get" target="_blank_{{ $loop->iteration }}">
-                                        <x-primary-button>
-                                            {{ __('Szolgálatok') }}
-                                        </x-primary-button>
-                                    </form>
-                                </td>
-                            @else
-                                <td>-</td>
-                                <td>-</td>
-                            @endif
-                        </tr>
-                    @endforeach
+                        @foreach ($closedUserStats as $closedUserStat)
+                            <tr>
+                                <th scope="row">{{ $loop->iteration }}</th>
+                                <td>{{ $closedUserStat->charactername }}</td>
+                                <td>{{ $closedUserStat->reportCount }}</td>
+                                @if ($closedUserStat->lastReportDate != '-')
+                                    <td>{{ \Illuminate\Support\Carbon::parse($closedUserStat->lastReportDate)->format('Y.m.d H:i') }}
+                                    </td>
+                                    <td>
+                                        <form action="{{ route('admin.viewClosedUserReports', $closedUserStat->id) }}"
+                                            method="get" target="_blank_{{ $loop->iteration }}">
+                                            <x-primary-button>
+                                                {{ __('Jelentések') }}
+                                            </x-primary-button>
+                                        </form>
+                                    </td>
+                                @else
+                                    <td>-</td>
+                                    <td>-</td>
+                                @endif
+                                <td>{{ $closedUserStat->dutyMinuteSum }}</td>
+                                @if ($closedUserStat->lastDutyDate != '-')
+                                    <td>{{ \Illuminate\Support\Carbon::parse($closedUserStat->lastDutyDate)->format('Y.m.d H:i') }}
+                                    </td>
+                                    <td>
+                                        <form action="{{ route('admin.viewClosedUserDuty', $closedUserStat->id) }}"
+                                            method="get" target="_blank_{{ $loop->iteration }}">
+                                            <x-primary-button>
+                                                {{ __('Szolgálatok') }}
+                                            </x-primary-button>
+                                        </form>
+                                    </td>
+                                @else
+                                    <td>-</td>
+                                    <td>-</td>
+                                @endif
+                            </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>

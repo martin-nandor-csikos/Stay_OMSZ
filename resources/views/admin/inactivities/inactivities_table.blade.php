@@ -1,14 +1,21 @@
 @if ($waitingForAnswerInInactivites == true)
+    <script>
+        window.onload = function() {
+            Swal.fire({
+                text: 'Új inaktivitási kérelem érkezett! (Válaszra vár)',
+                icon: 'info',
+                confirmButtonText: 'OK',
+            })
+        }
+    </script>
+@endif
+
+@vite('resources/js/swalConfirmDecision.js')
 <script>
-    window.onload = function() {
-        Swal.fire({
-            text: 'Új inaktivitási kérelem érkezett! (Válaszra vár)',
-            icon: 'info',
-            confirmButtonText: 'OK',
-        })
+    function confirmDelete(event) {
+        swalConfirmDecision(event, "Inaktivitás törlése", "Biztos törölni akarod az inaktivitást?", "Törlés", "Mégse");
     }
 </script>
-@endif
 
 <div class="py-12" id="inaktivitasok">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -32,62 +39,59 @@
                         </tr>
                     </thead>
                     <tbody>
-                    @foreach ($inactivities as $inactivity)
-                        <tr>
-                            <th scope="row">{{ $loop->iteration }}</th>
-                            <td>{{ $inactivity->id }}</td>
-                            <td>{{ $inactivity->charactername }}</td>
-                            <td>{{ \Illuminate\Support\Carbon::parse($inactivity->begin)->format('Y.m.d') }}</td>
-                            <td>{{ \Illuminate\Support\Carbon::parse($inactivity->end)->format('Y.m.d') }}</td>
-                            <td>{{ $inactivity->reason }}</td>
-                            @if ($inactivity->status == 1)
-                                <td>Elfogadva</td>
-                            @elseif ($inactivity->status == 2)
-                                <td>Elutasítva</td>
-                            @else
-                                <td>Válaszra vár</td>
-                            @endif
+                        @foreach ($inactivities as $inactivity)
+                            <tr>
+                                <th scope="row">{{ $loop->iteration }}</th>
+                                <td>{{ $inactivity->id }}</td>
+                                <td>{{ $inactivity->charactername }}</td>
+                                <td>{{ $inactivity->begin }}</td>
+                                <td>{{ $inactivity->end }}</td>
+                                <td>{{ $inactivity->reason }}</td>
+                                <td>{{ $inactivity->status }}</td>
 
-                            @if (\Illuminate\Support\Carbon::now()->between($inactivity->begin, $inactivity->end) && $inactivity->status == 1)
-                                <td>Igen</td>
-                            @else
-                                <td>Nem</td>
-                            @endif
-                            <td>
-                                @if ($inactivity->status == 1)
-                                -
+                                @if ($inactivity->inProgress)
+                                    <td>Igen</td>
                                 @else
-                                <form action="{{ route('admin.acceptInactivity', $inactivity->id) }}" method="POST">
-                                    @csrf
-                                    <x-primary-button>
-                                        {{ __('Elfogadás') }}
-                                    </x-primary-button>
-                                </form>
+                                    <td>Nem</td>
                                 @endif
-                            </td>
-                            <td>
-                                @if ($inactivity->status == 2)
-                                -
-                                @else
-                                <form action="{{ route('admin.denyInactivity', $inactivity->id) }}" method="POST">
-                                    @csrf
-                                    <x-primary-button>
-                                        {{ __('Elutasítás') }}
-                                    </x-primary-button>
-                                </form>
-                                @endif
-                            </td>
-                            <td>
-                                <form action="{{ route('admin.destroyInactivity', $inactivity->id) }}" method="post">
-                                    @csrf
-                                    @method('DELETE')
-                                    <x-primary-button onclick="return confirm('Ez egy visszafordíthatatlan esemény. Biztos törölni akarod?')">
-                                        {{ __('Törlés') }}
-                                    </x-primary-button>
-                                </form>
-                            </td>
-                        </tr>
-                    @endforeach
+                                <td>
+                                    @if ($inactivity->status == \App\Enums\InactivityStatus::Accepted->value)
+                                        -
+                                    @else
+                                        <form action="{{ route('admin.acceptInactivity', $inactivity->id) }}"
+                                            method="POST">
+                                            @csrf
+                                            <x-primary-button>
+                                                {{ __('Elfogadás') }}
+                                            </x-primary-button>
+                                        </form>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if ($inactivity->status == \App\Enums\InactivityStatus::Declined->value)
+                                        -
+                                    @else
+                                        <form action="{{ route('admin.declineInactivity', $inactivity->id) }}"
+                                            method="POST">
+                                            @csrf
+                                            <x-primary-button>
+                                                {{ __('Elutasítás') }}
+                                            </x-primary-button>
+                                        </form>
+                                    @endif
+                                </td>
+                                <td>
+                                    <form action="{{ route('admin.deleteInactivityAsAdmin', $inactivity->id) }}"
+                                        method="post">
+                                        @csrf
+                                        @method('DELETE')
+                                        <x-primary-button onclick="confirmDelete(event);">
+                                            {{ __('Törlés') }}
+                                        </x-primary-button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
