@@ -54,7 +54,7 @@
         </main>
 
         <footer class="bg-gray-100 dark:bg-gray-900">
-            <div class="footer-text dark:text-gray-100">&copy; 2024-2025 MateLUL <em>(Hibajelentésért keress fel
+            <div class="footer-text dark:text-gray-100">&copy; 2024-2026 MateLUL <em>(Hibajelentésért keress fel
                     Discordon, @matelul)</em></div>
         </footer>
     </div>

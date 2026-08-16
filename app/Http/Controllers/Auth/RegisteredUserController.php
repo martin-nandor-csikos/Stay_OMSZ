@@ -17,33 +17,49 @@ class RegisteredUserController extends Controller
 {
     /**
      * Display the registration view.
+     *
+     * Registration is only allowed when no users exist yet.
      */
-    public function create(): View
+    public function create(): View|RedirectResponse
     {
+        if (User::count() > 0) {
+            return redirect()->route('login');
+        }
+
         return view('auth.register');
     }
 
     /**
      * Handle an incoming registration request.
      *
+     * Only the first user is allowed to register, and is granted admin rights.
+     *
      * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse
     {
+        if (User::count() > 0) {
+            return redirect()->route('login');
+        }
+
         $request->validate([
             'charactername' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'unique:'.User::class],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ], [
             'charactername.required' => 'Az IC név nem lehet üres.',
-            'charactername.required' => 'Túl hosszú az IC név.',
+            'username.required' => 'A felhasználónév nem lehet üres.',
+            'username.unique' => 'Ez a felhasználónév már foglalt.',
+            'password.required' => 'A jelszó nem lehet üres.',
+            'password.confirmed' => 'A jelszavak nem egyeznek.',
         ]);
 
-        $randomUsername = str_random(8);
-        $randomPassword = str_random(8);
-        
         $user = User::create([
             'charactername' => $request->charactername,
-            'username' => $randomUsername,
-            'password' => Hash::make($randomPassword),
+            'username' => $request->username,
+            'password' => Hash::make($request->password),
+            'isAdmin' => 1,
+            'canGiveAdmin' => 1,
         ]);
 
         event(new Registered($user));

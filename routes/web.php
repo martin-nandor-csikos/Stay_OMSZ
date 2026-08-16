@@ -10,6 +10,7 @@ use App\Http\Controllers\DutyTimeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\InactivityController;
 use App\Http\Controllers\TicketServiceController;
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +26,9 @@ use App\Http\Controllers\TicketServiceController;
 Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route('dashboard');
+    }
+    if (User::count() === 0) {
+        return redirect()->route('register');
     }
     return view('auth.login');
 });

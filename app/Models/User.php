@@ -21,6 +21,8 @@ class User extends Authenticatable
         'charactername',
         'username',
         'password',
+        'isAdmin',
+        'canGiveAdmin',
     ];
 
     /**
