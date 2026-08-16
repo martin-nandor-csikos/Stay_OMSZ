@@ -34,24 +34,35 @@
                                 value="{{ $user->username }}" maxlength="255" autofocus />
                             <x-input-error :messages="$errors->get('username')" class="mt-2" />
                         </div>
-                        @if (Auth::user()->canGiveAdmin == 1)
+                        @if (Auth::user()->adminLevel == 2)
                             <div class="mt-4">
-                                <div class="form-check form-check-inline checkbox">
-                                    @if ($user->username == Auth::user()->username)
-                                        <input type="checkbox" id="admin" name="admin" value="admin" disabled
-                                            checked
-                                            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 form-check-input">
-                                    @else
-                                        @if ($user->isAdmin == 1)
-                                            <input type="checkbox" id="admin" name="admin" value="admin" checked
-                                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 form-check-input">
-                                        @else
-                                            <input type="checkbox" id="admin" name="admin" value="admin"
-                                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 form-check-input">
-                                        @endif
-                                    @endif
-                                    <label for="admin" class="form-check-label"> Admin</label><br>
-                                </div>
+                                <x-input-label for="adminLevel" value="Admin szint" />
+                                @if ($user->username == Auth::user()->username)
+                                    <select id="adminLevel" disabled
+                                        class="rounded border-gray-300 dark:bg-gray-900 dark:text-white block mt-1 w-full">
+                                        <option value="0" @selected($user->adminLevel == 0)>0</option>
+                                        <option value="1" @selected($user->adminLevel == 1)>1</option>
+                                        <option value="2" @selected($user->adminLevel == 2)>2</option>
+                                    </select>
+                                    <input type="hidden" name="adminLevel" value="{{ $user->adminLevel }}">
+                                @else
+                                    <select id="adminLevel" name="adminLevel"
+                                        class="rounded border-gray-300 dark:bg-gray-900 dark:text-white block mt-1 w-full">
+                                        <option value="0" @selected($user->adminLevel == 0)>0</option>
+                                        <option value="1" @selected($user->adminLevel == 1)>1</option>
+                                        <option value="2" @selected($user->adminLevel == 2)>2</option>
+                                    </select>
+                                @endif
+                                <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                    0-s admin szint --> A felhasználó nem admin.
+                                </p>
+                                <p class="text-sm text-gray-600 dark:text-gray-300">
+                                    1-es admin szint --> A felhasználó admin, de nem tud másnak admin jogot adni.
+                                </p>
+                                <p class="text-sm text-gray-600 dark:text-gray-300">
+                                    2-es admin szint --> A felhasználó admin, és tud másnak admin jogot adni.
+                                </p>
+                                <x-input-error :messages="$errors->get('adminLevel')" class="mt-2" />
                             </div>
                         @endif
 

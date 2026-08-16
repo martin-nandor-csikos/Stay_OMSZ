@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DutyTime;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use DateTime;
 use Carbon\Carbon;
@@ -20,13 +21,14 @@ class DutyTimeController extends Controller
     public function index(Request $request)
     {
         $dutyTimes = DB::table('duty_times')
-            ->select('id', 'begin', 'end', 'minutes')
+            ->select('id', 'begin', 'end', 'minutes', 'updated_at')
             ->where('user_id', '=', $request->user()->id)
             ->get();
 
         foreach ($dutyTimes as $dutyTime) {
             $dutyTime->begin = Carbon::parse($dutyTime->begin)->format('Y.m.d H:i');
             $dutyTime->end = Carbon::parse($dutyTime->end)->format('Y.m.d H:i');
+            $dutyTime->updated_at = Carbon::parse($dutyTime->updated_at)->format('Y.m.d H:i');
         }
 
         return view('duty_time.view_duty', [
@@ -69,6 +71,59 @@ class DutyTimeController extends Controller
         DutyTime::create(array_merge($duty, ['minutes' => $minutes]));
 
         return redirect()->route('duty_time.createDutyView')->with('successful-creation', 'A szolgálat felvitele sikeres.');
+    }
+
+    /**
+     * Show the form for editing the authenticated user's own duty.
+     *
+     * @param string $id
+     * @return \Illuminate\View\View
+     */
+    public function editDutyView(string $id)
+    {
+        $duty = DutyTime::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+
+        $duty->begin = $duty->begin->format('Y-m-d\TH:i');
+        $duty->end = $duty->end->format('Y-m-d\TH:i');
+
+        return view('duty_time.update_duty', [
+            'duty' => $duty,
+        ]);
+    }
+
+    /**
+     * Update the authenticated user's own duty. Only saves if a field actually changed.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param string $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updateDuty(Request $request, string $id)
+    {
+        $duty = DutyTime::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+
+        $this->validateDuty($request);
+
+        $begin = new DateTime($request->begin);
+        $end = new DateTime($request->end);
+
+        $newBegin = $begin->format('Y-m-d H:i:s');
+        $newEnd = $end->format('Y-m-d H:i:s');
+
+        if ($newBegin === $duty->begin->format('Y-m-d H:i:s') && $newEnd === $duty->end->format('Y-m-d H:i:s')) {
+            return redirect()->route('duty_time.index')->with('no-changes', 'Nem történt változás.');
+        }
+
+        // Recalculate the duration in minutes
+        $interval = $begin->diff($end);
+        $minutes = $interval->days * 24 * 60 + $interval->h * 60 + $interval->i;
+
+        $duty->begin = $newBegin;
+        $duty->end = $newEnd;
+        $duty->minutes = $minutes;
+        $duty->save();
+
+        return redirect()->route('duty_time.index')->with('successful-update', 'A szolgálat frissítése sikeres.');
     }
 
     /**

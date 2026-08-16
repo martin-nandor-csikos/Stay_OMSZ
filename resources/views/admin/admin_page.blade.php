@@ -22,7 +22,7 @@
     @include('admin.weekly_stats.closed_week_stats_table')
     @include('admin.inactivities.inactivities_table')
     @include('admin.users.registered_users_table')
-    @include('admin.ticket_services.update_ticket_services')
+    @include('admin.settings.update_settings')
     @include('admin.admin_logs.admin_logs_table')
 
     {{-- <script src="js/admin.js"></script> --}}
@@ -162,6 +162,15 @@
                         ]
                     }
                 },
+                scrollX: true,
+            });
+
+            window.ranksTable = new DataTable('#ranks', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
+                },
+                ordering: false,
+                paging: false,
                 scrollX: true,
             });
         });

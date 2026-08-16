@@ -24,6 +24,18 @@
         </div>
     @endsession
 
+    @session('successful-update')
+        <div class="alert alert-success" role="alert">
+            {{ session('successful-update') }}
+        </div>
+    @endsession
+
+    @session('no-changes')
+        <div class="alert alert-danger" role="alert">
+            {{ session('no-changes') }}
+        </div>
+    @endsession
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-gray-50 dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -47,6 +59,8 @@
                                 <th scope="col">Felvétel</th>
                                 <th scope="col">Leadás</th>
                                 <th scope="col">Idő</th>
+                                <th scope="col">Utolsó módosítás ideje</th>
+                                <th scope="col">Módosítás</th>
                                 <th scope="col">Törlés</th>
                             </tr>
                         </thead>
@@ -57,6 +71,14 @@
                                     <td>{{ $dutyTime->begin }}</td>
                                     <td>{{ $dutyTime->end }}</td>
                                     <td>{{ $dutyTime->minutes }} perc</td>
+                                    <td>{{ $dutyTime->updated_at }}</td>
+                                    <td>
+                                        <a href="{{ route('duty_time.editDutyView', $dutyTime->id) }}">
+                                            <x-primary-button>
+                                                {{ __('Módosítás') }}
+                                            </x-primary-button>
+                                        </a>
+                                    </td>
                                     <td>
                                         <form action="{{ route('duty_time.deleteDuty', $dutyTime->id) }}"
                                             method="post">

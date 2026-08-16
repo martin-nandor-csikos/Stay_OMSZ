@@ -41,10 +41,11 @@ class DashboardController extends Controller
         $userReportPercentage = $this->calculatingUserReportPercentage($userReportCount, $allReportCount);
         $minutesLeftUntilHavingTopDutyTime = $this->calculatingMinutesUntilTopDutyTime($topDutyTime, $userSumOfDutyTime);
 
-        $minimumDutyTime = 800;
-        $minimumReportCount = 15;
-        $minimumDoubleRankupDutyTime = 1800;
-        $minimumDoubleRankupReportCount = 40;
+        $settings = DB::table('settings')->first();
+        $minimumDutyTime = $settings->minimum_duty_time;
+        $minimumReportCount = $settings->minimum_report_count;
+        $minimumDoubleRankupDutyTime = $settings->double_week_duty_time;
+        $minimumDoubleRankupReportCount = $settings->double_week_report_count;
 
         $discordAnnouncements = $this->discordController->getDiscordAnnouncements();
 

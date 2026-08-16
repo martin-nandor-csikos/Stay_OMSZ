@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('ranks', function (Blueprint $table) {
             $table->id();
-            $table->string('charactername');
-            $table->string('username')->unique();
-            $table->string('password');
-            $table->tinyInteger('adminLevel')->default(0);
-            $table->boolean('has_logged_in')->default(false);
-            $table->rememberToken();
+            $table->string('name');
+            $table->unsignedInteger('salary');
+            // 1 is the lowest rank, n (the rank count) is the highest.
+            $table->unsignedInteger('rank_order');
             $table->timestamps();
         });
     }
@@ -28,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('ranks');
     }
 };

@@ -38,6 +38,8 @@
                                 <th scope="col">Társaid</th>
                                 <th scope="col">Kép</th>
                                 <th scope="col">Felvéve</th>
+                                <th scope="col">Utolsó módosítás ideje</th>
+                                <th scope="col">Módosítás</th>
                                 <th scope="col">Törlés</th>
                             </tr>
                         </thead>
@@ -50,6 +52,14 @@
                                     <td>{{ $report->withWho }}</td>
                                     <td><a href="{{ $report->img }}" target="blank">{{ $report->img }}</a></td>
                                     <td>{{ $report->created_at }}</td>
+                                    <td>{{ $report->updated_at }}</td>
+                                    <td>
+                                        <a href="{{ route('reports.editReportView', $report->id) }}">
+                                            <x-primary-button>
+                                                {{ __('Módosítás') }}
+                                            </x-primary-button>
+                                        </a>
+                                    </td>
                                     <td>
                                         <form action="{{ route('reports.deleteReport', $report->id) }}" method="post">
                                             @csrf

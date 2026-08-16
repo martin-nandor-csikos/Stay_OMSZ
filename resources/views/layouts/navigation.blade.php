@@ -29,7 +29,7 @@
                         {{ __('Inaktivitás') }}
                     </x-nav-link>
 
-                    @if (Auth::user()->isAdmin)
+                    @if (Auth::user()->adminLevel >= 1)
                         <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index') ||
                             request()->routeIs('admin.editUser') ||
                             request()->routeIs('admin.viewUserReports') ||
@@ -125,7 +125,7 @@
                 {{ __('Inaktivitás') }}
             </x-responsive-nav-link>
 
-            @if (Auth::user()->isAdmin)
+            @if (Auth::user()->adminLevel >= 1)
                 <x-responsive-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index') ||
                     request()->routeIs('admin.editUser') ||
                     request()->routeIs('admin.viewUserReports') ||

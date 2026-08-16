@@ -40,9 +40,9 @@
                         </a>
                     </div>
                     <div>
-                        <a href="#diagnosis-beallitasok">
+                        <a href="#beallitasok">
                             <x-primary-button class="w-full flex justify-center">
-                                {{ __('Ellátási árak') }}
+                                {{ __('Beállítások') }}
                             </x-primary-button>
                         </a>
                     </div>

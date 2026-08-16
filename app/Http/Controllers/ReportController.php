@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Report;
 use App\Http\Controllers\TicketServiceController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ReportController extends Controller
 {
@@ -32,9 +34,10 @@ class ReportController extends Controller
     {
         $userReports = $this->getUserReports($request->user()->id);
 
-        // Format the created_at date for each report
+        // Format the created_at and updated_at date for each report
         foreach ($userReports as $report) {
             $report->created_at = \Illuminate\Support\Carbon::parse($report->created_at)->format('Y.m.d H:i');
+            $report->updated_at = \Illuminate\Support\Carbon::parse($report->updated_at)->format('Y.m.d H:i');
         }
 
         return view('report.view_reports', [
@@ -78,59 +81,66 @@ class ReportController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Show the form for editing the authenticated user's own report.
+     *
+     * @param string $id
+     * @return \Illuminate\View\View
      */
-    public function edit($id)
+    public function editReportView(string $id)
     {
-        $report = Report::findOrFail($id);
+        $report = Report::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+        $services = $this->ticketServiceController->getServicesQuery();
+        $selectedServices = array_map('trim', explode(',', $report->diagnosis));
 
-        return view('report.updateReport', [
+        return view('report.update_report', [
             'report' => $report,
+            'services' => $services,
+            'selectedServices' => $selectedServices,
         ]);
     }
 
     /**
-     * Update the specified report
+     * Update the authenticated user's own report. Only saves if a field actually changed.
      *
      * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Report $report
+     * @param string $id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function updateReport(Request $request, Report $report)
+    public function updateReport(Request $request, string $id)
     {
-        /*
-        $request->validate([
-            'price' => ['required', 'integer', 'max:300000', 'min:0'],
-            'diagnosis' => ['required', 'string'],
-            'withWho' => ['nullable', 'string'],
-            'img' => ['required', 'url', 'unique:reports'],
-        ], [
-            'price.required' => 'Az ár nem lehet üres.',
-            'price.integer' => 'Az árnak egy pozitív egész számnak kell lennie.',
-            'price.max' => 'Az ár maximum $300.000 lehet.',
-            'price.min' => 'Az ár minimum $0 lehet.',
+        $report = Report::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
 
-            'diagnosis.required' => 'A diagnózis nem lehet üres.',
-            'diagnosis.string' => 'A diagnózis csak szöveg lehet.',
-            'diagnosis.max' => 'A diagnózis maximum 100 karakterből állhat.',
+        $this->validateReportUpdate($request, $report->id);
 
-            'withWho.string' => 'A társ mezőben csak szöveg lehet.',
+        $changed = false;
 
-            'img.required' => 'A kép megadása kötelező.',
-            'img.url' => 'A képnek érvényes URL-nek kell lennie.',
-            'img.max' => 'A kép URL-je maximum 100 karakterből állhat.',
-            'img.unique' => 'Ezt a képet már feltöltötted.',
-        ]);
+        if ((int) $request->cost !== (int) $report->price) {
+            $report->price = $request->cost;
+            $changed = true;
+        }
 
-        $oldReport = Report::findOrFail($report->id);
-        $oldReport->price = $report->price;
-        $oldReport->diagnosis = $report->diagnosis;
-        $oldReport->withWho = $report->withWho;
-        $oldReport->img = $report->img;
-        $oldReport->save();
+        if ($request->services !== $report->diagnosis) {
+            $report->diagnosis = $request->services;
+            $changed = true;
+        }
+
+        if ($request->withWho !== $report->withWho) {
+            $report->withWho = $request->withWho;
+            $changed = true;
+        }
+
+        if ($request->img !== $report->img) {
+            $report->img = $request->img;
+            $changed = true;
+        }
+
+        if (!$changed) {
+            return redirect()->route('reports.index')->with('no-changes', 'Nem történt változás.');
+        }
+
+        $report->save();
 
         return redirect()->route('reports.index')->with('successful-update', 'A jelentés frissítése sikeres.');
-        */
     }
 
     /**
@@ -160,7 +170,7 @@ class ReportController extends Controller
     public function getUserReports($userId)
     {
         return DB::table('reports')
-            ->select('id', 'price', 'diagnosis', 'withWho', 'img', 'created_at')
+            ->select('id', 'price', 'diagnosis', 'withWho', 'img', 'created_at', 'updated_at')
             ->where('user_id', '=', $userId)
             ->get();
     }
@@ -203,6 +213,38 @@ class ReportController extends Controller
             'services' => ['required', 'string'],
             'withWho' => ['nullable', 'string'],
             'img' => ['required', 'url', 'unique:reports'],
+        ], [
+            'cost.required' => 'Az ár nem lehet üres.',
+            'cost.integer' => 'Az árnak egy pozitív egész számnak kell lennie.',
+            'cost.max' => 'Az ár maximum $300.000 lehet.',
+            'cost.min' => 'Az ár minimum $0 lehet.',
+
+            'services.required' => 'Az ellátás mező nem lehet üres.',
+            'services.string' => 'A ellátás mezőben csak szöveg lehet.',
+            'services.max' => 'Az ellátás mező maximum 100 karakterből állhat.',
+
+            'withWho.string' => 'A társ mezőben csak szöveg lehet.',
+
+            'img.required' => 'A kép megadása kötelező.',
+            'img.url' => 'A képnek érvényes URL-nek kell lennie.',
+            'img.max' => 'A kép URL-je maximum 100 karakterből állhat.',
+            'img.unique' => 'Ezt a képet már feltöltötted.',
+        ]);
+    }
+
+    /**
+     * Validate the report input data when updating an existing report.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param int $reportId
+     */
+    private function validateReportUpdate(Request $request, $reportId)
+    {
+        $request->validate([
+            'cost' => ['required', 'integer', 'max:300000', 'min:0'],
+            'services' => ['required', 'string'],
+            'withWho' => ['nullable', 'string'],
+            'img' => ['required', 'url', Rule::unique('reports')->ignore($reportId)],
         ], [
             'cost.required' => 'Az ár nem lehet üres.',
             'cost.integer' => 'Az árnak egy pozitív egész számnak kell lennie.',

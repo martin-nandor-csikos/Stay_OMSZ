@@ -35,6 +35,16 @@ class AdminController extends Controller
     protected $dutyTimeController;
 
     /**
+     * @var SettingController
+     */
+    protected $settingController;
+
+    /**
+     * @var RankController
+     */
+    protected $rankController;
+
+    /**
      * AdminController constructor.
      */
     public function __construct()
@@ -42,6 +52,8 @@ class AdminController extends Controller
         $this->ticketServiceController = new TicketServiceController();
         $this->reportController = new ReportController();
         $this->dutyTimeController = new DutyTimeController();
+        $this->settingController = new SettingController();
+        $this->rankController = new RankController();
     }
 
     /**
@@ -57,6 +69,8 @@ class AdminController extends Controller
         $users = $this->getRegisteredUsersQuery();
         $admin_logs = $this->getAdminLogsQuery();
         $ticketServices = $this->ticketServiceController->getServicesQuery();
+        $settings = $this->settingController->getSettingsQuery();
+        $ranks = $this->rankController->getRanksQuery();
 
         $firstDayOfWeek = Carbon::today()->copy()->startOfWeek(Carbon::MONDAY)->toDateString();
         $lastDayOfWeek = Carbon::today()->copy()->endOfWeek(Carbon::SUNDAY)->toDateString();
@@ -90,6 +104,8 @@ class AdminController extends Controller
             'admin_logs' => $admin_logs,
             'inactivities' => $inactivities,
             'ticketServices' => $ticketServices,
+            'settings' => $settings,
+            'ranks' => $ranks,
             'waitingForAnswerInInactivites' => $waitingForAnswerInInactivites,
             'firstDayOfWeek' => $firstDayOfWeek,
             'lastDayOfWeek' => $lastDayOfWeek,
@@ -136,7 +152,7 @@ class AdminController extends Controller
      */
     private function getRegisteredUsersQuery()
     {
-        return DB::table('users')->select('users.id', 'users.charactername', 'users.username', 'users.created_at', 'users.isAdmin', 'users.canGiveAdmin')->orderBy('users.charactername', 'ASC')->get();
+        return DB::table('users')->select('users.id', 'users.charactername', 'users.username', 'users.created_at', 'users.adminLevel')->orderBy('users.charactername', 'ASC')->get();
     }
 
     /**
@@ -285,17 +301,23 @@ class AdminController extends Controller
         $user = User::findOrFail($id);
         $usernameCheck = $request->input('username') !== $user->username;
 
-        if (Auth::user()->canGiveAdmin == 1 && Auth::user()->username != $user->username) {
-            if ($request->has('admin')) {
-                if ($user->isAdmin == 0) {
-                    $this->logAdminAction('Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó admin rangját (0 -> 1)');
-                }
-                $user->isAdmin = 1;
-            } else {
-                if ($user->isAdmin == 1) {
-                    $this->logAdminAction('Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó admin rangját (1 -> 0)');
-                }
-                $user->isAdmin = 0;
+        // Only users with adminLevel 2 (can give admin) may change another user's admin level.
+        if (Auth::user()->adminLevel == 2 && Auth::user()->username != $user->username && $request->has('adminLevel')) {
+            $request->validate(
+                [
+                    'adminLevel' => ['required', 'integer', 'in:0,1,2'],
+                ],
+                [
+                    'adminLevel.required' => 'Az admin szint nem lehet üres.',
+                    'adminLevel.in' => 'Érvénytelen admin szint.',
+                ],
+            );
+
+            $newAdminLevel = (int) $request->input('adminLevel');
+
+            if ($newAdminLevel !== (int) $user->adminLevel) {
+                $this->logAdminAction('Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó admin szintjét (' . $user->adminLevel . ' -> ' . $newAdminLevel . ')');
+                $user->adminLevel = $newAdminLevel;
             }
         }
 

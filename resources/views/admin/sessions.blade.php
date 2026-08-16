@@ -70,14 +70,14 @@
     </div>
 @endsession
 
-@session('service-price-updated')
+@session('settings-updated')
     <div class="alert alert-success" role="alert">
-        {{ session('service-price-updated') }}
+        {{ session('settings-updated') }}
     </div>
 @endsession
 
-@session('service-price-not-updated')
+@session('settings-not-updated')
     <div class="alert alert-danger" role="alert">
-        {{ session('service-price-not-updated') }}
+        {{ session('settings-not-updated') }}
     </div>
 @endsession

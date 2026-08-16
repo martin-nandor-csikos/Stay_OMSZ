@@ -21,8 +21,8 @@ class User extends Authenticatable
         'charactername',
         'username',
         'password',
-        'isAdmin',
-        'canGiveAdmin',
+        'adminLevel',
+        'rank_id',
     ];
 
     /**
@@ -33,8 +33,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
-        'isAdmin',
-        'canGiveAdmin',
+        'adminLevel',
     ];
 
     /**
@@ -44,5 +43,14 @@ class User extends Authenticatable
      */
     protected $casts = [
         'password' => 'hashed',
+        'has_logged_in' => 'boolean',
     ];
+
+    /**
+     * The rank assigned to the user.
+     */
+    public function rank()
+    {
+        return $this->belongsTo(Rank::class);
+    }
 }

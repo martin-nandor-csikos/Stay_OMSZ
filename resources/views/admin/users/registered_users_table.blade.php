@@ -30,19 +30,14 @@
                                 <td>{{ $user->username }}</td>
                                 <td>{{ \Illuminate\Support\Carbon::parse($user->created_at)->format('Y.m.d H:i') }}</td>
                                 <td>
-                                    @if ($user->isAdmin == 1)
+                                    @if ($user->adminLevel >= 1)
                                         igen
-                                    @endif
-
-                                    @if ($user->isAdmin == 0)
+                                    @else
                                         -
                                     @endif
                                 </td>
                                 <td>
-                                    @if (
-                                        ($user->canGiveAdmin == 1 && Auth::user()->canGiveAdmin == 1) ||
-                                            ($user->canGiveAdmin == 0 && Auth::user()->canGiveAdmin == 0) ||
-                                            ($user->canGiveAdmin == 0 && Auth::user()->canGiveAdmin == 1))
+                                    @if (!($user->adminLevel == 2 && Auth::user()->adminLevel < 2))
                                         <form action="{{ route('admin.editUser', $user->id) }}" method="get">
                                             <x-primary-button>
                                                 {{ __('Módosítás') }}
@@ -51,10 +46,7 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if (
-                                        ($user->canGiveAdmin == 1 && Auth::user()->canGiveAdmin == 1) ||
-                                            ($user->canGiveAdmin == 0 && Auth::user()->canGiveAdmin == 0) ||
-                                            ($user->canGiveAdmin == 0 && Auth::user()->canGiveAdmin == 1))
+                                    @if (!($user->adminLevel == 2 && Auth::user()->adminLevel < 2))
                                         @if (Auth::user()->id != $user->id)
                                             <form action="{{ route('admin.deleteUser', $user->id) }}" method="post">
                                                 @csrf

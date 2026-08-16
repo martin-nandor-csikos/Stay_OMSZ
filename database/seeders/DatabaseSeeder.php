@@ -23,15 +23,13 @@ class DatabaseSeeder extends Seeder
             'charactername' => 'Dr. Mac Burns',
             'username' => 'admin',
             'password' => bcrypt('admin'),
-            'isAdmin' => 1,
-            'canGiveAdmin' => 1,
+            'adminLevel' => 2,
         ]);
         \App\Models\User::factory()->create([
             'charactername' => 'Dr. Pietro Burns',
             'username' => 'nonadmin',
             'password' => bcrypt('12345678'),
-            'isAdmin' => 0,
-            'canGiveAdmin' => 0,
+            'adminLevel' => 0,
         ]);
 
         \App\Models\Lock::factory()->create([

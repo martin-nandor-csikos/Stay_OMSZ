@@ -5,6 +5,27 @@
         </h2>
     </x-slot>
 
+    @if (session('show-first-login-alert'))
+        <script>
+            $(function() {
+                Swal.fire({
+                    title: 'Felhasználónév és jelszó változtatás emlékeztető',
+                    text: 'Ne felejts el felhasználónevet és jelszót változtatni. A maximum biztonságért érdemes megváltoztatni az előre generált jelszavad.',
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Felhasználónév és jelszó változtatás',
+                    cancelButtonColor: '#d33',
+                    cancelButtonText: 'Bezárás',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = "{{ route('profile.edit') }}";
+                    }
+                });
+            });
+        </script>
+    @endif
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="row">
