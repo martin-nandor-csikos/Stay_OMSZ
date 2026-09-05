@@ -58,6 +58,105 @@
                     Discordon, @matelul)</em></div>
         </footer>
     </div>
+
+    @if (Auth::check() && (Auth::user()->promoted_to_rank || !is_null(Auth::user()->closed_week_salary)))
+        <script>
+            $(function() {
+                @if (Auth::user()->promoted_to_rank && !is_null(Auth::user()->closed_week_salary))
+                    @if (Auth::user()->rank_change_type === 'demotion')
+                        Swal.fire({
+                            title: 'Lefokozás!',
+                            text: 'Lefokozásban részesültél: {{ Auth::user()->promoted_from_rank ?? "Nincs" }} -> {{ Auth::user()->promoted_to_rank }}.',
+                            icon: 'warning',
+                            confirmButtonText: 'Tovább',
+                        }).then(() => {
+                            @if (Auth::user()->closed_week_message)
+                                Swal.fire({
+                                    title: 'Heti fizetés',
+                                    text: '{{ Auth::user()->closed_week_message }}',
+                                    icon: 'warning',
+                                    confirmButtonText: 'Rendben',
+                                });
+                            @else
+                                Swal.fire({
+                                    title: 'Fizetésnap!',
+                                    html: '<div class="text-left space-y-2"><p><strong>Összeg:</strong> ${{ Auth::user()->closed_week_salary }}</p><p><strong>Bónusz:</strong> {{ Auth::user()->closed_week_bonus > 0 ? Auth::user()->closed_week_bonus . "%" : "0%" }}</p></div>',
+                                    icon: 'success',
+                                    confirmButtonText: 'Rendben',
+                                });
+                            @endif
+                        });
+                    @else
+                        Swal.fire({
+                            title: 'Előléptetés!',
+                            text: 'Gratulálunk! Előléptetésben részesültél: {{ Auth::user()->promoted_from_rank ?? "Nincs" }} -> {{ Auth::user()->promoted_to_rank }}.',
+                            icon: 'success',
+                            confirmButtonText: 'Tovább',
+                        }).then(() => {
+                            @if (Auth::user()->closed_week_message)
+                                Swal.fire({
+                                    title: 'Heti fizetés',
+                                    text: '{{ Auth::user()->closed_week_message }}',
+                                    icon: 'warning',
+                                    confirmButtonText: 'Rendben',
+                                });
+                            @else
+                                Swal.fire({
+                                    title: 'Fizetésnap!',
+                                    html: '<div class="text-left space-y-2"><p><strong>Összeg:</strong> ${{ Auth::user()->closed_week_salary }}</p> {{ Auth::user()->closed_week_bonus > 0 ? "<p><strong>Bónusz:</strong>" . Auth::user()->closed_week_bonus . "%</p>" : "" }} <p>Csak így tovább! :)</p><p><em class="text-xs">"Elmúlt a remegésöm, mert megjött a fizetésöm" -Belga</em></p></div>',
+                                    icon: 'success',
+                                    confirmButtonText: 'Rendben',
+                                });
+                            @endif
+                        });
+                    @endif
+                @elseif (Auth::user()->promoted_to_rank)
+                    @if (Auth::user()->rank_change_type === 'demotion')
+                        Swal.fire({
+                            title: 'Lefokozás!',
+                            text: 'Lefokozásban részesültél: {{ Auth::user()->promoted_from_rank ?? "Nincs" }} -> {{ Auth::user()->promoted_to_rank }}.',
+                            icon: 'warning',
+                            confirmButtonText: 'Rendben',
+                        });
+                    @else
+                        Swal.fire({
+                            title: 'Előléptetés!',
+                            text: 'Gratulálunk! Előléptetésben részesültél: {{ Auth::user()->promoted_from_rank ?? "Nincs" }} -> {{ Auth::user()->promoted_to_rank }}.',
+                            icon: 'success',
+                            confirmButtonText: 'Rendben',
+                        });
+                    @endif
+                @elseif (!is_null(Auth::user()->closed_week_salary))
+                    @if (Auth::user()->closed_week_message)
+                        Swal.fire({
+                            title: 'Heti fizetés',
+                            text: '{{ Auth::user()->closed_week_message }}',
+                            icon: 'warning',
+                            confirmButtonText: 'Rendben',
+                        });
+                    @else
+                        Swal.fire({
+                            title: 'Fizetésnap!',
+                            html: '<div class="text-left space-y-2"><p><strong>Összeg:</strong> ${{ Auth::user()->closed_week_salary }}</p> {{ Auth::user()->closed_week_bonus > 0 ? "<p><strong>Bónusz:</strong>" . Auth::user()->closed_week_bonus . "%</p>" : "" }} <p>Csak így tovább! :)</p><p><em class="text-xs">"Elmúlt a remegésöm, mert megjött a fizetésöm" -Belga</em></p></div>',
+                            icon: 'success',
+                            confirmButtonText: 'Rendben',
+                        });
+                    @endif
+                @endif
+            });
+        </script>
+        @php
+            \App\Models\User::where('id', Auth::id())->update([
+                'promoted_from_rank' => null,
+                'promoted_to_rank' => null,
+                'rank_change_type' => null,
+                'closed_week_salary' => null,
+                'closed_week_bonus' => null,
+                'closed_week_calculation' => null,
+                'closed_week_message' => null,
+            ]);
+        @endphp
+    @endif
 </body>
 
 </html>

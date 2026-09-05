@@ -23,11 +23,14 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $lowestRank = \App\Models\Rank::where('rank_order', 1)->first();
+
         return [
             'charactername' => fake()->name(),
             'username' => fake()->unique()->userName(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'rank_id' => $lowestRank ? $lowestRank->id : null,
         ];
     }
 }

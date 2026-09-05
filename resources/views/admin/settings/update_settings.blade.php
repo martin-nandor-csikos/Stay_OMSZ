@@ -7,7 +7,7 @@
                 <form method="POST" action="{{ route('admin.updateSettings') }}" id="settings-form">
                     @csrf
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <div>
                             <p class="top5 text-lg mt-4">Ellátási árak</p>
                             <div class="grid gap-4 mx-4">
@@ -79,6 +79,48 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div>
+                            <p class="top5 text-lg mt-4">Bónuszok</p>
+                            <div class="grid gap-4 mx-4">
+                                <div>
+                                    <x-input-label for="bonus_first_percentage"
+                                        value="Legtöbbet leadott jelentésért járó bónusz (%)" />
+                                    <x-text-input type="number" name="bonus_first_percentage"
+                                        id="bonus_first_percentage" value="{{ $settings->bonus_first_percentage }}"
+                                        class="required-field-input rounded border-gray-300 dark:bg-gray-900 dark:text-white"
+                                        required min="0" max="100" />
+                                    <p class="required-field-error text-red-600 dark:text-red-400 text-sm mt-2 hidden">
+                                        A bónusz nem lehet üres.
+                                    </p>
+                                    <x-input-error :messages="$errors->get('bonus_first_percentage')" class="mt-2" />
+                                </div>
+                                <div>
+                                    <x-input-label for="bonus_second_percentage"
+                                        value="Második legtöbbet leadott jelentésért járó bónusz (%)" />
+                                    <x-text-input type="number" name="bonus_second_percentage"
+                                        id="bonus_second_percentage" value="{{ $settings->bonus_second_percentage }}"
+                                        class="required-field-input rounded border-gray-300 dark:bg-gray-900 dark:text-white"
+                                        required min="0" max="100" />
+                                    <p class="required-field-error text-red-600 dark:text-red-400 text-sm mt-2 hidden">
+                                        A bónusz nem lehet üres.
+                                    </p>
+                                    <x-input-error :messages="$errors->get('bonus_second_percentage')" class="mt-2" />
+                                </div>
+                                <div>
+                                    <x-input-label for="bonus_third_percentage"
+                                        value="Harmadik legtöbbet leadott jelentésért járó bónusz (%)" />
+                                    <x-text-input type="number" name="bonus_third_percentage"
+                                        id="bonus_third_percentage" value="{{ $settings->bonus_third_percentage }}"
+                                        class="required-field-input rounded border-gray-300 dark:bg-gray-900 dark:text-white"
+                                        required min="0" max="100" />
+                                    <p class="required-field-error text-red-600 dark:text-red-400 text-sm mt-2 hidden">
+                                        A bónusz nem lehet üres.
+                                    </p>
+                                    <x-input-error :messages="$errors->get('bonus_third_percentage')" class="mt-2" />
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mt-6">
@@ -89,6 +131,9 @@
                                     <th scope="col">Sorrend</th>
                                     <th scope="col">Név</th>
                                     <th scope="col">Fizetés ($)</th>
+                                    <th scope="col">Min. sikeres hét</th>
+                                    <th scope="col">Vizsga szükséges?</th>
+                                    <th scope="col">Leader rank?</th>
                                     <th scope="col">Kezelés</th>
                                     <th scope="col">Fel</th>
                                     <th scope="col">Le</th>
@@ -117,6 +162,27 @@
                                                 Fizetés nem lehet üres
                                             </p>
                                             <x-input-error :messages="$errors->get('ranks.' . $rank->id . '.salary')" class="mt-2" />
+                                        </td>
+                                        <td>
+                                            <x-text-input type="number" class="rank-min-weeks-input rounded border-gray-300 dark:bg-gray-900 dark:text-white {{ $rank->is_leader ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed' : '' }}"
+                                                name="ranks[{{ $rank->id }}][minimum_successful_weeks]" value="{{ $rank->is_leader ? 0 : ($rank->minimum_successful_weeks ?? 2) }}"
+                                                required min="0" max="100" :disabled="Auth::user()->adminLevel != 2"
+                                                :readonly="(bool)$rank->is_leader" />
+                                            <x-input-error :messages="$errors->get('ranks.' . $rank->id . '.minimum_successful_weeks')" class="mt-2" />
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="hidden" name="ranks[{{ $rank->id }}][requires_exam]" value="0">
+                                            <input type="checkbox" name="ranks[{{ $rank->id }}][requires_exam]" value="1"
+                                                class="rank-exam-input rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                                @checked($rank->requires_exam && $rank->rank_order != 1 && !$rank->is_leader)
+                                                @disabled(Auth::user()->adminLevel != 2 || $rank->rank_order == 1 || $rank->is_leader)>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="hidden" name="ranks[{{ $rank->id }}][is_leader]" value="0">
+                                            <input type="checkbox" name="ranks[{{ $rank->id }}][is_leader]" value="1"
+                                                class="rank-leader-input rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                                @checked($rank->is_leader)
+                                                @disabled(Auth::user()->adminLevel != 2)>
                                         </td>
                                         <td>
                                             @if (Auth::user()->adminLevel == 2)
@@ -160,6 +226,20 @@
                                                 placeholder="Fizetés ($)"
                                                 class="rounded border-gray-300 dark:bg-gray-900 dark:text-white"
                                                 min="0" max="1000000" />
+                                        </td>
+                                        <td>
+                                            <x-text-input type="number" id="new_rank_min_weeks_draft"
+                                                placeholder="Min. hetek" value="2"
+                                                class="rounded border-gray-300 dark:bg-gray-900 dark:text-white"
+                                                min="0" max="100" />
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="checkbox" id="new_rank_exam_draft" value="1"
+                                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="checkbox" id="new_rank_leader_draft" value="1"
+                                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                                         </td>
                                         <td>
                                             <x-primary-button type="button" id="add-rank-button"
@@ -237,12 +317,37 @@
             });
         }
 
+        function updateRankExamAndLeaderStates() {
+            const rankRows = $('#ranks tbody tr.rank-row');
+            rankRows.each(function(index) {
+                const row = $(this);
+                const isLeader = row.find('.rank-leader-input').is(':checked');
+                const examInput = row.find('.rank-exam-input');
+                const minWeeksInput = row.find('.rank-min-weeks-input');
+
+                if (index === 0) {
+                    examInput.prop('checked', false).prop('disabled', true);
+                } else if (isLeader) {
+                    examInput.prop('checked', false).prop('disabled', true);
+                } else {
+                    examInput.prop('disabled', false);
+                }
+
+                if (isLeader) {
+                    minWeeksInput.val(0).prop('readonly', true).addClass('bg-gray-100 dark:bg-gray-700 cursor-not-allowed');
+                } else {
+                    minWeeksInput.prop('readonly', false).removeClass('bg-gray-100 dark:bg-gray-700 cursor-not-allowed');
+                }
+            });
+        }
+
         function renumberRankRows() {
             $('#ranks tbody tr.rank-row').each(function(index) {
                 const order = index + 1;
                 $(this).find('.rank-order-display').text(order);
                 $(this).find('.rank-order-input').val(order);
             });
+            updateRankExamAndLeaderStates();
         }
 
         function moveRankRow(button, direction) {
@@ -274,6 +379,45 @@
 
         $('#ranks').on('click', '.rank-move-down', function() {
             moveRankRow(this, 'down');
+        });
+
+        $('#ranks').on('change', '.rank-leader-input', function() {
+            const isLeader = $(this).is(':checked');
+            const row = $(this).closest('tr.rank-row');
+            const minWeeksInput = row.find('.rank-min-weeks-input');
+            const examInput = row.find('.rank-exam-input');
+            const rankRows = $('#ranks tbody tr.rank-row');
+            const rowIndex = rankRows.index(row);
+
+            if (isLeader) {
+                minWeeksInput.val(0).prop('readonly', true).addClass('bg-gray-100 dark:bg-gray-700 cursor-not-allowed');
+                examInput.prop('checked', false).prop('disabled', true);
+            } else {
+                if (minWeeksInput.val() == '0') {
+                    minWeeksInput.val(2);
+                }
+                minWeeksInput.prop('readonly', false).removeClass('bg-gray-100 dark:bg-gray-700 cursor-not-allowed');
+                if (rowIndex === 0) {
+                    examInput.prop('checked', false).prop('disabled', true);
+                } else {
+                    examInput.prop('disabled', false);
+                }
+            }
+            checkSettingsFormChanged();
+        });
+
+        $('#new_rank_leader_draft').on('change', function() {
+            const isLeader = $(this).is(':checked');
+            const minWeeksInput = $('#new_rank_min_weeks_draft');
+            const examInput = $('#new_rank_exam_draft');
+
+            if (isLeader) {
+                minWeeksInput.val(0).prop('readonly', true).addClass('bg-gray-100 dark:bg-gray-700 cursor-not-allowed');
+                examInput.prop('checked', false).prop('disabled', true);
+            } else {
+                minWeeksInput.val(2).prop('readonly', false).removeClass('bg-gray-100 dark:bg-gray-700 cursor-not-allowed');
+                examInput.prop('disabled', false);
+            }
         });
 
         // Alert in real time (while typing) if a rank name is empty or clashes with another rank's name
@@ -362,10 +506,16 @@
         $('#add-rank-button').on('click', function() {
             const nameInput = $('#new_rank_name_draft');
             const salaryInput = $('#new_rank_salary_draft');
+            const minWeeksInput = $('#new_rank_min_weeks_draft');
+            const examInput = $('#new_rank_exam_draft');
+            const leaderInput = $('#new_rank_leader_draft');
             const nameError = $('#new-rank-name-error');
 
             const name = nameInput.val().trim();
             const salary = salaryInput.val().trim();
+            const isLeader = leaderInput.is(':checked');
+            const minWeeks = isLeader ? 0 : (minWeeksInput.val() ? minWeeksInput.val().trim() : '2');
+            const requiresExam = !isLeader && examInput.is(':checked');
 
             nameError.addClass('hidden');
             nameInput.removeClass('border-red-500');
@@ -407,6 +557,23 @@
                 index + '][salary]" min="0" max="1000000"><p class="rank-salary-error text-red-600 dark:text-red-400 text-sm mt-2 hidden">Fizetés nem lehet üres</p></td>'
             );
             newRow.append(
+                '<td><input type="number" class="rank-min-weeks-input text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm rounded border-gray-300 dark:bg-gray-900 dark:text-white' + (isLeader ? ' bg-gray-100 dark:bg-gray-700 cursor-not-allowed' : '') + '" name="new_ranks[' +
+                index + '][minimum_successful_weeks]" value="' + (isLeader ? 0 : minWeeks) + '" min="0" max="100"' + (isLeader ? ' readonly' : '') + '></td>'
+            );
+            newRow.append(
+                '<td class="text-center"><input type="hidden" name="new_ranks[' + index +
+                '][requires_exam]" value="0"><input type="checkbox" name="new_ranks[' + index +
+                '][requires_exam]" value="1" class="rank-exam-input rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"' +
+                (!isLeader && nextOrder !== 1 && requiresExam ? ' checked' : '') +
+                (isLeader || nextOrder === 1 ? ' disabled' : '') + '></td>'
+            );
+            newRow.append(
+                '<td class="text-center"><input type="hidden" name="new_ranks[' + index +
+                '][is_leader]" value="0"><input type="checkbox" name="new_ranks[' + index +
+                '][is_leader]" value="1" class="rank-leader-input rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"' +
+                (isLeader ? ' checked' : '') + '></td>'
+            );
+            newRow.append(
                 '<td><button type="button" class="rank-delete-btn w-8 h-8 flex items-center justify-center rounded-full bg-red-600 hover:bg-red-700 text-white text-lg font-bold leading-none" title="Rang törlése" aria-label="Rang törlése">&minus;</button></td>'
             );
             newRow.append(
@@ -423,6 +590,9 @@
 
             nameInput.val('');
             salaryInput.val('');
+            minWeeksInput.val('2').prop('readonly', false).removeClass('bg-gray-100 dark:bg-gray-700 cursor-not-allowed');
+            examInput.prop('checked', false).prop('disabled', false);
+            leaderInput.prop('checked', false);
 
             renumberRankRows();
             updateRankMoveButtons();
@@ -435,5 +605,6 @@
         });
 
         updateRankMoveButtons();
+        updateRankExamAndLeaderStates();
     });
 </script>

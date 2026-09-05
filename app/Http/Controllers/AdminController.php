@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Enums\InactivityStatus;
 use App\Models\User;
 use App\Models\Report;
+use App\Models\Rank;
 use App\Http\Controllers\TicketServiceController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DutyTimeController;
@@ -71,6 +72,7 @@ class AdminController extends Controller
         $ticketServices = $this->ticketServiceController->getServicesQuery();
         $settings = $this->settingController->getSettingsQuery();
         $ranks = $this->rankController->getRanksQuery();
+        $promotionUsers = $this->getPromotionUsersQuery();
 
         $firstDayOfWeek = Carbon::today()->copy()->startOfWeek(Carbon::MONDAY)->toDateString();
         $lastDayOfWeek = Carbon::today()->copy()->endOfWeek(Carbon::SUNDAY)->toDateString();
@@ -106,6 +108,7 @@ class AdminController extends Controller
             'ticketServices' => $ticketServices,
             'settings' => $settings,
             'ranks' => $ranks,
+            'promotionUsers' => $promotionUsers,
             'waitingForAnswerInInactivites' => $waitingForAnswerInInactivites,
             'firstDayOfWeek' => $firstDayOfWeek,
             'lastDayOfWeek' => $lastDayOfWeek,
@@ -122,7 +125,82 @@ class AdminController extends Controller
      */
     private function getWeeklyStatsQuery()
     {
-        return DB::table('users')->leftJoin('reports', 'users.id', '=', 'reports.user_id')->select('users.id', 'users.charactername', DB::raw('COALESCE(count(reports.user_id), 0) as reportCount'), DB::raw('COALESCE((SELECT MAX(reports.created_at) FROM reports WHERE reports.user_id = users.id), "-") as lastReportDate'), DB::raw('COALESCE((SELECT SUM(duty_times.minutes) FROM duty_times WHERE duty_times.user_id = users.id), 0) as dutyMinuteSum'), DB::raw('COALESCE((SELECT MAX(duty_times.end) FROM duty_times WHERE duty_times.user_id = users.id), "-") as lastDutyDate'))->groupBy('users.id', 'users.charactername')->orderBy('reportCount', 'DESC')->get();
+        $userStats = DB::table('users')
+            ->leftJoin('reports', 'users.id', '=', 'reports.user_id')
+            ->leftJoin('ranks', 'users.rank_id', '=', 'ranks.id')
+            ->select(
+                'users.id',
+                'users.charactername',
+                DB::raw('COALESCE(ranks.name, "-") as rank_name'),
+                'ranks.salary as rank_salary',
+                DB::raw('COALESCE(count(reports.user_id), 0) as reportCount'),
+                DB::raw('COALESCE((SELECT MAX(reports.created_at) FROM reports WHERE reports.user_id = users.id), "-") as lastReportDate'),
+                DB::raw('COALESCE((SELECT SUM(duty_times.minutes) FROM duty_times WHERE duty_times.user_id = users.id), 0) as dutyMinuteSum'),
+                DB::raw('COALESCE((SELECT MAX(duty_times.end) FROM duty_times WHERE duty_times.user_id = users.id), "-") as lastDutyDate')
+            )
+            ->groupBy('users.id', 'users.charactername', 'ranks.name', 'ranks.salary')
+            ->orderBy('reportCount', 'DESC')
+            ->get();
+
+        return $this->calculateWeeklySalaries($userStats);
+    }
+
+    /**
+     * Calculate weekly salary for users in weekly stats
+     *
+     * @param \Illuminate\Support\Collection $userStats
+     * @return \Illuminate\Support\Collection
+     */
+    private function calculateWeeklySalaries($userStats)
+    {
+        $settings = DB::table('settings')->first();
+        $minReports = (int) ($settings->minimum_report_count ?? 15);
+        $bonus1 = $settings->bonus_first_percentage ?? 0;
+        $bonus2 = $settings->bonus_second_percentage ?? 0;
+        $bonus3 = $settings->bonus_third_percentage ?? 0;
+
+        foreach ($userStats as $index => $stat) {
+            $reportCount = (int) ($stat->reportCount ?? 0);
+            $rankSalary = (int) ($stat->rank_salary ?? 0);
+
+            if ($reportCount < $minReports) {
+                $stat->salary = 0;
+                $stat->bonus_percentage = 0;
+                $stat->salary_tooltip = 'Nincs meg a minimum jelentés szám';
+                $stat->closed_week_message = "Sajnos nem kapsz fizetést, mivel nem teljesítetted a minimum jelentés számot ({$reportCount}/{$minReports} jelentést adtál le).";
+            } else {
+                $baseSalary = $reportCount * $rankSalary;
+
+                $bonusPercent = 0;
+                if ($reportCount > 0) {
+                    if ($index === 0) {
+                        $bonusPercent = $bonus1;
+                    } elseif ($index === 1) {
+                        $bonusPercent = $bonus2;
+                    } elseif ($index === 2) {
+                        $bonusPercent = $bonus3;
+                    }
+                }
+
+                $bonusMultiplier = 1 + ($bonusPercent / 100);
+                $stat->salary = (int) round($baseSalary * $bonusMultiplier);
+                $stat->bonus_percentage = $bonusPercent;
+
+                if ($bonusPercent > 0) {
+                    $stat->salary_tooltip = "({$reportCount} * {$rankSalary}) * {$bonusMultiplier}";
+                } else {
+                    $stat->salary_tooltip = "{$reportCount} * {$rankSalary}";
+                }
+                $stat->closed_week_message = null;
+            }
+
+            DB::table('users')->where('id', $stat->id)->update([
+                'salary' => $stat->salary,
+                'salary_tooltip' => $stat->salary_tooltip,
+            ]);
+        }
+
+        return $userStats;
     }
 
     /**
@@ -132,7 +210,85 @@ class AdminController extends Controller
      */
     private function getClosedWeekStatsQuery()
     {
-        return DB::table('users_closed')->leftJoin('reports_closed', 'users_closed.id', '=', 'reports_closed.user_id')->select('users_closed.id', 'users_closed.charactername', DB::raw('COALESCE(count(reports_closed.user_id), 0) as reportCount'), DB::raw('COALESCE((SELECT MAX(reports_closed.created_at) FROM reports_closed WHERE reports_closed.user_id = users_closed.id), "-") as lastReportDate'), DB::raw('COALESCE((SELECT SUM(duty_times_closed.minutes) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), 0) as dutyMinuteSum'), DB::raw('COALESCE((SELECT MAX(duty_times_closed.end) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), "-") as lastDutyDate'))->groupBy('users_closed.id', 'users_closed.charactername')->orderBy('reportCount', 'DESC')->get();
+        return DB::table('users_closed')
+            ->leftJoin('reports_closed', 'users_closed.id', '=', 'reports_closed.user_id')
+            ->select(
+                'users_closed.id',
+                'users_closed.charactername',
+                DB::raw('COALESCE(users_closed.rank_name, "-") as rank_name'),
+                DB::raw('COALESCE(users_closed.salary, 0) as salary'),
+                DB::raw('COALESCE(users_closed.salary_tooltip, "") as salary_tooltip'),
+                DB::raw('COALESCE(count(reports_closed.user_id), 0) as reportCount'),
+                DB::raw('COALESCE((SELECT MAX(reports_closed.created_at) FROM reports_closed WHERE reports_closed.user_id = users_closed.id), "-") as lastReportDate'),
+                DB::raw('COALESCE((SELECT SUM(duty_times_closed.minutes) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), 0) as dutyMinuteSum'),
+                DB::raw('COALESCE((SELECT MAX(duty_times_closed.end) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), "-") as lastDutyDate')
+            )
+            ->groupBy('users_closed.id', 'users_closed.charactername', 'users_closed.rank_name', 'users_closed.salary', 'users_closed.salary_tooltip')
+            ->orderBy('reportCount', 'DESC')
+            ->get();
+    }
+
+    /**
+     * Get the promotions overview for all users
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    private function getPromotionUsersQuery()
+    {
+        $users = DB::table('users')
+            ->leftJoin('ranks', 'users.rank_id', '=', 'ranks.id')
+            ->select(
+                'users.id',
+                'users.charactername',
+                'users.rank_id',
+                'users.successful_weeks',
+                'ranks.name as rank_name',
+                'ranks.rank_order',
+                'ranks.minimum_successful_weeks',
+                'ranks.requires_exam',
+                'ranks.is_leader'
+            )
+            ->orderBy('users.charactername', 'ASC')
+            ->get();
+
+        $allRanks = Rank::orderBy('rank_order', 'ASC')->get();
+        $ranksByOrder = $allRanks->keyBy('rank_order');
+
+        foreach ($users as $user) {
+            $user->is_current_leader = (bool) ($user->is_leader ?? false);
+            $currentOrder = $user->rank_order;
+            if ($currentOrder !== null) {
+                $user->next_rank = $ranksByOrder->get($currentOrder + 1);
+            } else {
+                $user->next_rank = $ranksByOrder->get(1);
+            }
+
+            $user->is_next_leader = $user->next_rank ? (bool) ($user->next_rank->is_leader ?? false) : false;
+            $requiredWeeks = $user->minimum_successful_weeks ?? 2;
+            $user->required_weeks = $requiredWeeks;
+
+            if ($user->is_current_leader) {
+                $user->is_eligible = false;
+                $user->is_max_rank = false;
+            } elseif ($user->next_rank === null) {
+                $user->is_eligible = false;
+                $user->is_max_rank = true;
+            } else {
+                $user->is_max_rank = false;
+                $user->is_eligible = ($user->successful_weeks >= $requiredWeeks);
+            }
+        }
+
+        return $users->sort(function ($a, $b) {
+            $priorityA = $a->is_current_leader ? 0 : ($a->is_eligible ? 2 : 1);
+            $priorityB = $b->is_current_leader ? 0 : ($b->is_eligible ? 2 : 1);
+
+            if ($priorityA !== $priorityB) {
+                return $priorityB <=> $priorityA;
+            }
+
+            return strcmp($a->charactername, $b->charactername);
+        })->values();
     }
 
     /**
@@ -216,11 +372,13 @@ class AdminController extends Controller
         try {
             $randomUsername = Str::random(8);
             $randomPassword = Str::random(8);
+            $lowestRank = Rank::where('rank_order', 1)->first();
 
             $user = User::create([
                 'charactername' => $request->charactername,
                 'username' => $randomUsername,
                 'password' => Hash::make($randomPassword),
+                'rank_id' => $lowestRank ? $lowestRank->id : null,
             ]);
 
             $this->logAdminAction('Regisztrált egy új felhasználót ' . $request->charactername . ' IC néven (ID: ' . $user->id . ')');
@@ -432,6 +590,89 @@ class AdminController extends Controller
         return DB::table('users')->select('charactername')->where('id', '=', $id)->value('charactername');
     }
 
+    public function updateUserRanks(Request $request)
+    {
+        if (Auth::user()->adminLevel != 2) {
+            abort(403);
+        }
+
+        $userRanks = $request->input('user_ranks', []);
+        $ranks = Rank::all()->keyBy('id');
+
+        foreach ($userRanks as $userId => $newRankId) {
+            $user = User::find($userId);
+            if (!$user) {
+                continue;
+            }
+
+            $currentRankId = $user->rank_id ? (string)$user->rank_id : '';
+            $targetRankId = !empty($newRankId) ? (string)$newRankId : '';
+
+            if ($currentRankId !== $targetRankId) {
+                $oldRankName = $user->rank ? $user->rank->name : 'Nincs';
+                $newRank = !empty($newRankId) ? $ranks->get($newRankId) : null;
+                $newRankName = $newRank ? $newRank->name : 'Nincs';
+
+                $oldOrder = $user->rank ? $user->rank->rank_order : 0;
+                $newOrder = $newRank ? $newRank->rank_order : 0;
+                $rankChangeType = $newOrder < $oldOrder ? 'demotion' : 'promotion';
+
+                $requiredWeeks = $user->rank ? (int) $user->rank->minimum_successful_weeks : 2;
+                $carryOverWeeks = ($rankChangeType === 'promotion') ? max(0, (int) $user->successful_weeks - $requiredWeeks) : 0;
+
+                $user->update([
+                    'rank_id' => !empty($newRankId) ? (int)$newRankId : null,
+                    'successful_weeks' => $carryOverWeeks,
+                    'promoted_from_rank' => $oldRankName,
+                    'promoted_to_rank' => $newRankName,
+                    'rank_change_type' => $rankChangeType,
+                ]);
+
+                $this->logAdminAction('Módosította a(z) ' . $user->charactername . ' felhasználó rangját (' . $oldRankName . ' -> ' . $newRankName . ')');
+            }
+        }
+
+        return Redirect::route('admin.index')->with('promotions-updated', 'A rangok sikeresen frissítve.');
+    }
+
+    public function promoteUser(Request $request, string $id)
+    {
+        if (Auth::user()->adminLevel != 2) {
+            abort(403);
+        }
+
+        $user = User::findOrFail($id);
+        $currentRank = $user->rank;
+
+        if ($currentRank) {
+            $nextRank = Rank::where('rank_order', $currentRank->rank_order + 1)->first();
+        } else {
+            $nextRank = Rank::where('rank_order', 1)->first();
+        }
+
+        if (!$nextRank) {
+            return Redirect::route('admin.index')->with('promotion-failed', 'Nincs magasabb rang.');
+        }
+
+        $requiredWeeks = $currentRank ? (int) $currentRank->minimum_successful_weeks : 2;
+        $carryOverWeeks = max(0, (int) $user->successful_weeks - $requiredWeeks);
+
+        $oldRankName = $currentRank ? $currentRank->name : 'Nincs';
+        $newRankName = $nextRank->name;
+
+        $user->update([
+            'rank_id' => $nextRank->id,
+            'successful_weeks' => $carryOverWeeks,
+            'promoted_from_rank' => $oldRankName,
+            'promoted_to_rank' => $newRankName,
+            'rank_change_type' => 'promotion',
+        ]);
+
+        $this->logAdminAction('Előléptette a(z) ' . $user->charactername . ' felhasználót (' . $oldRankName . ' -> ' . $newRankName . ')');
+
+        return Redirect::route('admin.index')->with('promotions-updated', $user->charactername . ' sikeresen előléptetve: ' . $newRankName);
+    }
+
     /**
      * Move the weekly statistics to closed tables and reset the current tables.
      *
@@ -440,11 +681,55 @@ class AdminController extends Controller
     private function moveWeeklyStatsToClosed()
     {
         try {
+            $weeklyStats = $this->getWeeklyStatsQuery();
+            $settings = DB::table('settings')->first();
+            $minReports = (int) ($settings->minimum_report_count ?? 15);
+            $minDuty = (int) ($settings->minimum_duty_time ?? 800);
+            $doubleReports = (int) ($settings->double_week_report_count ?? 40);
+            $doubleDuty = (int) ($settings->double_week_duty_time ?? 1800);
+
             DB::delete('DELETE FROM reports_closed');
             DB::delete('DELETE FROM duty_times_closed');
             DB::delete('DELETE FROM users_closed');
 
-            DB::insert('INSERT INTO users_closed SELECT id, charactername FROM users');
+            foreach ($weeklyStats as $stat) {
+                DB::table('users_closed')->insert([
+                    'id' => $stat->id,
+                    'charactername' => $stat->charactername,
+                    'salary' => $stat->salary ?? 0,
+                    'salary_tooltip' => $stat->salary_tooltip ?? '',
+                    'rank_name' => $stat->rank_name ?? '-',
+                ]);
+
+                DB::table('users')->where('id', $stat->id)->update([
+                    'salary' => $stat->salary ?? 0,
+                    'salary_tooltip' => $stat->salary_tooltip ?? '',
+                    'closed_week_salary' => $stat->salary ?? 0,
+                    'closed_week_bonus' => $stat->bonus_percentage ?? 0,
+                    'closed_week_calculation' => $stat->salary_tooltip ?? '',
+                    'closed_week_message' => $stat->closed_week_message ?? null,
+                ]);
+
+                // Calculate successful weeks for each user
+                $reportCount = (int) ($stat->reportCount ?? 0);
+                $dutyMinutes = (int) ($stat->dutyMinuteSum ?? 0);
+                $weeksToAdd = 0;
+
+                if ($reportCount >= $doubleReports && $dutyMinutes >= $doubleDuty) {
+                    $weeksToAdd = 2;
+                } elseif (
+                    ($reportCount >= $minReports && $dutyMinutes >= $minDuty) ||
+                    $reportCount >= $doubleReports ||
+                    $dutyMinutes >= $doubleDuty
+                ) {
+                    $weeksToAdd = 1;
+                }
+
+                if ($weeksToAdd > 0) {
+                    DB::table('users')->where('id', $stat->id)->increment('successful_weeks', $weeksToAdd);
+                }
+            }
+
             DB::insert('INSERT INTO reports_closed SELECT * FROM reports');
             DB::insert('INSERT INTO duty_times_closed SELECT * FROM duty_times');
 
@@ -459,8 +744,6 @@ class AdminController extends Controller
 
             return true;
         } catch (\Exception $e) {
-            DB::rollBack();
-
             DB::table('locks')
                 ->where('name', 'close_week')
                 ->update(['isLocked' => 0]);

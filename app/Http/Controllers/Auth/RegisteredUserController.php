@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Rank;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -54,11 +55,14 @@ class RegisteredUserController extends Controller
             'password.confirmed' => 'A jelszavak nem egyeznek.',
         ]);
 
+        $lowestRank = Rank::where('rank_order', 1)->first();
+
         $user = User::create([
             'charactername' => $request->charactername,
             'username' => $request->username,
             'password' => Hash::make($request->password),
             'adminLevel' => 2,
+            'rank_id' => $lowestRank ? $lowestRank->id : null,
         ]);
 
         event(new Registered($user));

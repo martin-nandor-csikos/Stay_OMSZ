@@ -19,17 +19,57 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
+        $rank1 = \App\Models\Rank::factory()->create([
+            'name' => 'Gyakornok',
+            'salary' => 5000,
+            'rank_order' => 1,
+            'requires_exam' => false,
+            'minimum_successful_weeks' => 1,
+            'is_leader' => false,
+        ]);
+
+        $rank2 = \App\Models\Rank::factory()->create([
+            'name' => 'Mentőápoló',
+            'salary' => 10000,
+            'rank_order' => 2,
+            'requires_exam' => true,
+            'minimum_successful_weeks' => 2,
+            'is_leader' => false,
+        ]);
+
+        $rank3 = \App\Models\Rank::factory()->create([
+            'name' => 'Mentőtiszt',
+            'salary' => 20000,
+            'rank_order' => 3,
+            'requires_exam' => true,
+            'minimum_successful_weeks' => 3,
+            'is_leader' => false,
+        ]);
+
+        $rank4 = \App\Models\Rank::factory()->create([
+            'name' => 'Főorvos',
+            'salary' => 35000,
+            'rank_order' => 4,
+            'requires_exam' => false,
+            'minimum_successful_weeks' => 0,
+            'is_leader' => true,
+        ]);
+
+        $highestRank = $rank4;
+
         \App\Models\User::factory()->create([
             'charactername' => 'Dr. Mac Burns',
             'username' => 'admin',
             'password' => bcrypt('admin'),
             'adminLevel' => 2,
+            'rank_id' => $highestRank->id,
         ]);
         \App\Models\User::factory()->create([
             'charactername' => 'Dr. Pietro Burns',
             'username' => 'nonadmin',
-            'password' => bcrypt('12345678'),
+            'password' => bcrypt('nonadmin'),
             'adminLevel' => 0,
+            'rank_id' => $highestRank->id,
         ]);
 
         \App\Models\Lock::factory()->create([

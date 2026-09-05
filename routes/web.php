@@ -102,6 +102,8 @@ Route::middleware('auth')->group(function () {
             Route::delete('/admin-inaktivitas-torles/{id}', [InactivityController::class, 'deleteInactivityAsAdmin'])->name('admin.deleteInactivityAsAdmin');
 
             Route::post('/beallitasok-frissites', [SettingController::class, 'update'])->name('admin.updateSettings');
+            Route::post('/eloleptetesek-mentes', [AdminController::class, 'updateUserRanks'])->name('admin.updateUserRanks');
+            Route::post('/felhasznalo-eloleptetes/{id}', [AdminController::class, 'promoteUser'])->name('admin.promoteUser');
         });
     });
 });

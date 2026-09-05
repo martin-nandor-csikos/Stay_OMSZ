@@ -22,6 +22,7 @@
     @include('admin.weekly_stats.closed_week_stats_table')
     @include('admin.inactivities.inactivities_table')
     @include('admin.users.registered_users_table')
+    @include('admin.promotions.promotions_table')
     @include('admin.settings.update_settings')
     @include('admin.admin_logs.admin_logs_table')
 
@@ -68,7 +69,7 @@
                                 filename: 'heti_statisztika_' +
                                     '{{ $firstDayOfWeek }}_{{ $lastDayOfWeek }}',
                                 exportOptions: {
-                                    columns: [0, 1, 2, 3, 5, 6]
+                                    columns: [0, 1, 2, 3, 4, 6, 7, 9]
                                 }
                             },
                             {
@@ -76,7 +77,7 @@
                                 filename: 'heti_statisztika_' +
                                     '{{ $firstDayOfWeek }}_{{ $lastDayOfWeek }}',
                                 exportOptions: {
-                                    columns: [0, 1, 2, 3, 5, 6]
+                                    columns: [0, 1, 2, 3, 4, 6, 7, 9]
                                 }
                             }
                         ]
@@ -96,7 +97,7 @@
                                 filename: 'heti_statisztika_' +
                                     '{{ $firstDayOfPreviousWeek }}_{{ $lastDayOfPreviousWeek }}',
                                 exportOptions: {
-                                    columns: [0, 1, 2, 3, 5, 6]
+                                    columns: [0, 1, 2, 3, 4, 6, 7, 9]
                                 }
                             },
                             {
@@ -104,7 +105,7 @@
                                 filename: 'heti_statisztika_' +
                                     '{{ $firstDayOfPreviousWeek }}_{{ $lastDayOfPreviousWeek }}',
                                 exportOptions: {
-                                    columns: [0, 1, 2, 3, 5, 6]
+                                    columns: [0, 1, 2, 3, 4, 6, 7, 9]
                                 }
                             }
                         ]
@@ -171,6 +172,15 @@
                 },
                 ordering: false,
                 paging: false,
+                scrollX: true,
+            });
+
+            window.promotionsTable = new DataTable('#promotions', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
+                },
+                ordering: false,
+                paging: true,
                 scrollX: true,
             });
         });

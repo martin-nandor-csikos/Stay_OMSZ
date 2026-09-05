@@ -86,6 +86,17 @@ class SettingController extends Controller
                 }
             }
 
+            foreach ($this->bonusFields() as $field => $label) {
+                // Only update if the value has changed
+                if ((int) $request->input($field) != (int) $settings->$field) {
+                    DB::table('settings')
+                        ->where('id', $settings->id)
+                        ->update([$field => (int) $request->input($field)]);
+
+                    $this->logSettingChange($label, $settings->$field . '%', $request->input($field) . '%');
+                }
+            }
+
             if ($canEditRanks) {
                 $submittedRanks = $request->input('ranks', []);
 
@@ -106,6 +117,9 @@ class SettingController extends Controller
                     $newName = $data['name'];
                     $newSalary = (int) $data['salary'];
                     $newOrder = (int) $data['order'];
+                    $newIsLeader = !empty($data['is_leader']) ? 1 : 0;
+                    $newRequiresExam = ($newIsLeader || $newOrder === 1) ? 0 : (!empty($data['requires_exam']) ? 1 : 0);
+                    $newMinWeeks = $newIsLeader ? 0 : (isset($data['minimum_successful_weeks']) ? (int) $data['minimum_successful_weeks'] : 2);
 
                     if ($newName !== $rank->name) {
                         DB::table('ranks')->where('id', $rankId)->update(['name' => $newName]);
@@ -121,13 +135,36 @@ class SettingController extends Controller
                         DB::table('ranks')->where('id', $rankId)->update(['rank_order' => $newOrder]);
                         $this->logSettingChange($rank->name . ' rang sorrendje', $rank->rank_order, $newOrder);
                     }
+
+                    if ($newRequiresExam !== (int) ($rank->requires_exam ? 1 : 0)) {
+                        DB::table('ranks')->where('id', $rankId)->update(['requires_exam' => $newRequiresExam]);
+                        $this->logSettingChange($rank->name . ' rang vizsgakötelezettsége', $rank->requires_exam ? 'Igen' : 'Nem', $newRequiresExam ? 'Igen' : 'Nem');
+                    }
+
+                    if ($newMinWeeks !== (int) $rank->minimum_successful_weeks) {
+                        DB::table('ranks')->where('id', $rankId)->update(['minimum_successful_weeks' => $newMinWeeks]);
+                        $this->logSettingChange($rank->name . ' rang minimum sikeres heteinek száma', $rank->minimum_successful_weeks, $newMinWeeks);
+                    }
+
+                    if ($newIsLeader !== (int) ($rank->is_leader ? 1 : 0)) {
+                        DB::table('ranks')->where('id', $rankId)->update(['is_leader' => $newIsLeader]);
+                        $this->logSettingChange($rank->name . ' rang leader státusza', $rank->is_leader ? 'Igen' : 'Nem', $newIsLeader ? 'Igen' : 'Nem');
+                    }
                 }
 
                 foreach ($request->input('new_ranks', []) as $newRankData) {
+                    $order = (int) $newRankData['order'];
+                    $isLeader = !empty($newRankData['is_leader']) ? 1 : 0;
+                    $minWeeks = $isLeader ? 0 : (isset($newRankData['minimum_successful_weeks']) ? (int) $newRankData['minimum_successful_weeks'] : 2);
+                    $requiresExam = ($isLeader || $order === 1) ? 0 : (!empty($newRankData['requires_exam']) ? 1 : 0);
+
                     $newRank = Rank::create([
                         'name' => $newRankData['name'],
                         'salary' => (int) $newRankData['salary'],
-                        'rank_order' => (int) $newRankData['order'],
+                        'rank_order' => $order,
+                        'requires_exam' => $requiresExam,
+                        'minimum_successful_weeks' => $minWeeks,
+                        'is_leader' => $isLeader,
                     ]);
 
                     DB::table('admin_logs')->insert(['user_id' => Auth::id(), 'didWhat' => 'Új rangot hozott létre (név: ' . $newRank->name . ', fizetés: $' . $newRank->salary . ', ' . $newRank->rank_order . '. hely).']);
@@ -152,6 +189,20 @@ class SettingController extends Controller
             'minimum_duty_time' => 'Minimum szolgálati idő',
             'double_week_report_count' => 'Dupla hét jelentés szám',
             'double_week_duty_time' => 'Dupla hét szolgálati idő',
+        ];
+    }
+
+    /**
+     * Map of the bonus percentage fields to their admin log labels.
+     *
+     * @return array<string, string>
+     */
+    private function bonusFields(): array
+    {
+        return [
+            'bonus_first_percentage' => 'Legtöbbet leadott jelentésért járó bónusz',
+            'bonus_second_percentage' => 'Második legtöbbet leadott jelentésért járó bónusz',
+            'bonus_third_percentage' => 'Harmadik legtöbbet leadott jelentésért járó bónusz',
         ];
     }
 
@@ -192,6 +243,22 @@ class SettingController extends Controller
                 'double_week_duty_time.required' => 'A dupla hét szolgálati idő nem lehet üres.',
             ],
         );
+
+        $request->validate(
+            [
+                'bonus_first_percentage' => ['required', 'integer', 'min:0', 'max:100'],
+                'bonus_second_percentage' => ['required', 'integer', 'min:0', 'max:100'],
+                'bonus_third_percentage' => ['required', 'integer', 'min:0', 'max:100'],
+            ],
+            [
+                'bonus_first_percentage.required' => 'A bónusz nem lehet üres.',
+                'bonus_first_percentage.max' => 'A bónusz maximum 100% lehet.',
+                'bonus_second_percentage.required' => 'A bónusz nem lehet üres.',
+                'bonus_second_percentage.max' => 'A bónusz maximum 100% lehet.',
+                'bonus_third_percentage.required' => 'A bónusz nem lehet üres.',
+                'bonus_third_percentage.max' => 'A bónusz maximum 100% lehet.',
+            ],
+        );
     }
 
     /**
@@ -216,21 +283,29 @@ class SettingController extends Controller
             $rules["ranks.$rankId.name"] = ['required', 'string', 'max:255'];
             $rules["ranks.$rankId.salary"] = ['required', 'integer', 'min:0', 'max:1000000'];
             $rules["ranks.$rankId.order"] = ['required', 'integer'];
+            $rules["ranks.$rankId.requires_exam"] = ['nullable', 'boolean'];
+            $rules["ranks.$rankId.minimum_successful_weeks"] = ['required', 'integer', 'min:0', 'max:100'];
+            $rules["ranks.$rankId.is_leader"] = ['nullable', 'boolean'];
 
             $messages["ranks.$rankId.name.required"] = 'A rang neve nem lehet üres.';
             $messages["ranks.$rankId.salary.required"] = 'A fizetés nem lehet üres.';
             $messages["ranks.$rankId.salary.integer"] = 'A fizetésnek egy pozitív egész számnak kell lennie.';
             $messages["ranks.$rankId.order.required"] = 'A sorrend nem lehet üres.';
+            $messages["ranks.$rankId.minimum_successful_weeks.required"] = 'A minimum sikeres hetek száma nem lehet üres.';
         }
 
         foreach ($newRanks as $index => $data) {
             $rules["new_ranks.$index.name"] = ['required', 'string', 'max:255'];
             $rules["new_ranks.$index.salary"] = ['required', 'integer', 'min:0', 'max:1000000'];
             $rules["new_ranks.$index.order"] = ['required', 'integer'];
+            $rules["new_ranks.$index.requires_exam"] = ['nullable', 'boolean'];
+            $rules["new_ranks.$index.minimum_successful_weeks"] = ['required', 'integer', 'min:0', 'max:100'];
+            $rules["new_ranks.$index.is_leader"] = ['nullable', 'boolean'];
 
             $messages["new_ranks.$index.name.required"] = 'Az új rang neve nem lehet üres.';
             $messages["new_ranks.$index.salary.required"] = 'Az új rang fizetése nem lehet üres.';
             $messages["new_ranks.$index.salary.integer"] = 'A fizetésnek egy pozitív egész számnak kell lennie.';
+            $messages["new_ranks.$index.minimum_successful_weeks.required"] = 'A minimum sikeres hetek száma nem lehet üres.';
         }
 
         $request->validate($rules, $messages);

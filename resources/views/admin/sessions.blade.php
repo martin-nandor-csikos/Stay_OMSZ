@@ -81,3 +81,15 @@
         {{ session('settings-not-updated') }}
     </div>
 @endsession
+
+@session('promotions-updated')
+    <div class="alert alert-success" role="alert">
+        {{ session('promotions-updated') }}
+    </div>
+@endsession
+
+@session('promotion-failed')
+    <div class="alert alert-danger" role="alert">
+        {{ session('promotion-failed') }}
+    </div>
+@endsession

@@ -18,6 +18,19 @@ class Rank extends Model
         'name',
         'salary',
         'rank_order',
+        'requires_exam',
+        'minimum_successful_weeks',
+        'is_leader',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'requires_exam' => 'boolean',
+        'is_leader' => 'boolean',
     ];
 
     /**

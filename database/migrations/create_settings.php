@@ -18,6 +18,9 @@ return new class extends Migration
             $table->unsignedInteger('minimum_duty_time')->default(800);
             $table->unsignedInteger('double_week_report_count')->default(40);
             $table->unsignedInteger('double_week_duty_time')->default(1800);
+            $table->unsignedInteger('bonus_first_percentage')->default(50);
+            $table->unsignedInteger('bonus_second_percentage')->default(40);
+            $table->unsignedInteger('bonus_third_percentage')->default(30);
             $table->timestamps();
         });
 

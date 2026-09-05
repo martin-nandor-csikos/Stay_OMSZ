@@ -22,12 +22,14 @@
                         <tr>
                             <th scope="col">#</th>
                             <th scope="col">IC név</th>
+                            <th scope="col">Rank</th>
                             <th scope="col">Jelentések</th>
                             <th scope="col">Utolsó jelentés</th>
                             <th scope="col">Jelentések megtekintése</th>
                             <th scope="col">Szolgálati idő (perc)</th>
                             <th scope="col">Utolsó szolgálat leadása</th>
                             <th scope="col">Szolgálatok megtekintése</th>
+                            <th scope="col">Fizetés ($)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -35,6 +37,7 @@
                             <tr>
                                 <th scope="row">{{ $loop->iteration }}</th>
                                 <td>{{ $userStat->charactername }}</td>
+                                <td>{{ $userStat->rank_name ?? '-' }}</td>
                                 <td>{{ $userStat->reportCount }}</td>
                                 @if ($userStat->lastReportDate != '-')
                                     <td>{{ \Illuminate\Support\Carbon::parse($userStat->lastReportDate)->format('Y.m.d H:i') }}
@@ -67,6 +70,7 @@
                                     <td>-</td>
                                     <td>-</td>
                                 @endif
+                                <td title="{{ $userStat->salary_tooltip ?? '' }}">{{ $userStat->salary }}</td>
                             </tr>
                         @endforeach
                     </tbody>

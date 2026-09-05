@@ -23,6 +23,16 @@ class User extends Authenticatable
         'password',
         'adminLevel',
         'rank_id',
+        'salary',
+        'salary_tooltip',
+        'successful_weeks',
+        'promoted_from_rank',
+        'promoted_to_rank',
+        'rank_change_type',
+        'closed_week_salary',
+        'closed_week_bonus',
+        'closed_week_calculation',
+        'closed_week_message',
     ];
 
     /**
