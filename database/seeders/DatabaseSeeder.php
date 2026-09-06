@@ -65,6 +65,13 @@ class DatabaseSeeder extends Seeder
             'rank_id' => $highestRank->id,
         ]);
         \App\Models\User::factory()->create([
+            'charactername' => 'Dr. Lily Burns',
+            'username' => 'admin2',
+            'password' => bcrypt('admin2'),
+            'adminLevel' => 1,
+            'rank_id' => $highestRank->id,
+        ]);
+        \App\Models\User::factory()->create([
             'charactername' => 'Dr. Pietro Burns',
             'username' => 'nonadmin',
             'password' => bcrypt('nonadmin'),

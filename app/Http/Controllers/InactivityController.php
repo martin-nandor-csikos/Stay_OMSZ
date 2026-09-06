@@ -172,7 +172,8 @@ class InactivityController extends Controller
                 ->where('id', $id)
                 ->update(['status' => $status->value]);
 
-            $this->adminController->logAdminAction('Frissítette a(z) ' . $id . ' ID-val rendelkező inaktivitási kérelmet (' . $inactivity->status . ' -> ' . $status->value . ')');
+            $characterName = $this->adminController->getCharacterNameById($inactivity->user_id);
+            $this->adminController->logAdminAction('Frissítette ' . $characterName . ' inaktivitási kérelmét (' . $inactivity->status . ' -> ' . $status->value . ')');
 
             return true;
         } catch (\Throwable $th) {

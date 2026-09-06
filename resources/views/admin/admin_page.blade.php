@@ -20,9 +20,10 @@
     @include('admin.header_navigation')
     @include('admin.weekly_stats.weekly_stats_table')
     @include('admin.weekly_stats.closed_week_stats_table')
+    @include('admin.promotions.promotions_table')
     @include('admin.inactivities.inactivities_table')
     @include('admin.users.registered_users_table')
-    @include('admin.promotions.promotions_table')
+    @include('admin.users.deleted_users_table')
     @include('admin.settings.update_settings')
     @include('admin.admin_logs.admin_logs_table')
 
@@ -179,8 +180,15 @@
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
                 },
-                ordering: false,
+                ordering: true,
                 paging: true,
+                scrollX: true,
+            });
+
+            window.deletedUsersTable = new DataTable('#deleted-users', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
+                },
                 scrollX: true,
             });
         });

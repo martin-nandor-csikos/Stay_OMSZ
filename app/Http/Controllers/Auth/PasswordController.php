@@ -40,7 +40,7 @@ class PasswordController extends Controller
     public function updateUserPassword(Request $request, string $id): RedirectResponse
     {
         $user = User::findOrFail($id);
- 
+
         $validated = $request->validateWithBag('updatePassword', [
             'password' => ['required', 'min:8', 'confirmed'],
         ], [
@@ -54,7 +54,7 @@ class PasswordController extends Controller
         ]);
 
         DB::table('admin_logs')->insert(
-            ['user_id' => Auth::user()->id, 'didWhat' => 'Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó jelszavát']
+            ['user_id' => Auth::user()->id, 'didWhat' => 'Frissítette ' . $user->charactername . ' jelszavát']
         );
 
         return back()->with('password-updated', 'A jelszó sikeresen frissült.');

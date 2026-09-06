@@ -80,7 +80,7 @@
                             @else
                                 Swal.fire({
                                     title: 'Fizetésnap!',
-                                    html: '<div class="text-left space-y-2"><p><strong>Összeg:</strong> ${{ Auth::user()->closed_week_salary }}</p><p><strong>Bónusz:</strong> {{ Auth::user()->closed_week_bonus > 0 ? Auth::user()->closed_week_bonus . "%" : "0%" }}</p></div>',
+                                    html: '<div class="text-center space-y-2"><p><strong>Összeg:</strong> ${{ Auth::user()->closed_week_salary }}</p>@if (Auth::user()->closed_week_bonus > 0)<p><strong>Bónusz:</strong> {{ Auth::user()->closed_week_bonus }}%</p>@endif<p>Csak így tovább! :)</p><p><em class="text-xs">"Elmúlt a remegésöm, mert megjött a fizetésöm" -Belga</em></p></div>',
                                     icon: 'success',
                                     confirmButtonText: 'Rendben',
                                 });
@@ -103,7 +103,7 @@
                             @else
                                 Swal.fire({
                                     title: 'Fizetésnap!',
-                                    html: '<div class="text-left space-y-2"><p><strong>Összeg:</strong> ${{ Auth::user()->closed_week_salary }}</p> {{ Auth::user()->closed_week_bonus > 0 ? "<p><strong>Bónusz:</strong>" . Auth::user()->closed_week_bonus . "%</p>" : "" }} <p>Csak így tovább! :)</p><p><em class="text-xs">"Elmúlt a remegésöm, mert megjött a fizetésöm" -Belga</em></p></div>',
+                                    html: '<div class="text-center space-y-2"><p><strong>Összeg:</strong> ${{ Auth::user()->closed_week_salary }}</p>@if (Auth::user()->closed_week_bonus > 0)<p><strong>Bónusz:</strong> {{ Auth::user()->closed_week_bonus }}%</p>@endif<p>Csak így tovább! :)</p><p><em class="text-xs">"Elmúlt a remegésöm, mert megjött a fizetésöm" -Belga</em></p></div>',
                                     icon: 'success',
                                     confirmButtonText: 'Rendben',
                                 });
@@ -137,7 +137,7 @@
                     @else
                         Swal.fire({
                             title: 'Fizetésnap!',
-                            html: '<div class="text-left space-y-2"><p><strong>Összeg:</strong> ${{ Auth::user()->closed_week_salary }}</p> {{ Auth::user()->closed_week_bonus > 0 ? "<p><strong>Bónusz:</strong>" . Auth::user()->closed_week_bonus . "%</p>" : "" }} <p>Csak így tovább! :)</p><p><em class="text-xs">"Elmúlt a remegésöm, mert megjött a fizetésöm" -Belga</em></p></div>',
+                            html: '<div class="text-center space-y-2"><p><strong>Összeg:</strong> ${{ Auth::user()->closed_week_salary }}</p>@if (Auth::user()->closed_week_bonus > 0)<p><strong>Bónusz:</strong> {{ Auth::user()->closed_week_bonus }}%</p>@endif<p>Csak így tovább! :)</p><p><em class="text-xs">"Elmúlt a remegésöm, mert megjött a fizetésöm" -Belga</em></p></div>',
                             icon: 'success',
                             confirmButtonText: 'Rendben',
                         });

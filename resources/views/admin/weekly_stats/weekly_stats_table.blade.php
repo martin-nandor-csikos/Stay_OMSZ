@@ -17,6 +17,11 @@
                         {{ __('Hét lezárása') }}
                     </x-primary-button>
                 </form>
+                @php
+                    $totalReports = $userStats->sum('reportCount');
+                    $totalDutyMinutes = $userStats->sum('dutyMinuteSum');
+                    $totalSalary = $userStats->sum('salary');
+                @endphp
                 <table class="display view-reports" id="weekly-stats">
                     <thead>
                         <tr>
@@ -24,12 +29,12 @@
                             <th scope="col">IC név</th>
                             <th scope="col">Rank</th>
                             <th scope="col">Jelentések</th>
-                            <th scope="col">Utolsó jelentés</th>
-                            <th scope="col">Jelentések megtekintése</th>
                             <th scope="col">Szolgálati idő (perc)</th>
-                            <th scope="col">Utolsó szolgálat leadása</th>
-                            <th scope="col">Szolgálatok megtekintése</th>
                             <th scope="col">Fizetés ($)</th>
+                            <th scope="col">Utolsó jelentés</th>
+                            <th scope="col">Utolsó szolgálat</th>
+                            <th scope="col">Jelentések megtekintése</th>
+                            <th scope="col">Szolgálatok megtekintése</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -39,9 +44,21 @@
                                 <td>{{ $userStat->charactername }}</td>
                                 <td>{{ $userStat->rank_name ?? '-' }}</td>
                                 <td>{{ $userStat->reportCount }}</td>
+                                <td>{{ $userStat->dutyMinuteSum }}</td>
+                                <td title="{{ $userStat->salary_tooltip ?? '' }}">${{ number_format($userStat->salary, 0, '.', ' ') }}</td>
                                 @if ($userStat->lastReportDate != '-')
                                     <td>{{ \Illuminate\Support\Carbon::parse($userStat->lastReportDate)->format('Y.m.d H:i') }}
                                     </td>
+                                @else
+                                    <td>-</td>
+                                @endif
+                                @if ($userStat->lastDutyDate != '-')
+                                    <td>{{ \Illuminate\Support\Carbon::parse($userStat->lastDutyDate)->format('Y.m.d H:i') }}
+                                    </td>
+                                @else
+                                    <td>-</td>
+                                @endif
+                                @if ($userStat->lastReportDate != '-')
                                     <td>
                                         <form action="{{ route('admin.viewUserReports', $userStat->id) }}"
                                             method="get" target="_blank_{{ $loop->iteration }}">
@@ -52,12 +69,8 @@
                                     </td>
                                 @else
                                     <td>-</td>
-                                    <td>-</td>
                                 @endif
-                                <td>{{ $userStat->dutyMinuteSum }}</td>
                                 @if ($userStat->lastDutyDate != '-')
-                                    <td>{{ \Illuminate\Support\Carbon::parse($userStat->lastDutyDate)->format('Y.m.d H:i') }}
-                                    </td>
                                     <td>
                                         <form action="{{ route('admin.viewUserDuty', $userStat->id) }}" method="get"
                                             target="_blank_{{ $loop->iteration }}">
@@ -68,13 +81,16 @@
                                     </td>
                                 @else
                                     <td>-</td>
-                                    <td>-</td>
                                 @endif
-                                <td title="{{ $userStat->salary_tooltip ?? '' }}">{{ $userStat->salary }}</td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
+                <div class="mt-4 text-gray-900 dark:text-gray-100">
+                    <p>Összes jelentés: <b>{{ $totalReports }}</b></p>
+                    <p>Összes szolgálati idő: <b>{{ $totalDutyMinutes }} perc</b></p>
+                    <p>Kifizetés összesen: <b>${{ number_format($totalSalary, 0, '.', ' ') }}</b></p>
+                </div>
             </div>
         </div>
     </div>

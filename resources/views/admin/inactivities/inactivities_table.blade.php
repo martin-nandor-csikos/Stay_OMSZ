@@ -26,7 +26,7 @@
                     <thead>
                         <tr>
                             <th scope="col">#</th>
-                            <th scope="col">ID</th>
+                            <th scope="col">Account ID</th>
                             <th scope="col">IC név</th>
                             <th scope="col">Ettől</th>
                             <th scope="col">Eddig</th>
@@ -42,7 +42,7 @@
                         @foreach ($inactivities as $inactivity)
                             <tr>
                                 <th scope="row">{{ $loop->iteration }}</th>
-                                <td>{{ $inactivity->id }}</td>
+                                <td>{{ $inactivity->account_id }}</td>
                                 <td>{{ $inactivity->charactername }}</td>
                                 <td>{{ $inactivity->begin }}</td>
                                 <td>{{ $inactivity->end }}</td>

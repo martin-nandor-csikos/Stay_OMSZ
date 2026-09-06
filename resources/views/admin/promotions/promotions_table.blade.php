@@ -14,6 +14,8 @@
                                 <th scope="col">Rang</th>
                                 <th scope="col">Sikeres hetek</th>
                                 <th scope="col">Előléptetés</th>
+                                <th scope="col">Utolsó ranglépés</th>
+                                <th scope="col">Rangon eltöltött napok</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -77,6 +79,8 @@
                                             <span class="text-gray-400 text-sm">{{ __('Még nem léptethető elő') }}</span>
                                         @endif
                                     </td>
+                                    <td>{{ $promoUser->last_rank_change_display }}</td>
+                                    <td>{{ $promoUser->days_at_rank }} nap</td>
                                 </tr>
                             @endforeach
                         </tbody>

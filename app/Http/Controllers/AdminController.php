@@ -68,6 +68,7 @@ class AdminController extends Controller
         $closedUserStats = $this->getClosedWeekStatsQuery();
         $inactivities = $this->getInactivitiesQuery();
         $users = $this->getRegisteredUsersQuery();
+        $deletedUsers = $this->getDeletedUsersQuery();
         $admin_logs = $this->getAdminLogsQuery();
         $ticketServices = $this->ticketServiceController->getServicesQuery();
         $settings = $this->settingController->getSettingsQuery();
@@ -101,6 +102,7 @@ class AdminController extends Controller
 
         return view('admin.admin_page', [
             'users' => $users,
+            'deletedUsers' => $deletedUsers,
             'userStats' => $userStats,
             'closedUserStats' => $closedUserStats,
             'admin_logs' => $admin_logs,
@@ -217,15 +219,57 @@ class AdminController extends Controller
                 'users_closed.charactername',
                 DB::raw('COALESCE(users_closed.rank_name, "-") as rank_name'),
                 DB::raw('COALESCE(users_closed.salary, 0) as salary'),
+                'users_closed.is_paid',
                 DB::raw('COALESCE(users_closed.salary_tooltip, "") as salary_tooltip'),
                 DB::raw('COALESCE(count(reports_closed.user_id), 0) as reportCount'),
                 DB::raw('COALESCE((SELECT MAX(reports_closed.created_at) FROM reports_closed WHERE reports_closed.user_id = users_closed.id), "-") as lastReportDate'),
                 DB::raw('COALESCE((SELECT SUM(duty_times_closed.minutes) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), 0) as dutyMinuteSum'),
                 DB::raw('COALESCE((SELECT MAX(duty_times_closed.end) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), "-") as lastDutyDate')
             )
-            ->groupBy('users_closed.id', 'users_closed.charactername', 'users_closed.rank_name', 'users_closed.salary', 'users_closed.salary_tooltip')
+            ->groupBy('users_closed.id', 'users_closed.charactername', 'users_closed.rank_name', 'users_closed.salary', 'users_closed.is_paid', 'users_closed.salary_tooltip')
             ->orderBy('reportCount', 'DESC')
             ->get();
+    }
+
+    /**
+     * Return paid statuses for the currently displayed closed week.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getClosedWeekPaidStatuses()
+    {
+        return response()->json(
+            DB::table('users_closed')->pluck('is_paid', 'id')
+        );
+    }
+
+    /**
+     * Update one user's paid status for the currently displayed closed week.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param string $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateClosedWeekPaidStatus(Request $request, string $id)
+    {
+        if (Auth::user()->adminLevel != 2) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'is_paid' => ['required', 'boolean'],
+        ]);
+
+        $closedUser = DB::table('users_closed')->where('id', $id)->first();
+        abort_unless($closedUser, 404);
+
+        DB::table('users_closed')->where('id', $id)->update([
+            'is_paid' => $validated['is_paid'],
+        ]);
+
+        $this->logAdminAction(($validated['is_paid'] ? 'Kifizetettként jelölte ' : 'Nem kifizetettként jelölte ') . $closedUser->charactername . ' felhasználót.');
+
+        return response()->json(['is_paid' => (bool) $validated['is_paid']]);
     }
 
     /**
@@ -242,6 +286,7 @@ class AdminController extends Controller
                 'users.charactername',
                 'users.rank_id',
                 'users.successful_weeks',
+                'users.last_rank_change_at',
                 'ranks.name as rank_name',
                 'ranks.rank_order',
                 'ranks.minimum_successful_weeks',
@@ -266,6 +311,9 @@ class AdminController extends Controller
             $user->is_next_leader = $user->next_rank ? (bool) ($user->next_rank->is_leader ?? false) : false;
             $requiredWeeks = $user->minimum_successful_weeks ?? 2;
             $user->required_weeks = $requiredWeeks;
+            $lastRankChange = $user->last_rank_change_at ? Carbon::parse($user->last_rank_change_at) : Carbon::now();
+            $user->last_rank_change_display = $lastRankChange->format('Y.m.d H:i');
+            $user->days_at_rank = $lastRankChange->startOfDay()->diffInDays(Carbon::today());
 
             if ($user->is_current_leader) {
                 $user->is_eligible = false;
@@ -298,7 +346,7 @@ class AdminController extends Controller
      */
     private function getInactivitiesQuery()
     {
-        return DB::table('inactivities')->join('users', 'users.id', '=', 'inactivities.user_id')->select('users.charactername', 'inactivities.begin', 'inactivities.end', 'inactivities.reason', 'inactivities.id', 'inactivities.status')->orderBy('inactivities.created_at', 'desc')->get();
+        return DB::table('inactivities')->join('users', 'users.id', '=', 'inactivities.user_id')->select('users.account_id', 'users.charactername', 'inactivities.begin', 'inactivities.end', 'inactivities.reason', 'inactivities.id', 'inactivities.status')->orderBy('inactivities.created_at', 'desc')->get();
     }
 
     /**
@@ -308,7 +356,17 @@ class AdminController extends Controller
      */
     private function getRegisteredUsersQuery()
     {
-        return DB::table('users')->select('users.id', 'users.charactername', 'users.username', 'users.created_at', 'users.adminLevel')->orderBy('users.charactername', 'ASC')->get();
+        return DB::table('users')->select('users.id', 'users.account_id', 'users.charactername', 'users.username', 'users.created_at', 'users.adminLevel')->orderBy('users.charactername', 'ASC')->get();
+    }
+
+    /**
+     * Get deleted users for the archive.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    private function getDeletedUsersQuery()
+    {
+        return DB::table('deleted_users')->orderBy('deleted_at', 'DESC')->get();
     }
 
     /**
@@ -361,11 +419,16 @@ class AdminController extends Controller
     {
         $request->validate(
             [
+                'account_id' => ['required', 'integer', 'min:1', 'unique:users,account_id'],
                 'charactername' => ['required', 'string', 'max:255'],
             ],
             [
+                'account_id.required' => 'Az Account ID nem lehet üres.',
+                'account_id.integer' => 'Az Account ID csak egész szám lehet.',
+                'account_id.min' => 'Az Account ID legalább 1 lehet.',
+                'account_id.unique' => 'Ez az Account ID már foglalt.',
                 'charactername.required' => 'Az IC név nem lehet üres.',
-                'charactername.required' => 'Túl hosszú az IC név.',
+                'charactername.max' => 'Túl hosszú az IC név.',
             ],
         );
 
@@ -375,13 +438,16 @@ class AdminController extends Controller
             $lowestRank = Rank::where('rank_order', 1)->first();
 
             $user = User::create([
+                'account_id' => $request->account_id,
                 'charactername' => $request->charactername,
                 'username' => $randomUsername,
                 'password' => Hash::make($randomPassword),
                 'rank_id' => $lowestRank ? $lowestRank->id : null,
+                'last_rank_change_at' => now(),
+                'highest_rank' => $lowestRank ? $lowestRank->name : null,
             ]);
 
-            $this->logAdminAction('Regisztrált egy új felhasználót ' . $request->charactername . ' IC néven (ID: ' . $user->id . ')');
+            $this->logAdminAction('Regisztrált egy új felhasználót ' . $user->charactername . ' IC néven.');
 
             return Redirect::route('admin.index')->with('user-created', 'A felhasználó regisztrációja sikeres. FELHASZNÁLÓNÉV: ' . $randomUsername . ', JELSZÓ: ' . $randomPassword);
         } catch (\Throwable $th) {
@@ -391,7 +457,7 @@ class AdminController extends Controller
 
     public function viewUserReports(string $id)
     {
-        $reports = $this->getUserReports($id);
+        $reports = $this->reportController->getUserReports($id);
         $userCharactername = $this->getCharacterNameById($id);
 
         if ($reports->isEmpty()) {
@@ -426,8 +492,12 @@ class AdminController extends Controller
      */
     public function viewClosedUserReports(string $id)
     {
-        $reportsFromClosedWeek = $this->getUserReportsFromClosedWeek($id);
+        $reportsFromClosedWeek = $this->reportController->getUserReportsFromClosedWeek($id);
         $userCharacterName = $this->getCharacterNameById($id);
+
+        if ($reportsFromClosedWeek->isEmpty()) {
+            return Redirect::route('admin.index');
+        }
 
         return view('admin.weekly_stats.view_user_reports', [
             'reports' => $reportsFromClosedWeek,
@@ -458,6 +528,7 @@ class AdminController extends Controller
     {
         $user = User::findOrFail($id);
         $usernameCheck = $request->input('username') !== $user->username;
+        $accountIdCheck = (int) $request->input('account_id') !== (int) $user->account_id;
 
         // Only users with adminLevel 2 (can give admin) may change another user's admin level.
         if (Auth::user()->adminLevel == 2 && Auth::user()->username != $user->username && $request->has('adminLevel')) {
@@ -474,10 +545,22 @@ class AdminController extends Controller
             $newAdminLevel = (int) $request->input('adminLevel');
 
             if ($newAdminLevel !== (int) $user->adminLevel) {
-                $this->logAdminAction('Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó admin szintjét (' . $user->adminLevel . ' -> ' . $newAdminLevel . ')');
+                $this->logAdminAction('Frissítette ' . $user->charactername . ' admin szintjét (' . $user->adminLevel . ' -> ' . $newAdminLevel . ')');
                 $user->adminLevel = $newAdminLevel;
             }
         }
+
+        $request->validate(
+            [
+                'account_id' => ['required', 'integer', 'min:1', 'unique:users,account_id,' . $user->id],
+            ],
+            [
+                'account_id.required' => 'Az Account ID nem lehet üres.',
+                'account_id.integer' => 'Az Account ID csak egész szám lehet.',
+                'account_id.min' => 'Az Account ID legalább 1 lehet.',
+                'account_id.unique' => 'Ez az Account ID már foglalt.',
+            ],
+        );
 
         // Check if username was changed, if not, then don't validate for unique
         if ($usernameCheck) {
@@ -505,7 +588,7 @@ class AdminController extends Controller
 
         $request->validate(
             [
-                'charactername' => ['string', 'max:255'],
+                'charactername' => ['required', 'string', 'max:255'],
             ],
             [
                 'charactername.string' => 'Az IC név nem lehet üres.',
@@ -513,18 +596,30 @@ class AdminController extends Controller
             ],
         );
 
+        if ($accountIdCheck) {
+            $oldAccountId = $user->account_id;
+            $user->account_id = $request->input('account_id');
+
+            $this->logAdminAction('Frissítette ' . $user->charactername . ' Account ID-ját (' . $oldAccountId . ' -> ' . $request->input('account_id') . ')');
+        }
+
         if ($request->input('username') !== $user->username) {
             $oldusername = $user->username;
             $user->username = $request->input('username');
 
-            $this->logAdminAction('Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó felhasználónevét (' . $oldusername . ' -> ' . $request->input('username') . ')');
+            $this->logAdminAction('Frissítette ' . $user->charactername . ' felhasználónevét (' . $oldusername . ' -> ' . $request->input('username') . ')');
         }
 
         if ($request->input('charactername') !== $user->charactername) {
             $oldcharactername = $user->charactername;
             $user->charactername = $request->input('charactername');
 
-            $this->logAdminAction('Frissítette a(z) ' . $user->id . ' ID-val rendelkező felhasználó IC nevét (' . $oldcharactername . ' -> ' . $request->input('charactername') . ')');
+            DB::table('user_name_histories')->insert([
+                'user_id' => $user->id,
+                'charactername' => $oldcharactername,
+            ]);
+
+            $this->logAdminAction('Frissítette ' . $oldcharactername . ' IC nevét (' . $oldcharactername . ' -> ' . $request->input('charactername') . ')');
         }
 
         try {
@@ -539,11 +634,38 @@ class AdminController extends Controller
     public function deleteUser(string $id)
     {
         if (Auth::user()->id != $id) {
+            request()->validate([
+                'reason' => ['required', 'string', 'max:1000'],
+                'blacklist' => ['required', 'in:-,Aktív,Erősített'],
+            ], [
+                'reason.required' => 'A törlés indoklása kötelező.',
+                'reason.max' => 'A törlés indoklása maximum 1000 karakter lehet.',
+                'blacklist.required' => 'A feketelista állapotát kötelező kiválasztani.',
+                'blacklist.in' => 'Érvénytelen feketelista állapot.',
+            ]);
+
             try {
                 $user = User::findOrFail($id);
+                $previousNames = DB::table('user_name_histories')
+                    ->where('user_id', $user->id)
+                    ->orderBy('id')
+                    ->pluck('charactername')
+                    ->all();
+
+                DB::table('deleted_users')->insert([
+                    'account_id' => $user->account_id,
+                    'charactername' => $user->charactername,
+                    'previous_characternames' => empty($previousNames) ? null : json_encode($previousNames),
+                    'highest_rank' => $user->highest_rank ?? ($user->rank ? $user->rank->name : null),
+                    'registered_at' => $user->created_at,
+                    'deleted_at' => now(),
+                    'reason' => request()->input('reason'),
+                    'blacklist' => request()->input('blacklist'),
+                ]);
+
                 $user->delete();
 
-                $this->logAdminAction('Kitörölte a(z) ' . $user->charactername . ' (ID: ' . $user->id . ') felhasználót');
+                $this->logAdminAction('Kitörölte ' . $user->charactername . ' felhasználót. Indok: ' . request()->input('reason') . '. Feketelista: ' . request()->input('blacklist'));
 
                 return to_route('admin.index')->with('successful-user-deletion', 'A felhasználó törlése sikeres.');
             } catch (\Throwable $th) {
@@ -619,9 +741,16 @@ class AdminController extends Controller
 
                 $requiredWeeks = $user->rank ? (int) $user->rank->minimum_successful_weeks : 2;
                 $carryOverWeeks = ($rankChangeType === 'promotion') ? max(0, (int) $user->successful_weeks - $requiredWeeks) : 0;
+                $highestRankName = $user->highest_rank;
+
+                if ($newRank && ($newOrder > $oldOrder || empty($highestRankName))) {
+                    $highestRankName = $newRank->name;
+                }
 
                 $user->update([
                     'rank_id' => !empty($newRankId) ? (int)$newRankId : null,
+                    'last_rank_change_at' => now(),
+                    'highest_rank' => $highestRankName,
                     'successful_weeks' => $carryOverWeeks,
                     'promoted_from_rank' => $oldRankName,
                     'promoted_to_rank' => $newRankName,
@@ -662,6 +791,8 @@ class AdminController extends Controller
 
         $user->update([
             'rank_id' => $nextRank->id,
+            'last_rank_change_at' => now(),
+            'highest_rank' => $nextRank->name,
             'successful_weeks' => $carryOverWeeks,
             'promoted_from_rank' => $oldRankName,
             'promoted_to_rank' => $newRankName,

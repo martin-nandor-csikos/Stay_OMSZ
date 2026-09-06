@@ -19,11 +19,19 @@
                     <form method="POST" action="{{ route('admin.updateUser', $user->id) }}">
                         @csrf
                         @method('PUT')
-                        <!-- Character name -->
+                        <!-- Account ID -->
                         <div>
+                            <x-input-label for="account_id" :value="__('Account ID')" />
+                            <x-text-input id="account_id" class="block mt-1 w-full" type="number" name="account_id"
+                                value="{{ $user->account_id }}" min="1" required autofocus />
+                            <x-input-error :messages="$errors->get('account_id')" class="mt-2" />
+                        </div>
+
+                        <!-- Character name -->
+                        <div class="mt-4">
                             <x-input-label for="charactername" :value="__('IC név')" />
                             <x-text-input id="charactername" class="block mt-1 w-full" type="text"
-                                name="charactername" value="{{ $user->charactername }}" maxlength="255" autofocus />
+                                name="charactername" value="{{ $user->charactername }}" maxlength="255" />
                             <x-input-error :messages="$errors->get('charactername')" class="mt-2" />
                         </div>
 

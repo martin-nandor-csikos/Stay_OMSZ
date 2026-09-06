@@ -18,11 +18,14 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'account_id',
         'charactername',
         'username',
         'password',
         'adminLevel',
         'rank_id',
+        'last_rank_change_at',
+        'highest_rank',
         'salary',
         'salary_tooltip',
         'successful_weeks',
@@ -54,6 +57,7 @@ class User extends Authenticatable
     protected $casts = [
         'password' => 'hashed',
         'has_logged_in' => 'boolean',
+        'last_rank_change_at' => 'datetime',
     ];
 
     /**

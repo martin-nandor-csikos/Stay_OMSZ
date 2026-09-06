@@ -90,6 +90,8 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/lezart-jelentesek/{id}', [AdminController::class, 'viewClosedUserReports'])->name('admin.viewClosedUserReports');
             Route::get('/lezart-szolgalatok/{id}', [AdminController::class, 'viewClosedUserDuty'])->name('admin.viewClosedUserDuty');
+            Route::get('/lezart-het-kifizetesek', [AdminController::class, 'getClosedWeekPaidStatuses'])->name('admin.getClosedWeekPaidStatuses');
+            Route::put('/lezart-het-kifizetes/{id}', [AdminController::class, 'updateClosedWeekPaidStatus'])->name('admin.updateClosedWeekPaidStatus');
 
             Route::get('/regisztracio', [AdminController::class, 'userRegistrationPage'])->name('admin.userRegistrationPage');
             Route::post('/regisztracio', [AdminController::class, 'registerUser'])->name('admin.registerUser');

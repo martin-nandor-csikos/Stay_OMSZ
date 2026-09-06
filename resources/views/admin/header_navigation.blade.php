@@ -19,6 +19,13 @@
                         </a>
                     </div>
                     <div>
+                        <a href="#eloleptetesek">
+                            <x-primary-button class="w-full flex justify-center">
+                                {{ __('Előléptetések') }}
+                            </x-primary-button>
+                        </a>
+                    </div>
+                    <div>
                         <a href="#inaktivitasok">
                             <x-primary-button class="w-full flex justify-center">
                                 {{ __('Inaktivitások') }}
@@ -33,9 +40,9 @@
                         </a>
                     </div>
                     <div>
-                        <a href="#eloleptetesek">
+                        <a href="#volt-felhasznalok">
                             <x-primary-button class="w-full flex justify-center">
-                                {{ __('Előléptetések') }}
+                                {{ __('Volt felhasználók') }}
                             </x-primary-button>
                         </a>
                     </div>

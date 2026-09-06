@@ -56,13 +56,17 @@ class RegisteredUserController extends Controller
         ]);
 
         $lowestRank = Rank::where('rank_order', 1)->first();
+        $nextAccountId = (User::max('account_id') ?? 0) + 1;
 
         $user = User::create([
+            'account_id' => $nextAccountId,
             'charactername' => $request->charactername,
             'username' => $request->username,
             'password' => Hash::make($request->password),
             'adminLevel' => 2,
             'rank_id' => $lowestRank ? $lowestRank->id : null,
+            'last_rank_change_at' => now(),
+            'highest_rank' => $lowestRank ? $lowestRank->name : null,
         ]);
 
         event(new Registered($user));
