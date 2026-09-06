@@ -32,6 +32,13 @@
         window.routes = {
             dashboard: "{{ route('dashboardTable') }}",
         };
+
+        window.adminAlertQueue = Promise.resolve();
+        window.queueAdminAlert = function(callback) {
+            window.adminAlertQueue = window.adminAlertQueue.then(callback);
+
+            return window.adminAlertQueue;
+        };
     </script>
 </head>
 
@@ -59,93 +66,105 @@
         </footer>
     </div>
 
-    @if (Auth::check() && (Auth::user()->promoted_to_rank || !is_null(Auth::user()->closed_week_salary)))
+    @php
+        $queuedUserAlerts = collect();
+
+        if (Auth::check()) {
+            $queuedUserAlerts = \Illuminate\Support\Facades\DB::table('user_alert_notifications')
+                ->where('user_id', Auth::id())
+                ->orderBy('id')
+                ->get()
+                ->map(function ($notification) {
+                    $notification->payload = json_decode($notification->payload, true) ?: [];
+
+                    return $notification;
+                });
+
+            if (Auth::user()->promoted_to_rank) {
+                $queuedUserAlerts->push((object) [
+                    'id' => null,
+                    'type' => 'rank_change',
+                    'payload' => [
+                        'from_rank' => Auth::user()->promoted_from_rank ?? 'Nincs',
+                        'to_rank' => Auth::user()->promoted_to_rank,
+                        'change_type' => Auth::user()->rank_change_type ?? 'promotion',
+                    ],
+                ]);
+            }
+
+            if (!is_null(Auth::user()->closed_week_salary)) {
+                $queuedUserAlerts->push((object) [
+                    'id' => null,
+                    'type' => 'closed_week_salary',
+                    'payload' => [
+                        'salary' => Auth::user()->closed_week_salary,
+                        'bonus' => Auth::user()->closed_week_bonus ?? 0,
+                        'calculation' => Auth::user()->closed_week_calculation ?? '',
+                        'message' => Auth::user()->closed_week_message,
+                    ],
+                ]);
+            }
+        }
+    @endphp
+
+    @if ($queuedUserAlerts->isNotEmpty())
         <script>
-            $(function() {
-                @if (Auth::user()->promoted_to_rank && !is_null(Auth::user()->closed_week_salary))
-                    @if (Auth::user()->rank_change_type === 'demotion')
-                        Swal.fire({
-                            title: 'Lefokozás!',
-                            text: 'Lefokozásban részesültél: {{ Auth::user()->promoted_from_rank ?? "Nincs" }} -> {{ Auth::user()->promoted_to_rank }}.',
-                            icon: 'warning',
-                            confirmButtonText: 'Tovább',
-                        }).then(() => {
-                            @if (Auth::user()->closed_week_message)
-                                Swal.fire({
+            window.addEventListener('load', function() {
+                @foreach ($queuedUserAlerts as $queuedUserAlert)
+                    @if ($queuedUserAlert->type === 'rank_change')
+                        @php
+                            $isDemotion = ($queuedUserAlert->payload['change_type'] ?? 'promotion') === 'demotion';
+                            $fromRank = $queuedUserAlert->payload['from_rank'] ?? 'Nincs';
+                            $toRank = $queuedUserAlert->payload['to_rank'] ?? 'Nincs';
+                        @endphp
+                        window.queueAdminAlert(function() {
+                            return Swal.fire({
+                                title: @json($isDemotion ? 'Lefokozás!' : 'Előléptetés!'),
+                                text: @json(($isDemotion ? 'Lefokozásban részesültél: ' : 'Gratulálunk! Előléptetésben részesültél: ') . $fromRank . ' -> ' . $toRank . '.'),
+                                icon: @json($isDemotion ? 'warning' : 'success'),
+                                confirmButtonText: 'Rendben',
+                            });
+                        });
+                    @elseif ($queuedUserAlert->type === 'closed_week_salary')
+                        @php
+                            $salaryMessage = $queuedUserAlert->payload['message'] ?? null;
+                            $salary = $queuedUserAlert->payload['salary'] ?? 0;
+                            $bonus = $queuedUserAlert->payload['bonus'] ?? 0;
+                            $paydayHtml = '<div class="text-center space-y-2"><p><strong>Összeg:</strong> $' . e($salary) . '</p>';
+
+                            if ((int) $bonus > 0) {
+                                $paydayHtml .= '<p><strong>Bónusz:</strong> ' . e($bonus) . '%</p>';
+                            }
+
+                            $paydayHtml .= '<p>Csak így tovább! :)</p><p><em class="text-xs">"Elmúlt a remegésöm, mert megjött a fizetésöm" -Belga</em></p></div>';
+                        @endphp
+                        window.queueAdminAlert(function() {
+                            return Swal.fire({
+                                @if ($salaryMessage)
                                     title: 'Heti fizetés',
-                                    text: '{{ Auth::user()->closed_week_message }}',
+                                    text: @json($salaryMessage),
                                     icon: 'warning',
-                                    confirmButtonText: 'Rendben',
-                                });
-                            @else
-                                Swal.fire({
+                                @else
                                     title: 'Fizetésnap!',
-                                    html: '<div class="text-center space-y-2"><p><strong>Összeg:</strong> ${{ Auth::user()->closed_week_salary }}</p>@if (Auth::user()->closed_week_bonus > 0)<p><strong>Bónusz:</strong> {{ Auth::user()->closed_week_bonus }}%</p>@endif<p>Csak így tovább! :)</p><p><em class="text-xs">"Elmúlt a remegésöm, mert megjött a fizetésöm" -Belga</em></p></div>',
+                                    html: @json($paydayHtml),
                                     icon: 'success',
-                                    confirmButtonText: 'Rendben',
-                                });
-                            @endif
-                        });
-                    @else
-                        Swal.fire({
-                            title: 'Előléptetés!',
-                            text: 'Gratulálunk! Előléptetésben részesültél: {{ Auth::user()->promoted_from_rank ?? "Nincs" }} -> {{ Auth::user()->promoted_to_rank }}.',
-                            icon: 'success',
-                            confirmButtonText: 'Tovább',
-                        }).then(() => {
-                            @if (Auth::user()->closed_week_message)
-                                Swal.fire({
-                                    title: 'Heti fizetés',
-                                    text: '{{ Auth::user()->closed_week_message }}',
-                                    icon: 'warning',
-                                    confirmButtonText: 'Rendben',
-                                });
-                            @else
-                                Swal.fire({
-                                    title: 'Fizetésnap!',
-                                    html: '<div class="text-center space-y-2"><p><strong>Összeg:</strong> ${{ Auth::user()->closed_week_salary }}</p>@if (Auth::user()->closed_week_bonus > 0)<p><strong>Bónusz:</strong> {{ Auth::user()->closed_week_bonus }}%</p>@endif<p>Csak így tovább! :)</p><p><em class="text-xs">"Elmúlt a remegésöm, mert megjött a fizetésöm" -Belga</em></p></div>',
-                                    icon: 'success',
-                                    confirmButtonText: 'Rendben',
-                                });
-                            @endif
+                                @endif
+                                confirmButtonText: 'Rendben',
+                            });
                         });
                     @endif
-                @elseif (Auth::user()->promoted_to_rank)
-                    @if (Auth::user()->rank_change_type === 'demotion')
-                        Swal.fire({
-                            title: 'Lefokozás!',
-                            text: 'Lefokozásban részesültél: {{ Auth::user()->promoted_from_rank ?? "Nincs" }} -> {{ Auth::user()->promoted_to_rank }}.',
-                            icon: 'warning',
-                            confirmButtonText: 'Rendben',
-                        });
-                    @else
-                        Swal.fire({
-                            title: 'Előléptetés!',
-                            text: 'Gratulálunk! Előléptetésben részesültél: {{ Auth::user()->promoted_from_rank ?? "Nincs" }} -> {{ Auth::user()->promoted_to_rank }}.',
-                            icon: 'success',
-                            confirmButtonText: 'Rendben',
-                        });
-                    @endif
-                @elseif (!is_null(Auth::user()->closed_week_salary))
-                    @if (Auth::user()->closed_week_message)
-                        Swal.fire({
-                            title: 'Heti fizetés',
-                            text: '{{ Auth::user()->closed_week_message }}',
-                            icon: 'warning',
-                            confirmButtonText: 'Rendben',
-                        });
-                    @else
-                        Swal.fire({
-                            title: 'Fizetésnap!',
-                            html: '<div class="text-center space-y-2"><p><strong>Összeg:</strong> ${{ Auth::user()->closed_week_salary }}</p>@if (Auth::user()->closed_week_bonus > 0)<p><strong>Bónusz:</strong> {{ Auth::user()->closed_week_bonus }}%</p>@endif<p>Csak így tovább! :)</p><p><em class="text-xs">"Elmúlt a remegésöm, mert megjött a fizetésöm" -Belga</em></p></div>',
-                            icon: 'success',
-                            confirmButtonText: 'Rendben',
-                        });
-                    @endif
-                @endif
+                @endforeach
             });
         </script>
         @php
+            $displayedNotificationIds = $queuedUserAlerts->pluck('id')->filter()->all();
+
+            if (!empty($displayedNotificationIds)) {
+                \Illuminate\Support\Facades\DB::table('user_alert_notifications')
+                    ->whereIn('id', $displayedNotificationIds)
+                    ->delete();
+            }
+
             \App\Models\User::where('id', Auth::id())->update([
                 'promoted_from_rank' => null,
                 'promoted_to_rank' => null,

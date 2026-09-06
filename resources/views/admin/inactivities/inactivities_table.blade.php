@@ -1,12 +1,14 @@
 @if ($waitingForAnswerInInactivites == true)
     <script>
-        window.onload = function() {
-            Swal.fire({
-                text: 'Új inaktivitási kérelem érkezett! (Válaszra vár)',
-                icon: 'info',
-                confirmButtonText: 'OK',
-            })
-        }
+        window.addEventListener('load', function() {
+            window.queueAdminAlert(function() {
+                return Swal.fire({
+                    text: 'Új inaktivitási kérelem érkezett! (Válaszra vár)',
+                    icon: 'info',
+                    confirmButtonText: 'OK',
+                });
+            });
+        });
     </script>
 @endif
 

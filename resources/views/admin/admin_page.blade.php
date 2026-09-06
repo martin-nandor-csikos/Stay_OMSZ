@@ -15,17 +15,22 @@
         };
     </script> --}}
 
-    @include('admin.sessions')
+    <div class="admin-readonly-scope">
+        @include('admin.sessions')
 
-    @include('admin.header_navigation')
-    @include('admin.weekly_stats.weekly_stats_table')
-    @include('admin.weekly_stats.closed_week_stats_table')
-    @include('admin.promotions.promotions_table')
-    @include('admin.inactivities.inactivities_table')
-    @include('admin.users.registered_users_table')
-    @include('admin.users.deleted_users_table')
-    @include('admin.settings.update_settings')
-    @include('admin.admin_logs.admin_logs_table')
+        @include('admin.header_navigation')
+        @include('admin.weekly_stats.weekly_stats_table')
+        @include('admin.weekly_stats.closed_week_stats_table')
+        @include('admin.promotions.promotions_table')
+        @include('admin.points.points_table')
+        @include('admin.inactivities.inactivities_table')
+        @include('admin.departments.departments_table')
+        @include('admin.users.registered_users_table')
+        @include('admin.users.deleted_users_table')
+        @include('admin.vehicles.vehicles_table')
+        @include('admin.settings.update_settings')
+        @include('admin.admin_logs.admin_logs_table')
+    </div>
 
     {{-- <script src="js/admin.js"></script> --}}
 
@@ -176,6 +181,15 @@
                 scrollX: true,
             });
 
+            window.ticketServicesTable = new DataTable('#ticket-services', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
+                },
+                ordering: false,
+                paging: false,
+                scrollX: true,
+            });
+
             window.promotionsTable = new DataTable('#promotions', {
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
@@ -186,6 +200,52 @@
             });
 
             window.deletedUsersTable = new DataTable('#deleted-users', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
+                },
+                layout: {
+                    topStart: {
+                        buttons: [{
+                                extend: 'excel',
+                                filename: 'volt_felhasznalok_' + '{{ $currentDay }}',
+                                exportOptions: {
+                                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                                }
+                            },
+                            {
+                                extend: 'csv',
+                                filename: 'volt_felhasznalok_' + '{{ $currentDay }}',
+                                exportOptions: {
+                                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                                }
+                            }
+                        ]
+                    }
+                },
+                scrollX: true,
+            });
+
+            window.vehiclesTable = new DataTable('#vehicles', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
+                },
+                ordering: false,
+                paging: false,
+                scrollX: true,
+            });
+
+            window.userPointsTable = new DataTable('#user-points', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
+                },
+                columnDefs: [{
+                    targets: [3, 4],
+                    type: 'num',
+                }],
+                scrollX: true,
+            });
+
+            window.departmentsTable = new DataTable('#departments', {
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
                 },

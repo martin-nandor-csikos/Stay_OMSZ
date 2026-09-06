@@ -65,6 +65,7 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'adminLevel' => 2,
             'rank_id' => $lowestRank ? $lowestRank->id : null,
+            'department' => 'MGK',
             'last_rank_change_at' => now(),
             'highest_rank' => $lowestRank ? $lowestRank->name : null,
         ]);

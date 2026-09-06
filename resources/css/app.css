@@ -52,6 +52,53 @@ body.hidden {
     margin-right: 10px !important;
 }
 
+.admin-readonly-scope input:not([type="hidden"])[readonly],
+.admin-readonly-scope textarea[readonly],
+.admin-readonly-scope select:disabled {
+    background-color: rgb(229 231 235) !important;
+    border-color: rgb(156 163 175) !important;
+    color: rgb(75 85 99) !important;
+    cursor: not-allowed !important;
+}
+
+.dark .admin-readonly-scope input:not([type="hidden"])[readonly],
+.dark .admin-readonly-scope textarea[readonly],
+.dark .admin-readonly-scope select:disabled {
+    background-color: rgb(55 65 81) !important;
+    border-color: rgb(107 114 128) !important;
+    color: rgb(209 213 219) !important;
+}
+
+.admin-readonly-scope input[type="checkbox"]:disabled,
+.admin-readonly-scope input[type="radio"]:disabled {
+    accent-color: rgb(156 163 175) !important;
+    cursor: not-allowed !important;
+    opacity: 0.65 !important;
+}
+
+.admin-readonly-scope .select2-container--default.select2-container--disabled .select2-selection--single,
+.admin-readonly-scope .select2-container--default.select2-container--disabled .select2-selection--multiple {
+    background-color: rgb(229 231 235) !important;
+    border-color: rgb(156 163 175) !important;
+    cursor: not-allowed !important;
+}
+
+.admin-readonly-scope .select2-container--default.select2-container--disabled .select2-selection--single .select2-selection__rendered,
+.admin-readonly-scope .select2-container--default.select2-container--disabled .select2-selection--multiple .select2-selection__rendered {
+    color: rgb(75 85 99) !important;
+}
+
+.dark .admin-readonly-scope .select2-container--default.select2-container--disabled .select2-selection--single,
+.dark .admin-readonly-scope .select2-container--default.select2-container--disabled .select2-selection--multiple {
+    background-color: rgb(55 65 81) !important;
+    border-color: rgb(107 114 128) !important;
+}
+
+.dark .admin-readonly-scope .select2-container--default.select2-container--disabled .select2-selection--single .select2-selection__rendered,
+.dark .admin-readonly-scope .select2-container--default.select2-container--disabled .select2-selection--multiple .select2-selection__rendered {
+    color: rgb(209 213 219) !important;
+}
+
 /* Footer staying at the bottom of the page */
 main, .login-panel {
     min-height: 90vh !important;

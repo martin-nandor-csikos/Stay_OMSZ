@@ -19,11 +19,17 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'account_id',
+        'plus_points',
+        'penalty_points',
+        'last_plus_point_at',
+        'last_penalty_point_at',
         'charactername',
         'username',
         'password',
         'adminLevel',
         'rank_id',
+        'department',
+        'last_department_change_at',
         'last_rank_change_at',
         'highest_rank',
         'salary',
@@ -57,7 +63,10 @@ class User extends Authenticatable
     protected $casts = [
         'password' => 'hashed',
         'has_logged_in' => 'boolean',
+        'last_department_change_at' => 'datetime',
         'last_rank_change_at' => 'datetime',
+        'last_plus_point_at' => 'datetime',
+        'last_penalty_point_at' => 'datetime',
     ];
 
     /**

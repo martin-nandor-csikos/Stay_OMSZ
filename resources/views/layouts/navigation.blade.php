@@ -6,7 +6,7 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
-                        <img class="block h-9 w-auto fill-current text-gray-800 logo" src="{{ asset('/img/OMSZ.svg') }} "
+                        <img class="block h-9 w-auto fill-current text-gray-800 logo" src="{{ asset('img/OMSZ.svg') }}"
                             alt="OMSZ logo">
                     </a>
                 </div>
@@ -28,6 +28,12 @@
                     <x-nav-link :href="route('inactivity.index')" :active="request()->routeIs('inactivity.index') || request()->routeIs('inactivity.create')">
                         {{ __('Inaktivitás') }}
                     </x-nav-link>
+
+                    <x-nav-link :href="route('publicDocument.index')" :active="false" target="_blank" rel="noopener noreferrer">
+                        {{ __('Publikus dokumentum') }}
+                    </x-nav-link>
+
+                    @include('layouts.important_documents_dropdown')
 
                     @if (Auth::user()->adminLevel >= 1)
                         <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index') ||
@@ -123,6 +129,26 @@
 
             <x-responsive-nav-link :href="route('inactivity.index')" :active="request()->routeIs('inactivity.index') || request()->routeIs('inactivity.create')">
                 {{ __('Inaktivitás') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('publicDocument.index')" :active="false" target="_blank" rel="noopener noreferrer">
+                {{ __('Publikus dokumentum') }}
+            </x-responsive-nav-link>
+
+            <div class="px-3 pt-3 pb-1 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                {{ __('Fontos dokumentumok') }}
+            </div>
+            <x-responsive-nav-link href="https://docs.google.com/document/d/1NX7BJq_gpV4AT91tUuMOOeFmnk_daJifhA0sBBcH0o0" :active="false" target="_blank" rel="noopener noreferrer">
+                {{ __('Frakció szabályzat') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link href="https://docs.google.com/document/d/1k9WmCBlmBSuH1W5ccQsniZzk1Fzi1Ltt" :active="false" target="_blank" rel="noopener noreferrer">
+                {{ __('Rádiózási segédlet') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link href="https://docs.google.com/document/d/1YBgXuT4D1HhVlAn_HD6FdxGbD0clXgJP" :active="false" target="_blank" rel="noopener noreferrer">
+                {{ __('Ellátási segédlet') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link href="https://docs.google.com/spreadsheets/d/15yS_PBe7-qe928YhbZmGEj4m3BXz5Lva/edit?gid=666139380" :active="false" target="_blank" rel="noopener noreferrer">
+                {{ __('Parkolóhely kiosztás') }}
             </x-responsive-nav-link>
 
             @if (Auth::user()->adminLevel >= 1)

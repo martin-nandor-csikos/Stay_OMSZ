@@ -82,6 +82,18 @@
     </div>
 @endsession
 
+@session('vehicles-updated')
+    <div class="alert alert-success" role="alert">
+        {{ session('vehicles-updated') }}
+    </div>
+@endsession
+
+@session('vehicles-not-updated')
+    <div class="alert alert-danger" role="alert">
+        {{ session('vehicles-not-updated') }}
+    </div>
+@endsession
+
 @session('promotions-updated')
     <div class="alert alert-success" role="alert">
         {{ session('promotions-updated') }}

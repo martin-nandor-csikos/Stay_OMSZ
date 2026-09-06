@@ -33,6 +33,20 @@
                         </a>
                     </div>
                     <div>
+                        <a href="#alosztalyok">
+                            <x-primary-button class="w-full flex justify-center">
+                                {{ __('Alosztályok') }}
+                            </x-primary-button>
+                        </a>
+                    </div>
+                    <div>
+                        <a href="#plusz-hibapontok">
+                            <x-primary-button class="w-full flex justify-center">
+                                {{ __('Plusz- és hibapontok') }}
+                            </x-primary-button>
+                        </a>
+                    </div>
+                    <div>
                         <a href="#regisztralt-felhasznalok">
                             <x-primary-button class="w-full flex justify-center">
                                 {{ __('Regisztrált felhasználók') }}
@@ -43,6 +57,13 @@
                         <a href="#volt-felhasznalok">
                             <x-primary-button class="w-full flex justify-center">
                                 {{ __('Volt felhasználók') }}
+                            </x-primary-button>
+                        </a>
+                    </div>
+                    <div>
+                        <a href="#jarmuvek">
+                            <x-primary-button class="w-full flex justify-center">
+                                {{ __('Járművek') }}
                             </x-primary-button>
                         </a>
                     </div>

@@ -67,10 +67,17 @@ class AdminController extends Controller
         $userStats = $this->getWeeklyStatsQuery();
         $closedUserStats = $this->getClosedWeekStatsQuery();
         $inactivities = $this->getInactivitiesQuery();
+        $pointUsers = $this->getPointUsersQuery();
+        $departmentUsers = $this->getDepartmentUsersQuery();
+        $vehicles = $this->getVehiclesQuery();
+        $vehicleTypes = $this->getVehicleTypesQuery();
+        $vehicleUsers = $this->getVehicleUsersQuery();
+        $unassignedVehicleUserNames = $this->getUnassignedVehicleUserNames();
         $users = $this->getRegisteredUsersQuery();
         $deletedUsers = $this->getDeletedUsersQuery();
         $admin_logs = $this->getAdminLogsQuery();
         $ticketServices = $this->ticketServiceController->getServicesQuery();
+        $ticketServicesWithUpdateTimes = $this->ticketServiceController->getServicesWithUpdateTimesQuery();
         $settings = $this->settingController->getSettingsQuery();
         $ranks = $this->rankController->getRanksQuery();
         $promotionUsers = $this->getPromotionUsersQuery();
@@ -107,7 +114,14 @@ class AdminController extends Controller
             'closedUserStats' => $closedUserStats,
             'admin_logs' => $admin_logs,
             'inactivities' => $inactivities,
+            'pointUsers' => $pointUsers,
+            'departmentUsers' => $departmentUsers,
+            'vehicles' => $vehicles,
+            'vehicleTypes' => $vehicleTypes,
+            'vehicleUsers' => $vehicleUsers,
+            'unassignedVehicleUserNames' => $unassignedVehicleUserNames,
             'ticketServices' => $ticketServices,
+            'ticketServicesWithUpdateTimes' => $ticketServicesWithUpdateTimes,
             'settings' => $settings,
             'ranks' => $ranks,
             'promotionUsers' => $promotionUsers,
@@ -252,7 +266,7 @@ class AdminController extends Controller
      */
     public function updateClosedWeekPaidStatus(Request $request, string $id)
     {
-        if (Auth::user()->adminLevel != 2) {
+        if (Auth::user()->adminLevel < 1) {
             abort(403);
         }
 
@@ -349,6 +363,235 @@ class AdminController extends Controller
         return DB::table('inactivities')->join('users', 'users.id', '=', 'inactivities.user_id')->select('users.account_id', 'users.charactername', 'inactivities.begin', 'inactivities.end', 'inactivities.reason', 'inactivities.id', 'inactivities.status')->orderBy('inactivities.created_at', 'desc')->get();
     }
 
+    private function getPointUsersQuery()
+    {
+        return DB::table('users')
+            ->leftJoin('ranks', 'users.rank_id', '=', 'ranks.id')
+            ->select(
+                'users.id',
+                'users.charactername',
+                'users.plus_points',
+                'users.penalty_points',
+                'users.last_plus_point_at',
+                'users.last_penalty_point_at',
+                'ranks.name as rank_name'
+            )
+            ->orderBy('users.charactername')
+            ->get();
+    }
+
+    private function getDepartmentUsersQuery()
+    {
+        return DB::table('users')
+            ->leftJoin('ranks', 'users.rank_id', '=', 'ranks.id')
+            ->select('users.id', 'users.charactername', 'ranks.name as rank_name', 'users.department', 'users.last_department_change_at')
+            ->orderBy('users.charactername')
+            ->get();
+    }
+
+    public function updateUserDepartments(Request $request)
+    {
+        if (Auth::user()->adminLevel < 1) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'users' => ['required', 'array'],
+            'users.*.department' => ['required', 'in:MOK,MM,LMSZ,MGK'],
+        ]);
+
+        foreach ($validated['users'] as $userId => $values) {
+            $user = User::find($userId);
+            if (!$user || $user->department === $values['department']) {
+                continue;
+            }
+
+            $oldDepartment = $user->department;
+            $user->update([
+                'department' => $values['department'],
+                'last_department_change_at' => now(),
+            ]);
+
+            $this->logAdminAction('Frissítette ' . $user->charactername . ' alosztályát (' . $oldDepartment . ' -> ' . $values['department'] . ')');
+        }
+
+        return Redirect::route('admin.index')->with('departments-updated', 'Az alosztályok sikeresen frissítve.');
+    }
+
+    private function getVehiclesQuery()
+    {
+        return DB::table('vehicles')
+            ->leftJoin('users as caregiver', 'vehicles.caregiver_user_id', '=', 'caregiver.id')
+            ->leftJoin('users as secondary_caregiver', 'vehicles.secondary_caregiver_user_id', '=', 'secondary_caregiver.id')
+            ->select(
+                'vehicles.id',
+                'vehicles.vehicle_identifier',
+                'vehicles.plate_number',
+                'vehicles.type',
+                'vehicles.caregiver_user_id',
+                'vehicles.secondary_caregiver_user_id',
+                'caregiver.charactername as caregiver_name',
+                'secondary_caregiver.charactername as secondary_caregiver_name'
+            )
+            ->orderBy('vehicles.vehicle_identifier')
+            ->get();
+    }
+
+    private function getVehicleUsersQuery()
+    {
+        return DB::table('users')
+            ->select('id', 'charactername')
+            ->orderBy('charactername')
+            ->get();
+    }
+
+    private function getVehicleTypesQuery()
+    {
+        return DB::table('vehicles')
+            ->whereNotNull('type')
+            ->where('type', '!=', '')
+            ->distinct()
+            ->orderBy('type')
+            ->pluck('type')
+            ->all();
+    }
+
+    private function getUnassignedVehicleUserNames()
+    {
+        return DB::table('users')
+            ->whereNotExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('vehicles')
+                    ->whereColumn('vehicles.caregiver_user_id', 'users.id')
+                    ->orWhereColumn('vehicles.secondary_caregiver_user_id', 'users.id');
+            })
+            ->orderBy('charactername')
+            ->pluck('charactername')
+            ->all();
+    }
+
+    public function updateVehicles(Request $request)
+    {
+        if (Auth::user()->adminLevel < 1) {
+            abort(403);
+        }
+
+        $existingVehicles = DB::table('vehicles')->get()->keyBy('id');
+
+        $rules = [
+            'vehicles' => ['nullable', 'array'],
+            'vehicles.*.caregiver_user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'vehicles.*.secondary_caregiver_user_id' => ['nullable', 'integer', 'exists:users,id'],
+        ];
+
+        if (Auth::user()->adminLevel == 2) {
+            $rules = array_merge($rules, [
+                'vehicles.*.vehicle_identifier' => ['required', 'string', 'max:255'],
+                'vehicles.*.plate_number' => ['required', 'string', 'max:255'],
+                'vehicles.*.type' => ['required', 'string', 'max:255'],
+                'new_vehicles' => ['nullable', 'array'],
+                'new_vehicles.*.vehicle_identifier' => ['required', 'string', 'max:255'],
+                'new_vehicles.*.plate_number' => ['required', 'string', 'max:255'],
+                'new_vehicles.*.type' => ['required', 'string', 'max:255'],
+                'new_vehicles.*.caregiver_user_id' => ['nullable', 'integer', 'exists:users,id'],
+                'new_vehicles.*.secondary_caregiver_user_id' => ['nullable', 'integer', 'exists:users,id'],
+            ]);
+        }
+
+        $validated = $request->validate($rules);
+        $submittedVehicles = $validated['vehicles'] ?? [];
+
+        foreach (array_merge($submittedVehicles, $validated['new_vehicles'] ?? []) as $vehicleData) {
+            if (!empty($vehicleData['caregiver_user_id']) && !empty($vehicleData['secondary_caregiver_user_id']) && (int) $vehicleData['caregiver_user_id'] === (int) $vehicleData['secondary_caregiver_user_id']) {
+                return Redirect::route('admin.index')->with('vehicles-not-updated', 'Egy járműnél az Ápoló és II. Ápoló nem lehet ugyanaz a felhasználó.');
+            }
+        }
+
+        if (Auth::user()->adminLevel == 2) {
+            $vehicleIdentifiers = [];
+
+            foreach ($submittedVehicles as $vehicleId => $vehicleData) {
+                if (isset($existingVehicles[$vehicleId])) {
+                    $vehicleIdentifiers[] = $vehicleData['vehicle_identifier'];
+                }
+            }
+
+            foreach ($validated['new_vehicles'] ?? [] as $vehicleData) {
+                $vehicleIdentifiers[] = $vehicleData['vehicle_identifier'];
+            }
+
+            if (count($vehicleIdentifiers) !== count(array_unique($vehicleIdentifiers))) {
+                return Redirect::route('admin.index')->with('vehicles-not-updated', 'A jármű ID-knek egyedinek kell lenniük.');
+            }
+        }
+
+        try {
+            if (Auth::user()->adminLevel == 2) {
+                foreach ($existingVehicles as $vehicleId => $vehicle) {
+                    if (!array_key_exists((string) $vehicleId, $submittedVehicles)) {
+                        DB::table('vehicles')->where('id', $vehicleId)->delete();
+                        $this->logAdminAction('Törölte a(z) ' . $vehicle->vehicle_identifier . ' járművet.');
+                    }
+                }
+            }
+
+            foreach ($submittedVehicles as $vehicleId => $vehicleData) {
+                if (!isset($existingVehicles[$vehicleId])) {
+                    continue;
+                }
+
+                $vehicle = $existingVehicles[$vehicleId];
+                $updates = [
+                    'caregiver_user_id' => $vehicleData['caregiver_user_id'] ?? null,
+                    'secondary_caregiver_user_id' => $vehicleData['secondary_caregiver_user_id'] ?? null,
+                ];
+
+                if (Auth::user()->adminLevel == 2) {
+                    $updates['vehicle_identifier'] = $vehicleData['vehicle_identifier'];
+                    $updates['plate_number'] = $vehicleData['plate_number'];
+                    $updates['type'] = $vehicleData['type'];
+                }
+
+                if ($this->vehicleUpdatesChanged($vehicle, $updates)) {
+                    $updates['updated_at'] = now();
+                    DB::table('vehicles')->where('id', $vehicleId)->update($updates);
+                    $this->logAdminAction('Frissítette a(z) ' . $vehicle->vehicle_identifier . ' jármű adatait.');
+                }
+            }
+
+            if (Auth::user()->adminLevel == 2) {
+                foreach ($validated['new_vehicles'] ?? [] as $vehicleData) {
+                    DB::table('vehicles')->insert([
+                        'vehicle_identifier' => $vehicleData['vehicle_identifier'],
+                        'plate_number' => $vehicleData['plate_number'],
+                        'type' => $vehicleData['type'],
+                        'caregiver_user_id' => $vehicleData['caregiver_user_id'] ?? null,
+                        'secondary_caregiver_user_id' => $vehicleData['secondary_caregiver_user_id'] ?? null,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                    $this->logAdminAction('Létrehozta a(z) ' . $vehicleData['vehicle_identifier'] . ' járművet.');
+                }
+            }
+        } catch (Exception $e) {
+            return Redirect::route('admin.index')->with('vehicles-not-updated', 'A járművek mentése sikertelen.');
+        }
+
+        return Redirect::route('admin.index')->with('vehicles-updated', 'A járművek sikeresen frissítve.');
+    }
+
+    private function vehicleUpdatesChanged($vehicle, array $updates): bool
+    {
+        foreach ($updates as $field => $value) {
+            if ((string) ($vehicle->$field ?? '') !== (string) ($value ?? '')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Get the registered users
      *
@@ -357,6 +600,47 @@ class AdminController extends Controller
     private function getRegisteredUsersQuery()
     {
         return DB::table('users')->select('users.id', 'users.account_id', 'users.charactername', 'users.username', 'users.created_at', 'users.adminLevel')->orderBy('users.charactername', 'ASC')->get();
+    }
+
+    public function updateUserPoints(Request $request)
+    {
+        if (Auth::user()->adminLevel < 1) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'users' => ['required', 'array'],
+            'users.*.plus_points' => ['required', 'integer', 'min:0'],
+            'users.*.penalty_points' => ['required', 'integer', 'min:0'],
+        ]);
+
+        foreach ($validated['users'] as $userId => $pointValues) {
+            $user = User::find($userId);
+            if (!$user) {
+                continue;
+            }
+
+            $plusPoints = (int) $pointValues['plus_points'];
+            $penaltyPoints = (int) $pointValues['penalty_points'];
+            $updates = [
+                'plus_points' => $plusPoints,
+                'penalty_points' => $penaltyPoints,
+            ];
+
+            if ($plusPoints !== (int) $user->plus_points) {
+                $updates['last_plus_point_at'] = now();
+                $this->logAdminAction('Frissítette ' . $user->charactername . ' pluszpontjait (' . $user->plus_points . ' -> ' . $plusPoints . ')');
+            }
+
+            if ($penaltyPoints !== (int) $user->penalty_points) {
+                $updates['last_penalty_point_at'] = now();
+                $this->logAdminAction('Frissítette ' . $user->charactername . ' hibapontjait (' . $user->penalty_points . ' -> ' . $penaltyPoints . ')');
+            }
+
+            $user->update($updates);
+        }
+
+        return Redirect::route('admin.index')->with('points-updated', 'A plusz- és hibapontok sikeresen frissítve.');
     }
 
     /**
@@ -443,6 +727,7 @@ class AdminController extends Controller
                 'username' => $randomUsername,
                 'password' => Hash::make($randomPassword),
                 'rank_id' => $lowestRank ? $lowestRank->id : null,
+                'department' => 'MGK',
                 'last_rank_change_at' => now(),
                 'highest_rank' => $lowestRank ? $lowestRank->name : null,
             ]);
@@ -657,10 +942,12 @@ class AdminController extends Controller
                     'charactername' => $user->charactername,
                     'previous_characternames' => empty($previousNames) ? null : json_encode($previousNames),
                     'highest_rank' => $user->highest_rank ?? ($user->rank ? $user->rank->name : null),
+                    'department' => $user->department,
                     'registered_at' => $user->created_at,
                     'deleted_at' => now(),
                     'reason' => request()->input('reason'),
                     'blacklist' => request()->input('blacklist'),
+                    'penalty_points' => $user->penalty_points,
                 ]);
 
                 $user->delete();
@@ -714,7 +1001,7 @@ class AdminController extends Controller
 
     public function updateUserRanks(Request $request)
     {
-        if (Auth::user()->adminLevel != 2) {
+        if (Auth::user()->adminLevel < 1) {
             abort(403);
         }
 
@@ -733,6 +1020,11 @@ class AdminController extends Controller
             if ($currentRankId !== $targetRankId) {
                 $oldRankName = $user->rank ? $user->rank->name : 'Nincs';
                 $newRank = !empty($newRankId) ? $ranks->get($newRankId) : null;
+
+                if (Auth::user()->adminLevel == 1 && !$this->canLevelOnePromoteToRank($user, $newRank)) {
+                    abort(403);
+                }
+
                 $newRankName = $newRank ? $newRank->name : 'Nincs';
 
                 $oldOrder = $user->rank ? $user->rank->rank_order : 0;
@@ -752,16 +1044,37 @@ class AdminController extends Controller
                     'last_rank_change_at' => now(),
                     'highest_rank' => $highestRankName,
                     'successful_weeks' => $carryOverWeeks,
-                    'promoted_from_rank' => $oldRankName,
-                    'promoted_to_rank' => $newRankName,
-                    'rank_change_type' => $rankChangeType,
+                ]);
+
+                $this->createUserAlertNotification((int) $user->id, 'rank_change', [
+                    'from_rank' => $oldRankName,
+                    'to_rank' => $newRankName,
+                    'change_type' => $rankChangeType,
                 ]);
 
                 $this->logAdminAction('Módosította a(z) ' . $user->charactername . ' felhasználó rangját (' . $oldRankName . ' -> ' . $newRankName . ')');
             }
         }
 
-        return Redirect::route('admin.index')->with('promotions-updated', 'A rangok sikeresen frissítve.');
+        return Redirect::route('admin.index')->with('promotions-updated', 'A rangok sikeresen frissültek.');
+    }
+
+    private function canLevelOnePromoteToRank(User $user, ?Rank $newRank): bool
+    {
+        if (!$newRank || $newRank->is_leader) {
+            return false;
+        }
+
+        $currentRank = $user->rank;
+        $expectedOrder = $currentRank ? $currentRank->rank_order + 1 : 1;
+
+        if ((int) $newRank->rank_order !== (int) $expectedOrder) {
+            return false;
+        }
+
+        $requiredWeeks = $currentRank ? (int) $currentRank->minimum_successful_weeks : 2;
+
+        return (int) $user->successful_weeks >= $requiredWeeks;
     }
 
     public function promoteUser(Request $request, string $id)
@@ -794,9 +1107,12 @@ class AdminController extends Controller
             'last_rank_change_at' => now(),
             'highest_rank' => $nextRank->name,
             'successful_weeks' => $carryOverWeeks,
-            'promoted_from_rank' => $oldRankName,
-            'promoted_to_rank' => $newRankName,
-            'rank_change_type' => 'promotion',
+        ]);
+
+        $this->createUserAlertNotification((int) $user->id, 'rank_change', [
+            'from_rank' => $oldRankName,
+            'to_rank' => $newRankName,
+            'change_type' => 'promotion',
         ]);
 
         $this->logAdminAction('Előléptette a(z) ' . $user->charactername . ' felhasználót (' . $oldRankName . ' -> ' . $newRankName . ')');
@@ -835,10 +1151,13 @@ class AdminController extends Controller
                 DB::table('users')->where('id', $stat->id)->update([
                     'salary' => $stat->salary ?? 0,
                     'salary_tooltip' => $stat->salary_tooltip ?? '',
-                    'closed_week_salary' => $stat->salary ?? 0,
-                    'closed_week_bonus' => $stat->bonus_percentage ?? 0,
-                    'closed_week_calculation' => $stat->salary_tooltip ?? '',
-                    'closed_week_message' => $stat->closed_week_message ?? null,
+                ]);
+
+                $this->createUserAlertNotification((int) $stat->id, 'closed_week_salary', [
+                    'salary' => $stat->salary ?? 0,
+                    'bonus' => $stat->bonus_percentage ?? 0,
+                    'calculation' => $stat->salary_tooltip ?? '',
+                    'message' => $stat->closed_week_message ?? null,
                 ]);
 
                 // Calculate successful weeks for each user
@@ -881,5 +1200,16 @@ class AdminController extends Controller
 
             return false;
         }
+    }
+
+    private function createUserAlertNotification(int $userId, string $type, array $payload): void
+    {
+        DB::table('user_alert_notifications')->insert([
+            'user_id' => $userId,
+            'type' => $type,
+            'payload' => json_encode($payload, JSON_UNESCAPED_UNICODE),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

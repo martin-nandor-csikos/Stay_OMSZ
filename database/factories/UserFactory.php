@@ -43,6 +43,7 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
             'rank_id' => $lowestRank ? $lowestRank->id : null,
+            'department' => 'MGK',
             'last_rank_change_at' => now(),
             'highest_rank' => $lowestRank ? $lowestRank->name : null,
         ];

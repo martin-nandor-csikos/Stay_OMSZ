@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DutyTimeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\InactivityController;
+use App\Http\Controllers\PublicDocumentController;
 use App\Http\Controllers\SettingController;
 use App\Models\User;
 
@@ -32,6 +33,9 @@ Route::get('/', function () {
     }
     return view('auth.login');
 });
+
+Route::get('/publikus-dokumentum', [PublicDocumentController::class, 'index'])->name('publicDocument.index');
+Route::get('/publikus-dokumentum/jarmuvek', [PublicDocumentController::class, 'vehicles'])->name('publicDocument.vehicles');
 
 Route::middleware('auth')->group(function () {
     Route::get('/fooldal', [DashboardController::class, 'index'])->name('dashboard');
@@ -104,6 +108,9 @@ Route::middleware('auth')->group(function () {
             Route::delete('/admin-inaktivitas-torles/{id}', [InactivityController::class, 'deleteInactivityAsAdmin'])->name('admin.deleteInactivityAsAdmin');
 
             Route::post('/beallitasok-frissites', [SettingController::class, 'update'])->name('admin.updateSettings');
+            Route::post('/pontok-mentese', [AdminController::class, 'updateUserPoints'])->name('admin.updateUserPoints');
+            Route::post('/alosztalyok-mentese', [AdminController::class, 'updateUserDepartments'])->name('admin.updateUserDepartments');
+            Route::post('/jarmuvek-mentese', [AdminController::class, 'updateVehicles'])->name('admin.updateVehicles');
             Route::post('/eloleptetesek-mentes', [AdminController::class, 'updateUserRanks'])->name('admin.updateUserRanks');
             Route::post('/felhasznalo-eloleptetes/{id}', [AdminController::class, 'promoteUser'])->name('admin.promoteUser');
         });

@@ -23,10 +23,14 @@
                                 <tr>
                                     <th scope="row">{{ $loop->iteration }}</th>
                                     <td>{{ $promoUser->charactername }}</td>
-                                    <td>
-                                        <select name="user_ranks[{{ $promoUser->id }}]"
+                                    <td class="promotion-rank-cell" data-search="{{ $promoUser->rank_name ?? '' }}">
+                                        @if (Auth::user()->adminLevel == 1)
+                                            <input type="hidden" class="user-rank-value"
+                                                name="user_ranks[{{ $promoUser->id }}]" value="{{ $promoUser->rank_id }}">
+                                        @endif
+                                        <select @if (Auth::user()->adminLevel == 2) name="user_ranks[{{ $promoUser->id }}]" @endif
                                             class="user-rank-select rounded border-gray-300 dark:bg-gray-900 dark:text-white"
-                                            @disabled(Auth::user()->adminLevel != 2)>
+                                            @disabled(Auth::user()->adminLevel == 1)>
                                             @foreach ($ranks as $rankOption)
                                                 <option value="{{ $rankOption->id }}" @selected($promoUser->rank_id == $rankOption->id)>
                                                     {{ $rankOption->name }}
@@ -62,7 +66,7 @@
                                         @elseif ($promoUser->is_max_rank)
                                             <span class="text-gray-500 font-semibold">{{ __('Legmagasabb rang') }}</span>
                                         @elseif ($promoUser->is_eligible)
-                                            @if (Auth::user()->adminLevel == 2)
+                                            @if (Auth::user()->adminLevel >= 1)
                                                 <button type="button"
                                                     class="promote-btn inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-semibold text-xs uppercase tracking-widest transition cursor-pointer"
                                                     data-user-name="{{ $promoUser->charactername }}"
@@ -86,7 +90,7 @@
                         </tbody>
                     </table>
 
-                    @if (Auth::user()->adminLevel == 2)
+                    @if (Auth::user()->adminLevel >= 1)
                         <div class="flex justify-end mt-4">
                             <x-primary-button id="promotions-save-button"
                                 class="admin-button disabled:!bg-gray-400 dark:disabled:!bg-gray-600 disabled:!text-gray-200 disabled:hover:!bg-gray-400 dark:disabled:hover:!bg-gray-600 disabled:cursor-not-allowed"
@@ -110,7 +114,22 @@
             promotionsForm.find('#promotions-save-button').prop('disabled', promotionsForm.serialize() === originalPromotionsValues);
         }
 
-        promotionsForm.on('change input', '.user-rank-select', checkPromotionsFormChanged);
+        function updatePromotionRankSearchData(select) {
+            const selectedRankName = select.find('option:selected').text().trim();
+
+            select.closest('.promotion-rank-cell').attr('data-search', selectedRankName);
+
+            if (window.promotionsTable) {
+                window.promotionsTable.rows().invalidate();
+            }
+        }
+
+        promotionsForm.on('change input', '.user-rank-select', function() {
+            updatePromotionRankSearchData($(this));
+            checkPromotionsFormChanged();
+        });
+
+        promotionsForm.on('change input', '.user-rank-value', checkPromotionsFormChanged);
 
         function markAsPromoted(btn) {
             btn.text('Előléptetve')
@@ -123,6 +142,7 @@
             const btn = $(this);
             const row = btn.closest('tr');
             const select = row.find('.user-rank-select');
+            const hiddenRankValue = row.find('.user-rank-value');
             const userName = btn.data('userName');
             const nextRank = btn.data('nextRank');
             const nextRankId = btn.data('nextRankId');
@@ -141,11 +161,13 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         select.val(nextRankId).trigger('change');
+                        hiddenRankValue.val(nextRankId).trigger('change');
                         markAsPromoted(btn);
                     }
                 });
             } else {
                 select.val(nextRankId).trigger('change');
+                hiddenRankValue.val(nextRankId).trigger('change');
                 markAsPromoted(btn);
             }
         });

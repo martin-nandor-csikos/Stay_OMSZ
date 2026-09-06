@@ -10,9 +10,11 @@
                             <th scope="col">Account ID</th>
                             <th scope="col">IC név</th>
                             <th scope="col">Legmagasabb rank</th>
+                            <th scope="col">Alosztály</th>
                             <th scope="col">Regisztráció ideje</th>
                             <th scope="col">Törlés ideje</th>
                             <th scope="col">Indok</th>
+                            <th scope="col">Hibapontok</th>
                             <th scope="col">Feketelista</th>
                         </tr>
                     </thead>
@@ -32,9 +34,11 @@
                                     @endif
                                 </td>
                                 <td>{{ $deletedUser->highest_rank ?? '-' }}</td>
+                                <td>{{ $deletedUser->department ?? '-' }}</td>
                                 <td>{{ \Illuminate\Support\Carbon::parse($deletedUser->registered_at)->format('Y.m.d H:i') }}</td>
                                 <td>{{ \Illuminate\Support\Carbon::parse($deletedUser->deleted_at)->format('Y.m.d H:i') }}</td>
                                 <td>{{ $deletedUser->reason }}</td>
+                                <td>{{ $deletedUser->penalty_points > 0 ? $deletedUser->penalty_points : '-' }}</td>
                                 <td>{{ $deletedUser->blacklist }}</td>
                             </tr>
                         @endforeach

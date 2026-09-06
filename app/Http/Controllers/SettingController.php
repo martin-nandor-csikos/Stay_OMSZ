@@ -50,6 +50,10 @@ class SettingController extends Controller
      */
     public function update(Request $request)
     {
+        if (Auth::user()->adminLevel != 2) {
+            abort(403);
+        }
+
         $services = $this->ticketServiceController->getServicesQuery();
         $settings = $this->getSettingsQuery();
         $existingRanks = $this->rankController->getRanksQuery()->keyBy('id');
@@ -69,7 +73,10 @@ class SettingController extends Controller
                 if ($request->input($serviceCost) != $cost) {
                     DB::table('ticket_services')
                         ->where('service_name', $serviceName)
-                        ->update(['cost' => (int) $request->input($serviceCost)]);
+                        ->update([
+                            'cost' => (int) $request->input($serviceCost),
+                            'updated_at' => now(),
+                        ]);
 
                     $this->logSettingChange($serviceName . ' diagnózis ára', '$' . $cost, '$' . $request->input($serviceCost));
                 }

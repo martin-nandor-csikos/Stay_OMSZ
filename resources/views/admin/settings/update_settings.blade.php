@@ -7,26 +7,7 @@
                 <form method="POST" action="{{ route('admin.updateSettings') }}" id="settings-form">
                     @csrf
 
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                        <div>
-                            <p class="top5 text-lg mt-4">Ellátási árak</p>
-                            <div class="grid gap-4 mx-4">
-                                @foreach ($ticketServices as $name => $cost)
-                                    <div>
-                                        <x-input-label for="{{ $name }}_cost" :value="$name" />
-                                        <x-text-input type="number" name="{{ $name }}_cost"
-                                            id="{{ $name }}_cost" value="{{ $cost }}"
-                                            class="required-field-input rounded border-gray-300 dark:bg-gray-900 dark:text-white"
-                                            required min="1" max="300000" />
-                                        <p class="required-field-error text-red-600 dark:text-red-400 text-sm mt-2 hidden">
-                                            Az ár nem lehet üres.
-                                        </p>
-                                        <x-input-error :messages="$errors->get($name . '_cost')" class="mt-2" />
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-
+                    <div class="grid gap-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));">
                         <div>
                             <p class="top5 text-lg mt-4">Minimumok</p>
                             <div class="grid gap-4 mx-4">
@@ -35,7 +16,7 @@
                                     <x-text-input type="number" name="minimum_report_count" id="minimum_report_count"
                                         value="{{ $settings->minimum_report_count }}"
                                         class="required-field-input rounded border-gray-300 dark:bg-gray-900 dark:text-white"
-                                        required min="0" max="1000" />
+                                        required min="0" max="1000" :readonly="Auth::user()->adminLevel != 2" />
                                     <p class="required-field-error text-red-600 dark:text-red-400 text-sm mt-2 hidden">
                                         A minimum jelentés szám nem lehet üres.
                                     </p>
@@ -47,7 +28,7 @@
                                         id="double_week_report_count"
                                         value="{{ $settings->double_week_report_count }}"
                                         class="required-field-input rounded border-gray-300 dark:bg-gray-900 dark:text-white"
-                                        required min="0" max="1000" />
+                                        required min="0" max="1000" :readonly="Auth::user()->adminLevel != 2" />
                                     <p class="required-field-error text-red-600 dark:text-red-400 text-sm mt-2 hidden">
                                         A dupla hét jelentés szám nem lehet üres.
                                     </p>
@@ -59,7 +40,7 @@
                                     <x-text-input type="number" name="minimum_duty_time" id="minimum_duty_time"
                                         value="{{ $settings->minimum_duty_time }}"
                                         class="required-field-input rounded border-gray-300 dark:bg-gray-900 dark:text-white"
-                                        required min="0" max="100000" />
+                                        required min="0" max="100000" :readonly="Auth::user()->adminLevel != 2" />
                                     <p class="required-field-error text-red-600 dark:text-red-400 text-sm mt-2 hidden">
                                         A minimum szolgálati idő nem lehet üres.
                                     </p>
@@ -71,7 +52,7 @@
                                     <x-text-input type="number" name="double_week_duty_time"
                                         id="double_week_duty_time" value="{{ $settings->double_week_duty_time }}"
                                         class="required-field-input rounded border-gray-300 dark:bg-gray-900 dark:text-white"
-                                        required min="0" max="100000" />
+                                        required min="0" max="100000" :readonly="Auth::user()->adminLevel != 2" />
                                     <p class="required-field-error text-red-600 dark:text-red-400 text-sm mt-2 hidden">
                                         A dupla hét szolgálati idő nem lehet üres.
                                     </p>
@@ -89,7 +70,7 @@
                                     <x-text-input type="number" name="bonus_first_percentage"
                                         id="bonus_first_percentage" value="{{ $settings->bonus_first_percentage }}"
                                         class="required-field-input rounded border-gray-300 dark:bg-gray-900 dark:text-white"
-                                        required min="0" max="100" />
+                                        required min="0" max="100" :readonly="Auth::user()->adminLevel != 2" />
                                     <p class="required-field-error text-red-600 dark:text-red-400 text-sm mt-2 hidden">
                                         A bónusz nem lehet üres.
                                     </p>
@@ -101,7 +82,7 @@
                                     <x-text-input type="number" name="bonus_second_percentage"
                                         id="bonus_second_percentage" value="{{ $settings->bonus_second_percentage }}"
                                         class="required-field-input rounded border-gray-300 dark:bg-gray-900 dark:text-white"
-                                        required min="0" max="100" />
+                                        required min="0" max="100" :readonly="Auth::user()->adminLevel != 2" />
                                     <p class="required-field-error text-red-600 dark:text-red-400 text-sm mt-2 hidden">
                                         A bónusz nem lehet üres.
                                     </p>
@@ -113,7 +94,7 @@
                                     <x-text-input type="number" name="bonus_third_percentage"
                                         id="bonus_third_percentage" value="{{ $settings->bonus_third_percentage }}"
                                         class="required-field-input rounded border-gray-300 dark:bg-gray-900 dark:text-white"
-                                        required min="0" max="100" />
+                                        required min="0" max="100" :readonly="Auth::user()->adminLevel != 2" />
                                     <p class="required-field-error text-red-600 dark:text-red-400 text-sm mt-2 hidden">
                                         A bónusz nem lehet üres.
                                     </p>
@@ -121,6 +102,39 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <p class="top5 text-lg">Ellátási árak</p>
+                        <table class="display view-reports" id="ticket-services">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Név</th>
+                                    <th scope="col">Ár ($)</th>
+                                    <th scope="col">Utolsó árfrissítés</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($ticketServicesWithUpdateTimes as $service)
+                                    <tr>
+                                        <th scope="row">{{ $loop->iteration }}</th>
+                                        <td>{{ $service->service_name }}</td>
+                                        <td>
+                                            <x-text-input type="number" name="{{ $service->service_name }}_cost"
+                                                id="{{ $service->service_name }}_cost" value="{{ $service->cost }}"
+                                                class="required-field-input rounded border-gray-300 dark:bg-gray-900 dark:text-white"
+                                                required min="1" max="300000" :readonly="Auth::user()->adminLevel != 2" />
+                                            <p class="required-field-error text-red-600 dark:text-red-400 text-sm mt-2 hidden">
+                                                Az ár nem lehet üres.
+                                            </p>
+                                            <x-input-error :messages="$errors->get($service->service_name . '_cost')" class="mt-2" />
+                                        </td>
+                                        <td>{{ $service->updated_at ? \Carbon\Carbon::parse($service->updated_at)->format('Y.m.d H:i') : '-' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
 
                     <div class="mt-6">
@@ -134,9 +148,11 @@
                                     <th scope="col">Min. sikeres hét</th>
                                     <th scope="col">Vizsga szükséges?</th>
                                     <th scope="col">Leader rank?</th>
-                                    <th scope="col">Kezelés</th>
-                                    <th scope="col">Fel</th>
-                                    <th scope="col">Le</th>
+                                    @if (Auth::user()->adminLevel == 2)
+                                        <th scope="col">Kezelés</th>
+                                        <th scope="col">Fel</th>
+                                        <th scope="col">Le</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody>
@@ -150,14 +166,14 @@
                                         <td>
                                             <x-text-input type="text" class="rank-name-input rounded border-gray-300 dark:bg-gray-900 dark:text-white"
                                                 name="ranks[{{ $rank->id }}][name]" value="{{ $rank->name }}"
-                                                required maxlength="255" :disabled="Auth::user()->adminLevel != 2" />
+                                                required maxlength="255" :readonly="Auth::user()->adminLevel != 2" />
                                             <p class="rank-name-error text-red-600 dark:text-red-400 text-sm mt-2 hidden"></p>
                                             <x-input-error :messages="$errors->get('ranks.' . $rank->id . '.name')" class="mt-2" />
                                         </td>
                                         <td>
                                             <x-text-input type="number" class="rank-salary-input rounded border-gray-300 dark:bg-gray-900 dark:text-white"
                                                 name="ranks[{{ $rank->id }}][salary]" value="{{ $rank->salary }}"
-                                                required min="0" max="1000000" :disabled="Auth::user()->adminLevel != 2" />
+                                                required min="0" max="1000000" :readonly="Auth::user()->adminLevel != 2" />
                                             <p class="rank-salary-error text-red-600 dark:text-red-400 text-sm mt-2 hidden">
                                                 Fizetés nem lehet üres
                                             </p>
@@ -166,8 +182,8 @@
                                         <td>
                                             <x-text-input type="number" class="rank-min-weeks-input rounded border-gray-300 dark:bg-gray-900 dark:text-white {{ $rank->is_leader ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed' : '' }}"
                                                 name="ranks[{{ $rank->id }}][minimum_successful_weeks]" value="{{ $rank->is_leader ? 0 : ($rank->minimum_successful_weeks ?? 2) }}"
-                                                required min="0" max="100" :disabled="Auth::user()->adminLevel != 2"
-                                                :readonly="(bool)$rank->is_leader" />
+                                                required min="0" max="100"
+                                                :readonly="Auth::user()->adminLevel != 2 || (bool)$rank->is_leader" />
                                             <x-input-error :messages="$errors->get('ranks.' . $rank->id . '.minimum_successful_weeks')" class="mt-2" />
                                         </td>
                                         <td class="text-center">
@@ -184,15 +200,13 @@
                                                 @checked($rank->is_leader)
                                                 @disabled(Auth::user()->adminLevel != 2)>
                                         </td>
-                                        <td>
-                                            @if (Auth::user()->adminLevel == 2)
+                                        @if (Auth::user()->adminLevel == 2)
+                                            <td>
                                                 <button type="button"
                                                     class="rank-delete-btn w-8 h-8 flex items-center justify-center rounded-full bg-red-600 hover:bg-red-700 text-white text-lg font-bold leading-none"
                                                     title="Rang törlése" aria-label="Rang törlése"
                                                     data-rank-name="{{ $rank->name }}">&minus;</button>
-                                            @endif
-                                        </td>
-                                        @if (Auth::user()->adminLevel == 2)
+                                            </td>
                                             <td>
                                                 <x-secondary-button type="button" class="rank-move-up"
                                                     :disabled="$loop->first">&uarr;</x-secondary-button>
@@ -201,9 +215,6 @@
                                                 <x-secondary-button type="button" class="rank-move-down"
                                                     :disabled="$loop->last">&darr;</x-secondary-button>
                                             </td>
-                                        @else
-                                            <td></td>
-                                            <td></td>
                                         @endif
                                     </tr>
                                 @endforeach
@@ -213,7 +224,7 @@
                                         <td></td>
                                         <td>
                                             <x-text-input type="text" id="new_rank_name_draft"
-                                                placeholder="Új rang hozzáadása"
+                                                placeholder="Név..."
                                                 class="rounded border-gray-300 dark:bg-gray-900 dark:text-white"
                                                 maxlength="255" />
                                             <p id="new-rank-name-error" class="text-red-600 dark:text-red-400 text-sm mt-2 hidden">
@@ -271,6 +282,7 @@
     $(function() {
         const settingsForm = $('#settings-form');
         const originalSettingsValues = settingsForm.serialize();
+        const canManageSettings = @json(Auth::user()->adminLevel == 2);
         let newRankCounter = 0;
 
         function hasFieldErrors() {
@@ -294,7 +306,7 @@
         function checkSettingsFormChanged() {
             const unchanged = settingsForm.serialize() === originalSettingsValues;
 
-            settingsForm.find('#settings-save-button').prop('disabled', unchanged || hasFieldErrors());
+            settingsForm.find('#settings-save-button').prop('disabled', !canManageSettings || unchanged || hasFieldErrors());
         }
 
         settingsForm.on('input change', 'input, select', checkSettingsFormChanged);
@@ -324,6 +336,12 @@
                 const isLeader = row.find('.rank-leader-input').is(':checked');
                 const examInput = row.find('.rank-exam-input');
                 const minWeeksInput = row.find('.rank-min-weeks-input');
+
+                if (!canManageSettings) {
+                    examInput.prop('disabled', true);
+                    minWeeksInput.prop('readonly', true);
+                    return;
+                }
 
                 if (index === 0) {
                     examInput.prop('checked', false).prop('disabled', true);

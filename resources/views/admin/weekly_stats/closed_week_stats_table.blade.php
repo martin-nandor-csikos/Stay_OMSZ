@@ -37,7 +37,7 @@
                                     @if ($closedUserStat->salary > 0)
                                         <input type="checkbox" class="closed-week-paid-status rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
                                             data-user-id="{{ $closedUserStat->id }}" @checked($closedUserStat->is_paid)
-                                            @disabled(Auth::user()->adminLevel != 2)>
+                                            @disabled(Auth::user()->adminLevel < 1)>
                                     @else
                                         -
                                     @endif
@@ -106,10 +106,7 @@
             });
         }
 
-        $('.closed-week-paid-status').on('change', function() {
-            const checkbox = $(this);
-            const isPaid = checkbox.is(':checked');
-
+        function updatePaidStatus(checkbox, isPaid) {
             checkbox.prop('disabled', true);
 
             $.ajax({
@@ -120,6 +117,34 @@
                 checkbox.prop('checked', !isPaid);
             }).always(function() {
                 checkbox.prop('disabled', false);
+            });
+        }
+
+        $('.closed-week-paid-status').on('change', function() {
+            const checkbox = $(this);
+            const isPaid = checkbox.is(':checked');
+
+            if (isPaid) {
+                updatePaidStatus(checkbox, true);
+                return;
+            }
+
+            checkbox.prop('checked', true);
+
+            Swal.fire({
+                title: 'Kifizetés visszavonása',
+                text: 'Biztosan visszavonod a kifizetett státuszt?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Igen',
+                cancelButtonColor: '#d33',
+                cancelButtonText: 'Mégse',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    checkbox.prop('checked', false);
+                    updatePaidStatus(checkbox, false);
+                }
             });
         });
 
