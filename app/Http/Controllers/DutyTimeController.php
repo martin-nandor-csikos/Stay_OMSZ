@@ -138,6 +138,8 @@ class DutyTimeController extends Controller
             $duty = DutyTime::findOrFail($id);
             $duty->delete();
 
+            (new DashboardController())->refreshPersonalStatistics();
+
             return to_route('duty_time.index')->with('successful-deletion', 'A szolgálat törlése sikeres.');
         } catch (\Throwable $th) {
             return to_route('duty_time.index')->with('unsuccessful-deletion', 'A szolgálat törlése sikertelen.');
@@ -158,6 +160,8 @@ class DutyTimeController extends Controller
             $characterName = $this->getCharacterNameById($userId);
 
             $duty->delete();
+
+            (new DashboardController())->refreshPersonalStatistics();
 
             $this->logAdminAction('Kitörölte a(z) ' . $characterName . ' (Szolgálat ID: ' . $id . ') felhasználó szolgálatát');
 

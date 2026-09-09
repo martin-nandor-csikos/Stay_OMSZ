@@ -155,6 +155,8 @@ class ReportController extends Controller
             $report = Report::findOrFail($id);
             $report->delete();
 
+            (new DashboardController())->refreshPersonalStatistics();
+
             return to_route('reports.index')->with('successful-deletion', 'A jelentés törlése sikeres.');
         } catch (\Throwable $th) {
             return to_route('reports.index')->with('unsuccessful-deletion', 'A jelentés törlése sikertelen.');

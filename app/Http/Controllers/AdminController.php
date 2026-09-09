@@ -1082,6 +1082,8 @@ class AdminController extends Controller
 
             $report->delete();
 
+            (new DashboardController())->refreshPersonalStatistics();
+
             $this->logAdminAction('Kitörölte a(z) ' . $characterName . ' (Jelentés ID: ' . $id . ') felhasználó jelentését');
 
             return Redirect::route('admin.viewUserReports', $userId)->with('successful-user-report-deletion', 'A felhasználó jelentésének törlése sikeres.');

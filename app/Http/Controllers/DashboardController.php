@@ -187,10 +187,11 @@ class DashboardController extends Controller
 
     /**
      * Refresh personal statistics in the database and return them indexed by user id.
+     * Public so report/duty deletion can force an immediate recalculation.
      *
      * @return array<int, array<string, mixed>>
      */
-    private function refreshPersonalStatistics(): array
+    public function refreshPersonalStatistics(): array
     {
         $users = DB::table('users')->select('id', 'charactername', 'salary')->get()->keyBy('id');
         $storedStatistics = $this->getStoredPersonalStatisticsByUser();
