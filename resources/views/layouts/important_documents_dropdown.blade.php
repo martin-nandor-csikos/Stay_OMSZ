@@ -4,6 +4,7 @@
         'Rádiózási segédlet' => 'https://docs.google.com/document/d/1k9WmCBlmBSuH1W5ccQsniZzk1Fzi1Ltt',
         'Ellátási segédlet' => 'https://docs.google.com/document/d/1YBgXuT4D1HhVlAn_HD6FdxGbD0clXgJP',
         'Parkolóhely kiosztás' => 'https://docs.google.com/spreadsheets/d/15yS_PBe7-qe928YhbZmGEj4m3BXz5Lva/edit?gid=666139380',
+        'Rangok' => 'https://docs.google.com/spreadsheets/d/15yS_PBe7-qe928YhbZmGEj4m3BXz5Lva/edit?gid=1678971351',
     ];
 @endphp
 

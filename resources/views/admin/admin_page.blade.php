@@ -120,7 +120,7 @@
                 scrollX: true,
             });
 
-            var adminLogs = new DataTable('#admin-logs', {
+            window.adminLogsTable = new DataTable('#admin-logs', {
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
                 },
@@ -209,14 +209,14 @@
                                 extend: 'excel',
                                 filename: 'volt_felhasznalok_' + '{{ $currentDay }}',
                                 exportOptions: {
-                                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
                                 }
                             },
                             {
                                 extend: 'csv',
                                 filename: 'volt_felhasznalok_' + '{{ $currentDay }}',
                                 exportOptions: {
-                                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
                                 }
                             }
                         ]

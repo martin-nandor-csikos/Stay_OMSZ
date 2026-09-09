@@ -1,4 +1,27 @@
 <x-app-layout>
+    <style>
+        .admin-level-help .admin-level-tooltip {
+            display: none;
+            width: 36rem;
+            max-width: calc(100vw - 2rem);
+        }
+
+        .admin-level-help:hover .admin-level-tooltip,
+        .admin-level-help:focus-within .admin-level-tooltip {
+            display: block;
+        }
+
+        .admin-level-help-button {
+            background-color: #0066db;
+            margin-bottom: 2px;
+        }
+
+        .admin-level-help-button:hover,
+        .admin-level-help-button:focus {
+            background-color: #0066db;
+        }
+    </style>
+
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
             {{ __('Felhasználó frissítése') }}
@@ -13,7 +36,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 create-report">
-            <div class="bg-gray-50 dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="bg-gray-50 dark:bg-gray-800 overflow-visible shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <p class="top5">Csak azok az adatok frissülnek, amik megváltoznak.</p>
                     <form method="POST" action="{{ route('admin.updateUser', $user->id) }}">
@@ -44,7 +67,26 @@
                         </div>
                         @if (Auth::user()->adminLevel == 2)
                             <div class="mt-4">
-                                <x-input-label for="adminLevel" value="Admin szint" />
+                                <div class="flex items-center gap-2">
+                                    <x-input-label for="adminLevel" value="Admin szint" />
+                                    <div class="admin-level-help relative inline-flex">
+                                        <span tabindex="0"
+                                            class="admin-level-help-button w-5 h-5 inline-flex items-center justify-center rounded-full text-white text-xs font-bold leading-none cursor-help focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                            aria-label="Admin szint korlátozások">?</span>
+                                        <div
+                                            class="admin-level-tooltip absolute left-0 top-7 z-20 rounded-md bg-gray-800 border border-gray-700 p-3 text-sm text-gray-100 shadow-lg">
+                                            <p class="font-semibold mb-2">Az 1-es adminok a következő korlátozásokkal rendelkeznek:</p>
+                                            <ul class="list-disc pl-5 space-y-1">
+                                                <li>- Nem tudnak másnak admin jogot adni vagy admin szintet módosítani.</li>
+                                                <li>- Nem tudnak 2-es admin szintű felhasználót módosítani vagy törölni.</li>
+                                                <li>- Nem tudják módosítani a Beállítások részt, beleértve a minimumokat, bónuszokat és ellátási árakat.</li>
+                                                <li>- Nem tudnak rangokat létrehozni, törölni vagy módosítani.</li>
+                                                <li>- Csak jogosult felhasználót tudnak előléptetni, de nem tudnak lefokozni.</li>
+                                                <li>- Nem tudnak járművet létrehozni, törölni vagy módosítani (ápolókat viszont tudják kezelni).</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
                                 @if ($user->username == Auth::user()->username)
                                     <select id="adminLevel" disabled
                                         class="rounded border-gray-300 dark:bg-gray-900 dark:text-white block mt-1 w-full">
@@ -68,7 +110,7 @@
                                     1-es admin szint --> A felhasználó admin, de nem tud másnak admin jogot adni.
                                 </p>
                                 <p class="text-sm text-gray-600 dark:text-gray-300">
-                                    2-es admin szint --> A felhasználó admin, és tud másnak admin jogot adni.
+                                    2-es admin szint --> A felhasználó főadmin.
                                 </p>
                                 <x-input-error :messages="$errors->get('adminLevel')" class="mt-2" />
                             </div>

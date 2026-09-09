@@ -53,9 +53,12 @@ class PasswordController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        DB::table('admin_logs')->insert(
-            ['user_id' => Auth::user()->id, 'didWhat' => 'Frissítette ' . $user->charactername . ' jelszavát']
-        );
+        DB::table('admin_logs')->insert([
+            'user_id' => Auth::user()->id,
+            'didWhat' => 'Frissítette ' . $user->charactername . ' jelszavát',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         return back()->with('password-updated', 'A jelszó sikeresen frissült.');
     }

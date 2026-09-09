@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
 
 class AdminController extends Controller
@@ -234,13 +236,14 @@ class AdminController extends Controller
                 DB::raw('COALESCE(users_closed.rank_name, "-") as rank_name'),
                 DB::raw('COALESCE(users_closed.salary, 0) as salary'),
                 'users_closed.is_paid',
+                'users_closed.payment_proof_url',
                 DB::raw('COALESCE(users_closed.salary_tooltip, "") as salary_tooltip'),
                 DB::raw('COALESCE(count(reports_closed.user_id), 0) as reportCount'),
                 DB::raw('COALESCE((SELECT MAX(reports_closed.created_at) FROM reports_closed WHERE reports_closed.user_id = users_closed.id), "-") as lastReportDate'),
                 DB::raw('COALESCE((SELECT SUM(duty_times_closed.minutes) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), 0) as dutyMinuteSum'),
                 DB::raw('COALESCE((SELECT MAX(duty_times_closed.end) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), "-") as lastDutyDate')
             )
-            ->groupBy('users_closed.id', 'users_closed.charactername', 'users_closed.rank_name', 'users_closed.salary', 'users_closed.is_paid', 'users_closed.salary_tooltip')
+            ->groupBy('users_closed.id', 'users_closed.charactername', 'users_closed.rank_name', 'users_closed.salary', 'users_closed.is_paid', 'users_closed.payment_proof_url', 'users_closed.salary_tooltip')
             ->orderBy('reportCount', 'DESC')
             ->get();
     }
@@ -253,7 +256,17 @@ class AdminController extends Controller
     public function getClosedWeekPaidStatuses()
     {
         return response()->json(
-            DB::table('users_closed')->pluck('is_paid', 'id')
+            DB::table('users_closed')
+                ->select('id', 'is_paid', 'payment_proof_url')
+                ->get()
+                ->mapWithKeys(function ($closedUser) {
+                    return [
+                        $closedUser->id => [
+                            'is_paid' => (bool) $closedUser->is_paid,
+                            'payment_proof_url' => $closedUser->payment_proof_url,
+                        ],
+                    ];
+                })
         );
     }
 
@@ -272,18 +285,35 @@ class AdminController extends Controller
 
         $validated = $request->validate([
             'is_paid' => ['required', 'boolean'],
+            'payment_proof_url' => ['required_if:is_paid,1', 'nullable', 'url', 'max:2048'],
         ]);
 
         $closedUser = DB::table('users_closed')->where('id', $id)->first();
         abort_unless($closedUser, 404);
 
+        $paymentProofUrl = $validated['is_paid'] ? $validated['payment_proof_url'] : null;
+
+        if ($paymentProofUrl && DB::table('users_closed')->where('payment_proof_url', $paymentProofUrl)->where('id', '!=', $id)->exists()) {
+            return response()->json([
+                'message' => 'Ezt a képet már feltöltötted',
+            ], 422);
+        }
+
         DB::table('users_closed')->where('id', $id)->update([
             'is_paid' => $validated['is_paid'],
+            'payment_proof_url' => $paymentProofUrl,
         ]);
 
-        $this->logAdminAction(($validated['is_paid'] ? 'Kifizetettként jelölte ' : 'Nem kifizetettként jelölte ') . $closedUser->charactername . ' felhasználót.');
+        $paymentProofLogValue = $paymentProofUrl
+            ? '<a href="' . e($paymentProofUrl) . '" target="_blank" rel="noopener noreferrer">' . e($paymentProofUrl) . '</a>'
+            : 'nincs';
 
-        return response()->json(['is_paid' => (bool) $validated['is_paid']]);
+        $this->logAdminAction(($validated['is_paid'] ? 'Kifizette ' : 'Nem kifizetettként jelölte ') . e($closedUser->charactername) . ' felhasználót (kép: ' . $paymentProofLogValue . ').');
+
+        return response()->json([
+            'is_paid' => (bool) $validated['is_paid'],
+            'payment_proof_url' => $paymentProofUrl,
+        ]);
     }
 
     /**
@@ -612,6 +642,8 @@ class AdminController extends Controller
             'users' => ['required', 'array'],
             'users.*.plus_points' => ['required', 'integer', 'min:0'],
             'users.*.penalty_points' => ['required', 'integer', 'min:0'],
+            'users.*.plus_points_reason' => ['nullable', 'string', 'max:1000'],
+            'users.*.penalty_points_reason' => ['nullable', 'string', 'max:1000'],
         ]);
 
         foreach ($validated['users'] as $userId => $pointValues) {
@@ -622,25 +654,74 @@ class AdminController extends Controller
 
             $plusPoints = (int) $pointValues['plus_points'];
             $penaltyPoints = (int) $pointValues['penalty_points'];
+            $oldPlusPoints = (int) $user->plus_points;
+            $oldPenaltyPoints = (int) $user->penalty_points;
+            $plusPointsReason = trim($pointValues['plus_points_reason'] ?? '');
+            $penaltyPointsReason = trim($pointValues['penalty_points_reason'] ?? '');
+
+            if ($plusPoints !== $oldPlusPoints && $plusPointsReason === '') {
+                throw ValidationException::withMessages([
+                    'users.' . $userId . '.plus_points_reason' => 'A pluszpont módosítását indokolni kell.',
+                ]);
+            }
+
+            if ($penaltyPoints !== $oldPenaltyPoints && $penaltyPointsReason === '') {
+                throw ValidationException::withMessages([
+                    'users.' . $userId . '.penalty_points_reason' => 'A hibapont módosítását indokolni kell.',
+                ]);
+            }
+
             $updates = [
                 'plus_points' => $plusPoints,
                 'penalty_points' => $penaltyPoints,
             ];
 
-            if ($plusPoints !== (int) $user->plus_points) {
+            if ($plusPoints !== $oldPlusPoints) {
                 $updates['last_plus_point_at'] = now();
-                $this->logAdminAction('Frissítette ' . $user->charactername . ' pluszpontjait (' . $user->plus_points . ' -> ' . $plusPoints . ')');
+                $this->recordUserPointHistory((int) $user->id, 'pluszpont', $oldPlusPoints, $plusPoints, $plusPointsReason);
+                $this->logAdminAction('Frissítette ' . $user->charactername . ' pluszpontjait (' . $oldPlusPoints . ' -> ' . $plusPoints . '). Indok: ' . $plusPointsReason);
+                $this->createUserAlertNotification((int) $user->id, 'point_change', [
+                    'point_type' => 'pluszpont',
+                    'old_value' => $oldPlusPoints,
+                    'new_value' => $plusPoints,
+                    'reason' => $plusPointsReason,
+                ]);
             }
 
-            if ($penaltyPoints !== (int) $user->penalty_points) {
+            if ($penaltyPoints !== $oldPenaltyPoints) {
                 $updates['last_penalty_point_at'] = now();
-                $this->logAdminAction('Frissítette ' . $user->charactername . ' hibapontjait (' . $user->penalty_points . ' -> ' . $penaltyPoints . ')');
+                $this->recordUserPointHistory((int) $user->id, 'hibapont', $oldPenaltyPoints, $penaltyPoints, $penaltyPointsReason);
+                $this->logAdminAction('Frissítette ' . $user->charactername . ' hibapontjait (' . $oldPenaltyPoints . ' -> ' . $penaltyPoints . '). Indok: ' . $penaltyPointsReason);
+                $this->createUserAlertNotification((int) $user->id, 'point_change', [
+                    'point_type' => 'hibapont',
+                    'old_value' => $oldPenaltyPoints,
+                    'new_value' => $penaltyPoints,
+                    'reason' => $penaltyPointsReason,
+                ]);
             }
 
             $user->update($updates);
         }
 
         return Redirect::route('admin.index')->with('points-updated', 'A plusz- és hibapontok sikeresen frissítve.');
+    }
+
+    private function recordUserPointHistory(int $userId, string $pointType, int $oldValue, int $newValue, string $reason): void
+    {
+        if (!Schema::hasTable('user_point_histories')) {
+            return;
+        }
+
+        DB::table('user_point_histories')->insert([
+            'user_id' => $userId,
+            'point_type' => $pointType,
+            'old_value' => $oldValue,
+            'new_value' => $newValue,
+            'reason' => $reason,
+            'changed_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     /**
@@ -660,7 +741,31 @@ class AdminController extends Controller
      */
     private function getAdminLogsQuery()
     {
-        return DB::table('admin_logs')->join('users', 'users.id', '=', 'admin_logs.user_id')->select('users.charactername', 'admin_logs.didWhat', 'admin_logs.created_at')->orderBy('admin_logs.created_at', 'desc')->get();
+        return DB::table('admin_logs')
+            ->join('users', 'users.id', '=', 'admin_logs.user_id')
+            ->select('users.charactername', 'admin_logs.didWhat', 'admin_logs.created_at')
+            ->orderByDesc('admin_logs.created_at')
+            ->orderByDesc('admin_logs.id')
+            ->get();
+    }
+
+    /**
+     * Return admin logs for automatic table refresh.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAdminLogs()
+    {
+        return response()->json(
+            $this->getAdminLogsQuery()->values()->map(function ($adminLog, $index) {
+                return [
+                    'row_number' => $index + 1,
+                    'charactername' => e($adminLog->charactername),
+                    'didWhat' => str_contains($adminLog->didWhat, '<a href=') ? $adminLog->didWhat : e($adminLog->didWhat),
+                    'created_at' => Carbon::parse($adminLog->created_at)->format('Y.m.d H:i'),
+                ];
+            })
+        );
     }
 
     /**
@@ -937,7 +1042,7 @@ class AdminController extends Controller
                     ->pluck('charactername')
                     ->all();
 
-                DB::table('deleted_users')->insert([
+                $deletedUserId = DB::table('deleted_users')->insertGetId([
                     'account_id' => $user->account_id,
                     'charactername' => $user->charactername,
                     'previous_characternames' => empty($previousNames) ? null : json_encode($previousNames),
@@ -949,6 +1054,13 @@ class AdminController extends Controller
                     'blacklist' => request()->input('blacklist'),
                     'penalty_points' => $user->penalty_points,
                 ]);
+
+                if (Schema::hasTable('user_point_histories')) {
+                    DB::table('user_point_histories')
+                        ->where('user_id', $user->id)
+                        ->whereNull('deleted_user_id')
+                        ->update(['deleted_user_id' => $deletedUserId]);
+                }
 
                 $user->delete();
 
@@ -978,6 +1090,49 @@ class AdminController extends Controller
         }
     }
 
+        public function viewUserPointHistories(string $id)
+        {
+            $user = User::findOrFail($id);
+
+            return view('admin.points.view_user_points', [
+                'charactername' => $user->charactername,
+                'plusPointHistories' => $this->getUserPointHistories((int) $user->id, 'pluszpont'),
+                'penaltyPointHistories' => $this->getUserPointHistories((int) $user->id, 'hibapont'),
+            ]);
+        }
+
+        public function viewDeletedUserPointHistories(string $id)
+        {
+            $deletedUser = DB::table('deleted_users')->where('id', $id)->first();
+            abort_unless($deletedUser, 404);
+
+            return view('admin.points.view_user_points', [
+                'charactername' => $deletedUser->charactername,
+                'plusPointHistories' => $this->getDeletedUserPointHistories((int) $deletedUser->id, 'pluszpont'),
+                'penaltyPointHistories' => $this->getDeletedUserPointHistories((int) $deletedUser->id, 'hibapont'),
+            ]);
+        }
+
+        private function getUserPointHistories(int $userId, string $pointType)
+        {
+            return DB::table('user_point_histories')
+                ->where('user_id', $userId)
+                ->where('point_type', $pointType)
+                ->orderByDesc('changed_at')
+                ->orderByDesc('id')
+                ->get();
+        }
+
+        private function getDeletedUserPointHistories(int $deletedUserId, string $pointType)
+        {
+            return DB::table('user_point_histories')
+                ->where('deleted_user_id', $deletedUserId)
+                ->where('point_type', $pointType)
+                ->orderByDesc('changed_at')
+                ->orderByDesc('id')
+                ->get();
+        }
+
     /**
      * Log the given admin action for the current user
      *
@@ -985,7 +1140,12 @@ class AdminController extends Controller
      */
     public function logAdminAction($action)
     {
-        DB::table('admin_logs')->insert(['user_id' => Auth::user()->id, 'didWhat' => $action]);
+        DB::table('admin_logs')->insert([
+            'user_id' => Auth::user()->id,
+            'didWhat' => $action,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     /**
@@ -1134,6 +1294,7 @@ class AdminController extends Controller
             $minDuty = (int) ($settings->minimum_duty_time ?? 800);
             $doubleReports = (int) ($settings->double_week_report_count ?? 40);
             $doubleDuty = (int) ($settings->double_week_duty_time ?? 1800);
+            $this->addWeeklyStatsToPersonalStatistics($weeklyStats);
 
             DB::delete('DELETE FROM reports_closed');
             DB::delete('DELETE FROM duty_times_closed');
@@ -1199,6 +1360,43 @@ class AdminController extends Controller
                 ->update(['isLocked' => 0]);
 
             return false;
+        }
+    }
+
+    private function addWeeklyStatsToPersonalStatistics($weeklyStats): void
+    {
+        if (!Schema::hasTable('personal_statistics')) {
+            return;
+        }
+
+        $topThreeReportUserIds = $weeklyStats
+            ->filter(fn ($stat) => (int) ($stat->reportCount ?? 0) > 0)
+            ->sortByDesc(fn ($stat) => (int) ($stat->reportCount ?? 0))
+            ->take(3)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        foreach ($weeklyStats as $stat) {
+            $userId = (int) $stat->id;
+            $existingStatistic = DB::table('personal_statistics')->where('user_id', $userId)->first();
+            $values = [
+                'total_report_count' => (int) ($existingStatistic->total_report_count ?? 0) + (int) ($stat->reportCount ?? 0),
+                'total_duty_minutes' => (int) ($existingStatistic->total_duty_minutes ?? 0) + (int) ($stat->dutyMinuteSum ?? 0),
+                'top_three_report_count' => (int) ($existingStatistic->top_three_report_count ?? 0) + (in_array($userId, $topThreeReportUserIds, true) ? 1 : 0),
+                'total_salary' => (int) ($existingStatistic->total_salary ?? 0) + (int) ($stat->salary ?? 0),
+                'updated_at' => now(),
+            ];
+
+            if ($existingStatistic) {
+                DB::table('personal_statistics')->where('user_id', $userId)->update($values);
+                continue;
+            }
+
+            DB::table('personal_statistics')->insert(array_merge($values, [
+                'user_id' => $userId,
+                'created_at' => now(),
+            ]));
         }
     }
 

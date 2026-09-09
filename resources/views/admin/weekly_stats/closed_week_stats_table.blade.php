@@ -35,9 +35,13 @@
                                 <td title="{{ $closedUserStat->salary_tooltip ?? '' }}">${{ number_format($closedUserStat->salary, 0, '.', ' ') }}</td>
                                 <td class="text-center">
                                     @if ($closedUserStat->salary > 0)
-                                        <input type="checkbox" class="closed-week-paid-status rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-                                            data-user-id="{{ $closedUserStat->id }}" @checked($closedUserStat->is_paid)
-                                            @disabled(Auth::user()->adminLevel < 1)>
+                                        <div class="inline-flex flex-col items-center gap-1">
+                                            <input type="checkbox" class="closed-week-paid-status rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                                data-user-id="{{ $closedUserStat->id }}" @checked($closedUserStat->is_paid)
+                                                @disabled(Auth::user()->adminLevel < 1)>
+                                            <a href="{{ $closedUserStat->payment_proof_url }}" target="_blank" rel="noopener noreferrer"
+                                                class="payment-proof-link text-sm mt-1 text-blue-500 underline {{ $closedUserStat->is_paid && $closedUserStat->payment_proof_url ? '' : 'hidden' }}">(kép)</a>
+                                        </div>
                                     @else
                                         -
                                     @endif
@@ -97,24 +101,64 @@
         const paidStatusesUrl = "{{ route('admin.getClosedWeekPaidStatuses') }}";
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
+        function renderPaymentProofLink(checkbox, proofUrl) {
+            const link = checkbox.closest('td').find('.payment-proof-link');
+
+            if (proofUrl) {
+                link.attr('href', proofUrl).removeClass('hidden');
+                return;
+            }
+
+            link.attr('href', '').addClass('hidden');
+        }
+
+        function isValidUrl(value) {
+            try {
+                const url = new URL(value);
+
+                return url.protocol === 'http:' || url.protocol === 'https:';
+            } catch (error) {
+                return false;
+            }
+        }
+
         function refreshPaidStatuses() {
             $.get(paidStatusesUrl, function(statuses) {
                 $('.closed-week-paid-status').each(function() {
-                    const userId = $(this).data('userId');
-                    $(this).prop('checked', Boolean(Number(statuses[userId])));
+                    const checkbox = $(this);
+                    const userId = checkbox.data('userId');
+                    const status = statuses[userId] || { is_paid: false, payment_proof_url: null };
+
+                    checkbox.prop('checked', Boolean(status.is_paid));
+                    renderPaymentProofLink(checkbox, status.payment_proof_url);
                 });
             });
         }
 
-        function updatePaidStatus(checkbox, isPaid) {
+        function updatePaidStatus(checkbox, isPaid, paymentProofUrl = null) {
             checkbox.prop('disabled', true);
 
             $.ajax({
                 url: "{{ url('/admin/lezart-het-kifizetes') }}/" + checkbox.data('userId'),
                 method: 'PUT',
-                data: { is_paid: isPaid ? 1 : 0, _token: csrfToken },
-            }).fail(function() {
+                data: {
+                    is_paid: isPaid ? 1 : 0,
+                    payment_proof_url: paymentProofUrl,
+                    _token: csrfToken,
+                },
+            }).done(function(response) {
+                checkbox.prop('checked', Boolean(response.is_paid));
+                renderPaymentProofLink(checkbox, response.payment_proof_url);
+            }).fail(function(xhr) {
                 checkbox.prop('checked', !isPaid);
+
+                if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.message) {
+                    Swal.fire({
+                        title: xhr.responseJSON.message,
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                    });
+                }
             }).always(function() {
                 checkbox.prop('disabled', false);
             });
@@ -125,7 +169,32 @@
             const isPaid = checkbox.is(':checked');
 
             if (isPaid) {
-                updatePaidStatus(checkbox, true);
+                checkbox.prop('checked', false);
+
+                Swal.fire({
+                    title: 'Csatolj a kifizetésről egy képernyőképet',
+                    input: 'url',
+                    inputPlaceholder: 'https://...',
+                    showCancelButton: true,
+                    confirmButtonText: 'OK',
+                    cancelButtonText: 'Mégse',
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return 'A link megadása kötelező.';
+                        }
+
+                        if (!isValidUrl(value)) {
+                            return 'Érvényes URL linket adj meg.';
+                        }
+
+                        return null;
+                    },
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        updatePaidStatus(checkbox, true, result.value);
+                    }
+                });
+
                 return;
             }
 
@@ -144,6 +213,8 @@
                 if (result.isConfirmed) {
                     checkbox.prop('checked', false);
                     updatePaidStatus(checkbox, false);
+                } else {
+                    checkbox.prop('checked', true);
                 }
             });
         });

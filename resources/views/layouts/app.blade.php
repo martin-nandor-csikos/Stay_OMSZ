@@ -125,6 +125,35 @@
                                 confirmButtonText: 'Rendben',
                             });
                         });
+                    @elseif ($queuedUserAlert->type === 'point_change')
+                        @php
+                            $pointType = $queuedUserAlert->payload['point_type'] ?? 'pont';
+                            $oldValue = $queuedUserAlert->payload['old_value'] ?? 0;
+                            $newValue = $queuedUserAlert->payload['new_value'] ?? 0;
+                            $reason = $queuedUserAlert->payload['reason'] ?? '';
+                            $pointIncreased = (int) $newValue > (int) $oldValue;
+                            $pointAlertTitle = $pointType === 'hibapont'
+                                ? ($pointIncreased ? 'Hibapontot kaptál' : 'Hibapontot vesztettél')
+                                : ($pointIncreased ? 'Pluszpontot kaptál' : 'Pluszpontot vesztettél');
+                            $pointAlertIcon = $pointType === 'hibapont'
+                                ? ($pointIncreased ? 'warning' : 'success')
+                                : ($pointIncreased ? 'success' : 'warning');
+                            $pointAlertHtml = '<div class="text-center space-y-2">';
+
+                            if ($pointAlertIcon === 'success') {
+                                $pointAlertHtml .= '<p>Gratulálunk!</p>';
+                            }
+
+                            $pointAlertHtml .= '<p><strong>Régi érték:</strong> ' . e($oldValue) . '</p><p><strong>Új érték:</strong> ' . e($newValue) . '</p><p><strong>Indok:</strong> ' . e($reason) . '</p></div>';
+                        @endphp
+                        window.queueAdminAlert(function() {
+                            return Swal.fire({
+                                title: @json($pointAlertTitle),
+                                html: @json($pointAlertHtml),
+                                icon: @json($pointAlertIcon),
+                                confirmButtonText: 'Rendben',
+                            });
+                        });
                     @elseif ($queuedUserAlert->type === 'closed_week_salary')
                         @php
                             $salaryMessage = $queuedUserAlert->payload['message'] ?? null;

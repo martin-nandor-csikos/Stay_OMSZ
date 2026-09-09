@@ -17,7 +17,13 @@
                             <tr>
                                 <th scope="row">{{ $loop->iteration }}</th>
                                 <td>{{ $admin_log->charactername }}</td>
-                                <td>{{ $admin_log->didWhat }}</td>
+                                <td>
+                                    @if (str_contains($admin_log->didWhat, '<a href='))
+                                        {!! $admin_log->didWhat !!}
+                                    @else
+                                        {{ $admin_log->didWhat }}
+                                    @endif
+                                </td>
                                 <td>{{ \Illuminate\Support\Carbon::parse($admin_log->created_at)->format('Y.m.d H:i') }}
                                 </td>
                             </tr>
@@ -28,3 +34,30 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(function() {
+        const adminLogsUrl = "{{ route('admin.getAdminLogs') }}";
+
+        function refreshAdminLogs() {
+            $.get(adminLogsUrl, function(adminLogs) {
+                if (!window.adminLogsTable) {
+                    return;
+                }
+
+                window.adminLogsTable.clear();
+                window.adminLogsTable.rows.add(adminLogs.map(function(adminLog) {
+                    return [
+                        adminLog.row_number,
+                        adminLog.charactername,
+                        adminLog.didWhat,
+                        adminLog.created_at,
+                    ];
+                }));
+                window.adminLogsTable.draw(false);
+            });
+        }
+
+        setInterval(refreshAdminLogs, 5000);
+    });
+</script>

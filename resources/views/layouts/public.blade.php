@@ -104,6 +104,9 @@
                     <x-responsive-nav-link href="https://docs.google.com/spreadsheets/d/15yS_PBe7-qe928YhbZmGEj4m3BXz5Lva/edit?gid=666139380" :active="false" target="_blank" rel="noopener noreferrer">
                         {{ __('Parkolóhely kiosztás') }}
                     </x-responsive-nav-link>
+                    <x-responsive-nav-link href="https://docs.google.com/spreadsheets/d/15yS_PBe7-qe928YhbZmGEj4m3BXz5Lva/edit?gid=1678971351" :active="false" target="_blank" rel="noopener noreferrer">
+                        {{ __('Rangok') }}
+                    </x-responsive-nav-link>
                 </div>
             </div>
         </nav>

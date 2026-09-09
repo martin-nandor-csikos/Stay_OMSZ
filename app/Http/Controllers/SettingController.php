@@ -174,7 +174,12 @@ class SettingController extends Controller
                         'is_leader' => $isLeader,
                     ]);
 
-                    DB::table('admin_logs')->insert(['user_id' => Auth::id(), 'didWhat' => 'Új rangot hozott létre (név: ' . $newRank->name . ', fizetés: $' . $newRank->salary . ', ' . $newRank->rank_order . '. hely).']);
+                    DB::table('admin_logs')->insert([
+                        'user_id' => Auth::id(),
+                        'didWhat' => 'Új rangot hozott létre (név: ' . $newRank->name . ', fizetés: $' . $newRank->salary . ', ' . $newRank->rank_order . '. hely).',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
                 }
             }
         } catch (Exception $e) {
@@ -373,6 +378,11 @@ class SettingController extends Controller
      */
     private function logSettingChange($label, $oldValue, $newValue)
     {
-        DB::table('admin_logs')->insert(['user_id' => Auth::user()->id, 'didWhat' => 'Frissítette a(z) ' . $label . ' értékét (' . $oldValue . ' --> ' . $newValue . ').']);
+        DB::table('admin_logs')->insert([
+            'user_id' => Auth::user()->id,
+            'didWhat' => 'Frissítette a(z) ' . $label . ' értékét (' . $oldValue . ' --> ' . $newValue . ').',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

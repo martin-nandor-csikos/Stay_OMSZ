@@ -11,8 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasTable('users_closed')) {
+            return;
+        }
+
         Schema::table('users_closed', function (Blueprint $table) {
-            $table->boolean('is_paid')->default(false)->after('salary');
+            if (!Schema::hasColumn('users_closed', 'is_paid')) {
+                $table->boolean('is_paid')->default(false);
+            }
+
+            if (!Schema::hasColumn('users_closed', 'payment_proof_url')) {
+                $table->string('payment_proof_url', 2048)->nullable()->after('is_paid');
+            }
         });
     }
 
@@ -21,8 +31,18 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (!Schema::hasTable('users_closed')) {
+            return;
+        }
+
         Schema::table('users_closed', function (Blueprint $table) {
-            $table->dropColumn('is_paid');
+            if (Schema::hasColumn('users_closed', 'payment_proof_url')) {
+                $table->dropColumn('payment_proof_url');
+            }
+
+            if (Schema::hasColumn('users_closed', 'is_paid')) {
+                $table->dropColumn('is_paid');
+            }
         });
     }
 };

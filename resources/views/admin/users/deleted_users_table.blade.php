@@ -15,6 +15,7 @@
                             <th scope="col">Törlés ideje</th>
                             <th scope="col">Indok</th>
                             <th scope="col">Hibapontok</th>
+                            <th scope="col">Plusz- és hibapontok</th>
                             <th scope="col">Feketelista</th>
                         </tr>
                     </thead>
@@ -39,6 +40,17 @@
                                 <td>{{ \Illuminate\Support\Carbon::parse($deletedUser->deleted_at)->format('Y.m.d H:i') }}</td>
                                 <td>{{ $deletedUser->reason }}</td>
                                 <td>{{ $deletedUser->penalty_points > 0 ? $deletedUser->penalty_points : '-' }}</td>
+                                <td>
+                                    @if ($deletedUser->penalty_points > 0)
+                                        <a href="{{ route('admin.viewDeletedUserPointHistories', $deletedUser->id) }}"
+                                            target="_blank_deleted_points_{{ $loop->iteration }}"
+                                            class="inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-200 dark:text-gray-800 border border-transparent rounded-md font-semibold text-xs text-gray-50 uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-300 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                            {{ __('Plusz- és hibapontok') }}
+                                        </a>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                                 <td>{{ $deletedUser->blacklist }}</td>
                             </tr>
                         @endforeach

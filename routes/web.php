@@ -91,11 +91,14 @@ Route::middleware('auth')->group(function () {
             Route::delete('/jelentes-torles/{id}', [AdminController::class, 'deleteReport'])->name('admin.deleteReport');
             Route::get('/szolgalatok/{id}', [AdminController::class, 'viewUserDuty'])->name('admin.viewUserDuty');
             Route::delete('/szolgalat-torles/{id}', [AdminController::class, 'deleteDutyTime'])->name('admin.deleteDutyTime');
+            Route::get('/pontok/{id}', [AdminController::class, 'viewUserPointHistories'])->name('admin.viewUserPointHistories');
+            Route::get('/volt-felhasznalo-pontok/{id}', [AdminController::class, 'viewDeletedUserPointHistories'])->name('admin.viewDeletedUserPointHistories');
 
             Route::get('/lezart-jelentesek/{id}', [AdminController::class, 'viewClosedUserReports'])->name('admin.viewClosedUserReports');
             Route::get('/lezart-szolgalatok/{id}', [AdminController::class, 'viewClosedUserDuty'])->name('admin.viewClosedUserDuty');
             Route::get('/lezart-het-kifizetesek', [AdminController::class, 'getClosedWeekPaidStatuses'])->name('admin.getClosedWeekPaidStatuses');
             Route::put('/lezart-het-kifizetes/{id}', [AdminController::class, 'updateClosedWeekPaidStatus'])->name('admin.updateClosedWeekPaidStatus');
+            Route::get('/admin-logok', [AdminController::class, 'getAdminLogs'])->name('admin.getAdminLogs');
 
             Route::get('/regisztracio', [AdminController::class, 'userRegistrationPage'])->name('admin.userRegistrationPage');
             Route::post('/regisztracio', [AdminController::class, 'registerUser'])->name('admin.registerUser');
