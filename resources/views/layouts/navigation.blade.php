@@ -6,7 +6,8 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
-                        <img class="block h-9 w-auto fill-current text-gray-800 logo" src="{{ asset('/img/OMSZ.svg')}} " alt="OMSZ logo">
+                        <img class="block h-9 w-auto fill-current text-gray-800 logo" src="{{ asset('img/OMSZ.svg') }}"
+                            alt="OMSZ logo">
                     </a>
                 </div>
 
@@ -28,8 +29,20 @@
                         {{ __('Inaktivitás') }}
                     </x-nav-link>
 
-                    @if (Auth::user()->isAdmin)
-                        <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index') || request()->routeIs('admin.editUser') || request()->routeIs('admin.viewUserReports') || request()->routeIs('admin.viewUserDuty') || request()->routeIs('admin.userRegistrationPage') || request()->routeIs('admin.viewClosedUserReports') || request()->routeIs('admin.viewClosedUserDuty')">
+                    <x-nav-link :href="route('publicDocument.index')" :active="false" target="_blank" rel="noopener noreferrer">
+                        {{ __('Publikus dokumentum') }}
+                    </x-nav-link>
+
+                    @include('layouts.important_documents_dropdown')
+
+                    @if (Auth::user()->adminLevel >= 1)
+                        <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index') ||
+                            request()->routeIs('admin.editUser') ||
+                            request()->routeIs('admin.viewUserReports') ||
+                            request()->routeIs('admin.viewUserDuty') ||
+                            request()->routeIs('admin.userRegistrationPage') ||
+                            request()->routeIs('admin.viewClosedUserReports') ||
+                            request()->routeIs('admin.viewClosedUserDuty')">
                             {{ __('Admin panel') }}
                         </x-nav-link>
                     @endif
@@ -44,12 +57,16 @@
                 </button>
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                        <button
+                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
                             <div>{{ Auth::user()->charactername }}</div>
 
                             <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd" />
                                 </svg>
                             </div>
                         </button>
@@ -65,7 +82,7 @@
                             @csrf
 
                             <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
+                                onclick="event.preventDefault();
                                                 this.closest('form').submit();">
                                 {{ __('Kijelentkezés') }}
                             </x-dropdown-link>
@@ -81,10 +98,14 @@
                     Világos mód
                 </button>
 
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-300 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700 focus:text-gray-500 transition duration-150 ease-in-out">
+                <button @click="open = ! open"
+                    class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-300 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700 focus:text-gray-500 transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        <path :class="{ 'hidden': open, 'inline-flex': !open }" class="inline-flex"
+                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16" />
+                        <path :class="{ 'hidden': !open, 'inline-flex': open }" class="hidden" stroke-linecap="round"
+                            stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
@@ -92,7 +113,7 @@
     </div>
 
     <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
+    <div :class="{ 'block': open, 'hidden': !open }" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Főoldal') }}
@@ -110,8 +131,37 @@
                 {{ __('Inaktivitás') }}
             </x-responsive-nav-link>
 
-            @if (Auth::user()->isAdmin)
-                <x-responsive-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index') || request()->routeIs('admin.editUser') || request()->routeIs('admin.viewUserReports') || request()->routeIs('admin.viewUserDuty') || request()->routeIs('admin.userRegistrationPage') || request()->routeIs('admin.viewClosedUserReports') || request()->routeIs('admin.viewClosedUserDuty')">
+            <x-responsive-nav-link :href="route('publicDocument.index')" :active="false" target="_blank" rel="noopener noreferrer">
+                {{ __('Publikus dokumentum') }}
+            </x-responsive-nav-link>
+
+            <div class="px-3 pt-3 pb-1 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                {{ __('Fontos dokumentumok') }}
+            </div>
+            <x-responsive-nav-link href="https://docs.google.com/document/d/1NX7BJq_gpV4AT91tUuMOOeFmnk_daJifhA0sBBcH0o0" :active="false" target="_blank" rel="noopener noreferrer">
+                {{ __('Frakció szabályzat') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link href="https://docs.google.com/document/d/1k9WmCBlmBSuH1W5ccQsniZzk1Fzi1Ltt" :active="false" target="_blank" rel="noopener noreferrer">
+                {{ __('Rádiózási segédlet') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link href="https://docs.google.com/document/d/1YBgXuT4D1HhVlAn_HD6FdxGbD0clXgJP" :active="false" target="_blank" rel="noopener noreferrer">
+                {{ __('Ellátási segédlet') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link href="https://docs.google.com/spreadsheets/d/15yS_PBe7-qe928YhbZmGEj4m3BXz5Lva/edit?gid=666139380" :active="false" target="_blank" rel="noopener noreferrer">
+                {{ __('Parkolóhely kiosztás') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link href="https://docs.google.com/spreadsheets/d/15yS_PBe7-qe928YhbZmGEj4m3BXz5Lva/edit?gid=1678971351" :active="false" target="_blank" rel="noopener noreferrer">
+                {{ __('Rangok') }}
+            </x-responsive-nav-link>
+
+            @if (Auth::user()->adminLevel >= 1)
+                <x-responsive-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index') ||
+                    request()->routeIs('admin.editUser') ||
+                    request()->routeIs('admin.viewUserReports') ||
+                    request()->routeIs('admin.viewUserDuty') ||
+                    request()->routeIs('admin.userRegistrationPage') ||
+                    request()->routeIs('admin.viewClosedUserReports') ||
+                    request()->routeIs('admin.viewClosedUserDuty')">
                     {{ __('Admin panel') }}
                 </x-responsive-nav-link>
             @endif
@@ -120,7 +170,8 @@
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
-                <div class="font-medium text-base text-gray-800 dark:text-gray-100">{{ Auth::user()->charactername }}</div>
+                <div class="font-medium text-base text-gray-800 dark:text-gray-100">{{ Auth::user()->charactername }}
+                </div>
                 <div class="font-medium text-sm text-gray-500 dark:text-gray-400">{{ Auth::user()->username }}</div>
             </div>
 
@@ -134,7 +185,7 @@
                     @csrf
 
                     <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
+                        onclick="event.preventDefault();
                                         this.closest('form').submit();">
                         {{ __('Kijelentkezés') }}
                     </x-responsive-nav-link>

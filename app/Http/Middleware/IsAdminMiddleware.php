@@ -20,7 +20,7 @@ class IsAdminMiddleware
             return redirect()->route('dashboard');
         }
 
-        if(Auth::user()->isAdmin == true){
+        if (Auth::user()->adminLevel >= 1) {
             return $next($request);
         }
 

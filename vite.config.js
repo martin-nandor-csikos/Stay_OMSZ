@@ -8,6 +8,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/js/report_checkbox.js',
+                'resources/js/swalConfirmDecision.js',
             ],
             refresh: true,
         }),

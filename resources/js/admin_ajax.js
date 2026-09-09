@@ -9,7 +9,7 @@ $(document).ready(function () {
             complete: function () {
                 setTimeout(function () {
                     fetchData(url, targetId);
-                }, 3000);
+                }, 30000);
             }
         });
     }
@@ -39,5 +39,5 @@ $(document).ready(function () {
     }
 
     updateAllData();
-    setTimeout(updateAllData, 3000);
+    setTimeout(updateAllData, 30000);
 });

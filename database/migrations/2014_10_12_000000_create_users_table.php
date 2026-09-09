@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('charactername');
             $table->string('username')->unique();
             $table->string('password');
-            $table->tinyInteger('isAdmin')->default(0);
-            $table->tinyInteger('canGiveAdmin')->default(0);
+            $table->tinyInteger('adminLevel')->default(0);
+            $table->boolean('has_logged_in')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });

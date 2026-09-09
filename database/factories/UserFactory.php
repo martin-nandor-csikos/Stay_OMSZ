@@ -17,17 +17,35 @@ class UserFactory extends Factory
     protected static ?string $password;
 
     /**
+     * The next Account ID assigned by this factory process.
+     */
+    protected static ?int $nextAccountId = null;
+
+    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
+        $lowestRank = \App\Models\Rank::where('rank_order', 1)->first();
+
+        if (static::$nextAccountId === null) {
+            static::$nextAccountId = (\App\Models\User::max('account_id') ?? 0) + 1;
+        }
+
+        $accountId = static::$nextAccountId++;
+
         return [
+            'account_id' => $accountId,
             'charactername' => fake()->name(),
             'username' => fake()->unique()->userName(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'rank_id' => $lowestRank ? $lowestRank->id : null,
+            'department' => 'MGK',
+            'last_rank_change_at' => now(),
+            'highest_rank' => $lowestRank ? $lowestRank->name : null,
         ];
     }
 }

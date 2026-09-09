@@ -29,6 +29,16 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = Auth::user();
+
+        // Show the password change reminder only after the user's very first login
+        if (!$user->has_logged_in) {
+            $user->has_logged_in = true;
+            $user->save();
+
+            $request->session()->flash('show-first-login-alert', true);
+        }
+
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 

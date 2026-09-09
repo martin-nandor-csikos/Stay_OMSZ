@@ -3,14 +3,15 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DutyTimeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\InactivityController;
-
+use App\Http\Controllers\PublicDocumentController;
+use App\Http\Controllers\SettingController;
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,15 +25,21 @@ use App\Http\Controllers\InactivityController;
 */
 
 Route::get('/', function () {
-    if(Auth::check()) {
+    if (Auth::check()) {
         return redirect()->route('dashboard');
+    }
+    if (User::count() === 0) {
+        return redirect()->route('register');
     }
     return view('auth.login');
 });
 
+Route::get('/publikus-dokumentum', [PublicDocumentController::class, 'index'])->name('publicDocument.index');
+Route::get('/publikus-dokumentum/jarmuvek', [PublicDocumentController::class, 'vehicles'])->name('publicDocument.vehicles');
+
 Route::middleware('auth')->group(function () {
     Route::get('/fooldal', [DashboardController::class, 'index'])->name('dashboard');
-    
+
     // Ajax
     Route::get('/dashboard', [DashboardController::class, 'getDashboardTable'])->name('dashboardTable');
 
@@ -44,21 +51,25 @@ Route::middleware('auth')->group(function () {
 
     // Reports
     Route::get('/jelentesek', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('/uj-jelentes', [ReportController::class, 'create'])->name('reports.create');
-    Route::post('/uj-jelentes', [ReportController::class, 'store'])->name('reports.store');
-    Route::delete('/jelentes-torles/{id}', [ReportController::class, 'destroy'])->name('reports.delete');
+    Route::get('/uj-jelentes', [ReportController::class, 'createReportView'])->name('reports.createReportView');
+    Route::post('/uj-jelentes', [ReportController::class, 'storeNewReport'])->name('reports.storeNewReport');
+    Route::get('/jelentes-frissites/{id}', [ReportController::class, 'editReportView'])->name('reports.editReportView');
+    Route::put('/jelentes-frissites/{id}', [ReportController::class, 'updateReport'])->name('reports.updateReport');
+    Route::delete('/jelentes-torles/{id}', [ReportController::class, 'deleteReport'])->name('reports.deleteReport');
 
     // Duty
     Route::get('/szolgalatok', [DutyTimeController::class, 'index'])->name('duty_time.index');
-    Route::get('/uj-szolgalat', [DutyTimeController::class, 'create'])->name('duty_time.create');
-    Route::post('/uj-szolgalat', [DutyTimeController::class, 'store'])->name('duty_time.store');
-    Route::delete('/szolgalat-torles/{id}', [DutyTimeController::class, 'destroy'])->name('duty_time.delete');
+    Route::get('/uj-szolgalat', [DutyTimeController::class, 'createDutyView'])->name('duty_time.createDutyView');
+    Route::post('/uj-szolgalat', [DutyTimeController::class, 'storeNewDuty'])->name('duty_time.storeNewDuty');
+    Route::get('/szolgalat-frissites/{id}', [DutyTimeController::class, 'editDutyView'])->name('duty_time.editDutyView');
+    Route::put('/szolgalat-frissites/{id}', [DutyTimeController::class, 'updateDuty'])->name('duty_time.updateDuty');
+    Route::delete('/szolgalat-torles/{id}', [DutyTimeController::class, 'deleteDuty'])->name('duty_time.deleteDuty');
 
     // Inactivity
     Route::get('/inaktivitas', [InactivityController::class, 'index'])->name('inactivity.index');
-    Route::get('/uj-inaktivitas', [InactivityController::class, 'create'])->name('inactivity.create');
-    Route::post('/uj-inaktivitas', [InactivityController::class, 'store'])->name('inactivity.store');
-    Route::delete('/inaktivitas-torles/{id}', [InactivityController::class, 'destroy'])->name('inactivity.delete');
+    Route::get('/uj-inaktivitas', [InactivityController::class, 'createInactivityView'])->name('inactivity.createInactivityView');
+    Route::post('/uj-inaktivitas', [InactivityController::class, 'storeNewInactivity'])->name('inactivity.storeNewInactivity');
+    Route::delete('/inaktivitas-torles/{id}', [InactivityController::class, 'deleteInactivity'])->name('inactivity.deleteInactivity');
 
     // Admin
     Route::middleware('isAdmin')->group(function () {
@@ -69,7 +80,7 @@ Route::middleware('auth')->group(function () {
             // Route::get('/inactivities', [AdminController::class, 'getInactivitiesTable'])->name('admin.inactivities');
             // Route::get('/registrated-users', [AdminController::class, 'getRegistratedUsersTable'])->name('admin.registratedUsers');
             // Route::get('/admin-logs', [AdminController::class, 'getAdminLogsTable'])->name('admin.adminLogs');
-            
+
             Route::get('/', [AdminController::class, 'index'])->name('admin.index');
 
             Route::get('/felhasznalo-frissites/{id}', [AdminController::class, 'editUser'])->name('admin.editUser');
@@ -80,9 +91,14 @@ Route::middleware('auth')->group(function () {
             Route::delete('/jelentes-torles/{id}', [AdminController::class, 'deleteReport'])->name('admin.deleteReport');
             Route::get('/szolgalatok/{id}', [AdminController::class, 'viewUserDuty'])->name('admin.viewUserDuty');
             Route::delete('/szolgalat-torles/{id}', [AdminController::class, 'deleteDutyTime'])->name('admin.deleteDutyTime');
+            Route::get('/pontok/{id}', [AdminController::class, 'viewUserPointHistories'])->name('admin.viewUserPointHistories');
+            Route::get('/volt-felhasznalo-pontok/{id}', [AdminController::class, 'viewDeletedUserPointHistories'])->name('admin.viewDeletedUserPointHistories');
 
             Route::get('/lezart-jelentesek/{id}', [AdminController::class, 'viewClosedUserReports'])->name('admin.viewClosedUserReports');
             Route::get('/lezart-szolgalatok/{id}', [AdminController::class, 'viewClosedUserDuty'])->name('admin.viewClosedUserDuty');
+            Route::get('/lezart-het-kifizetesek', [AdminController::class, 'getClosedWeekPaidStatuses'])->name('admin.getClosedWeekPaidStatuses');
+            Route::put('/lezart-het-kifizetes/{id}', [AdminController::class, 'updateClosedWeekPaidStatus'])->name('admin.updateClosedWeekPaidStatus');
+            Route::get('/admin-logok', [AdminController::class, 'getAdminLogs'])->name('admin.getAdminLogs');
 
             Route::get('/regisztracio', [AdminController::class, 'userRegistrationPage'])->name('admin.userRegistrationPage');
             Route::post('/regisztracio', [AdminController::class, 'registerUser'])->name('admin.registerUser');
@@ -90,12 +106,18 @@ Route::middleware('auth')->group(function () {
 
             Route::post('/het-lezaras', [AdminController::class, 'closeWeek'])->name('admin.closeWeek');
 
-            Route::post('/inaktivitas-elfogadas/{id}', [AdminController::class, 'acceptInactivity'])->name('admin.acceptInactivity');
-            Route::post('/inaktivitas-elutasitas/{id}', [AdminController::class, 'denyInactivity'])->name('admin.denyInactivity');
-            Route::delete('/admin-inaktivitas-torles/{id}', [AdminController::class, 'destroyInactivity'])->name('admin.destroyInactivity');
+            Route::post('/inaktivitas-elfogadas/{id}', [InactivityController::class, 'acceptInactivity'])->name('admin.acceptInactivity');
+            Route::post('/inaktivitas-elutasitas/{id}', [InactivityController::class, 'declineInactivity'])->name('admin.declineInactivity');
+            Route::delete('/admin-inaktivitas-torles/{id}', [InactivityController::class, 'deleteInactivityAsAdmin'])->name('admin.deleteInactivityAsAdmin');
+
+            Route::post('/beallitasok-frissites', [SettingController::class, 'update'])->name('admin.updateSettings');
+            Route::post('/pontok-mentese', [AdminController::class, 'updateUserPoints'])->name('admin.updateUserPoints');
+            Route::post('/alosztalyok-mentese', [AdminController::class, 'updateUserDepartments'])->name('admin.updateUserDepartments');
+            Route::post('/jarmuvek-mentese', [AdminController::class, 'updateVehicles'])->name('admin.updateVehicles');
+            Route::post('/eloleptetesek-mentes', [AdminController::class, 'updateUserRanks'])->name('admin.updateUserRanks');
+            Route::post('/felhasznalo-eloleptetes/{id}', [AdminController::class, 'promoteUser'])->name('admin.promoteUser');
         });
     });
 });
 
-
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

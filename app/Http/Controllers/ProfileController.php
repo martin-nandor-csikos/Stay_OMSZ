@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\User;
-use Validator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,14 +30,14 @@ class ProfileController extends Controller
         $usernameCheck = ($request->input('username') !== '') && ($request->input('username') !== $user->username);
 
         if ($usernameCheck) {
-            $validatedData = $request->validate([
+            $request->validate([
                 'username' => ['string', 'max:255', 'unique:users'],
             ], [
                 'username.unique' => 'Ez a felhasználónév már foglalt.',
                 'username.max' => 'Túl hosszú a felhasználónév.',
             ]);
         } else {
-            $validatedData = $request->validate([
+            $request->validate([
                 'username' => ['string', 'max:255'],
             ], [
                 'username.max' => 'Túl hosszú a felhasználónév.',
