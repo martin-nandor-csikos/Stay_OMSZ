@@ -23,7 +23,7 @@
                                 <tr>
                                     <th scope="row">{{ $loop->iteration }}</th>
                                     <td>{{ $promoUser->charactername }}</td>
-                                    <td class="promotion-rank-cell" data-search="{{ $promoUser->rank_name ?? '' }}">
+                                    <td class="promotion-rank-cell" data-order="{{ $promoUser->rank_order ?? 0 }}" data-search="{{ $promoUser->rank_name ?? '' }}">
                                         @if (Auth::user()->adminLevel == 1)
                                             <input type="hidden" class="user-rank-value"
                                                 name="user_ranks[{{ $promoUser->id }}]" value="{{ $promoUser->rank_id }}">

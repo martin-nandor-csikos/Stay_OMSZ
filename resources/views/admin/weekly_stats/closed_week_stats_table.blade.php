@@ -29,7 +29,7 @@
                             <tr>
                                 <th scope="row">{{ $loop->iteration }}</th>
                                 <td>{{ $closedUserStat->charactername }}</td>
-                                <td>{{ $closedUserStat->rank_name ?? '-' }}</td>
+                                <td data-order="{{ $closedUserStat->rank_order ?? 0 }}">{{ $closedUserStat->rank_name ?? '-' }}</td>
                                 <td>{{ $closedUserStat->reportCount }}</td>
                                 <td>{{ $closedUserStat->dutyMinuteSum }}</td>
                                 <td title="{{ $closedUserStat->salary_tooltip ?? '' }}">${{ number_format($closedUserStat->salary, 0, '.', ' ') }}</td>

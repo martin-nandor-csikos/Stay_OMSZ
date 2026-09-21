@@ -130,6 +130,7 @@ class SettingController extends Controller
 
                     if ($newName !== $rank->name) {
                         DB::table('ranks')->where('id', $rankId)->update(['name' => $newName]);
+                        $this->updateRankNameInNotifications($rank->name, $newName);
                         $this->logSettingChange($rank->name . ' rang neve', $rank->name, $newName);
                     }
 
@@ -187,6 +188,60 @@ class SettingController extends Controller
         }
 
         return Redirect::route('admin.index')->with('settings-updated', 'A beállítások sikeresen frissültek.');
+    }
+
+    private function updateRankNameInNotifications(string $oldName, string $newName): void
+    {
+        DB::table('users')
+            ->where(function ($query) use ($oldName) {
+                $query->where('promoted_from_rank', $oldName)
+                    ->orWhere('promoted_to_rank', $oldName);
+            })
+            ->get()
+            ->each(function ($user) use ($oldName, $newName) {
+                $updates = [];
+
+                if ($user->promoted_from_rank === $oldName) {
+                    $updates['promoted_from_rank'] = $newName;
+                }
+
+                if ($user->promoted_to_rank === $oldName) {
+                    $updates['promoted_to_rank'] = $newName;
+                }
+
+                if ($updates) {
+                    DB::table('users')->where('id', $user->id)->update($updates);
+                }
+            });
+
+        DB::table('user_alert_notifications')
+            ->where('type', 'rank_change')
+            ->get()
+            ->each(function ($notification) use ($oldName, $newName) {
+                $payload = json_decode($notification->payload, true);
+
+                if (!is_array($payload)) {
+                    return;
+                }
+
+                $updated = false;
+
+                foreach (['from_rank', 'to_rank'] as $field) {
+                    if (($payload[$field] ?? null) === $oldName) {
+                        $payload[$field] = $newName;
+                        $updated = true;
+                    }
+                }
+
+                if ($updated) {
+                    DB::table('user_alert_notifications')
+                        ->where('id', $notification->id)
+                        ->update([
+                            'payload' => json_encode($payload, JSON_UNESCAPED_UNICODE),
+                            'updated_at' => now(),
+                        ]);
+                }
+            });
     }
 
     /**

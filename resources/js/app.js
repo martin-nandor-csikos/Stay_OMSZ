@@ -31,69 +31,75 @@ function getCookie(name) {
     return null;
 }
 
+function updateThemeToggle(button, isDark) {
+    if (!button) {
+        return;
+    }
+
+    var modeName = isDark ? "Sötét mód" : "Világos mód";
+    var icon = isDark
+        ? '<svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M21.64 13a1 1 0 0 0-1.05-.14A8.05 8.05 0 0 1 10.9 3.46a1 1 0 0 0-1.19-1.3A10 10 0 1 0 21.84 14.05 1 1 0 0 0 21.64 13Z"/></svg>'
+        : '<svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>';
+
+    button.innerHTML = icon;
+    button.title = modeName;
+    button.setAttribute("aria-label", modeName);
+}
+
 $(function() {
     var darkThemeEnabled = getCookie("color-theme") === "dark";
 
     if (darkThemeEnabled) {
         document.documentElement.classList.add("dark");
-        themeToggleBtn.textContent = "Sötét mód";
-        themeToggleRespBtn.textContent = "Sötét mód";
     } else {
         document.documentElement.classList.remove("dark");
-        themeToggleBtn.textContent = "Világos mód";
-        themeToggleRespBtn.textContent = "Világos mód";
     }
+
+    updateThemeToggle(themeToggleBtn, darkThemeEnabled);
+    updateThemeToggle(themeToggleRespBtn, darkThemeEnabled);
 
     document.body.classList.remove('hidden');
 });
 
-themeToggleBtn.addEventListener("click", function () {
+function toggleTheme(button) {
     if (getCookie("color-theme")) {
         if (getCookie("color-theme") === "light") {
             document.documentElement.classList.add("dark");
             setCookie("color-theme", "dark", 365);
-            themeToggleBtn.textContent = "Sötét mód";
+            updateThemeToggle(themeToggleBtn, true);
+            updateThemeToggle(themeToggleRespBtn, true);
         } else {
             document.documentElement.classList.remove("dark");
             setCookie("color-theme", "light", 365);
-            themeToggleBtn.textContent = "Világos mód";
+            updateThemeToggle(themeToggleBtn, false);
+            updateThemeToggle(themeToggleRespBtn, false);
         }
     } else {
         if (document.documentElement.classList.contains("dark")) {
             document.documentElement.classList.remove("dark");
             setCookie("color-theme", "light", 365);
-            themeToggleBtn.textContent = "Világos mód";
+            updateThemeToggle(themeToggleBtn, false);
+            updateThemeToggle(themeToggleRespBtn, false);
         } else {
             document.documentElement.classList.add("dark");
             setCookie("color-theme", "dark", 365);
-            themeToggleBtn.textContent = "Sötét mód";
+            updateThemeToggle(themeToggleBtn, true);
+            updateThemeToggle(themeToggleRespBtn, true);
         }
     }
-});
+}
 
-themeToggleRespBtn.addEventListener("click", function () {
-    if (getCookie("color-theme")) {
-        if (getCookie("color-theme") === "light") {
-            document.documentElement.classList.add("dark");
-            setCookie("color-theme", "dark", 365);
-            themeToggleRespBtn.textContent = "Sötét mód";
-        } else {
-            document.documentElement.classList.remove("dark");
-            setCookie("color-theme", "light", 365);
-            themeToggleRespBtn.textContent = "Világos mód";
-        }
-    } else {
-        if (document.documentElement.classList.contains("dark")) {
-            document.documentElement.classList.remove("dark");
-            setCookie("color-theme", "light", 365);
-            themeToggleRespBtn.textContent = "Világos mód";
-        } else {
-            document.documentElement.classList.add("dark");
-            setCookie("color-theme", "dark", 365);
-            themeToggleRespBtn.textContent = "Sötét mód";
-        }
-    }
-});
+if (themeToggleBtn) {
+    themeToggleBtn.addEventListener("click", function () {
+        toggleTheme(themeToggleBtn);
+    });
+}
+
+if (themeToggleRespBtn) {
+    themeToggleRespBtn.addEventListener("click", function () {
+        toggleTheme(themeToggleRespBtn);
+    });
+}
 
 // Admin Ajax
 /*

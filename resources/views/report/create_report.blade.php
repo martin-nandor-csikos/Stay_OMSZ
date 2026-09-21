@@ -4,6 +4,9 @@
 @vite('resources/js/report_checkbox.js')
 
 <x-app-layout>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Új jelentés felvétele') }}
@@ -60,9 +63,18 @@
                 </div>
 
                 <div class="mt-4">
-                    <x-input-label for="withWho" :value="__('Társaid (nem kötelező)')" />
-                    <x-text-input id="withWho" class="block mt-1 w-full" type="text" name="withWho"
-                        autocomplete="withWho" maxlength="100" />
+                    <x-input-label for="withWho" :value="__('Társaid (ha voltak)')" />
+                    <select id="withWho" name="withWho[]" class="report-companions-select block mt-1 w-full" multiple>
+                        @php
+                            $selectedCompanions = old('withWho', []);
+                            $selectedCompanions = is_array($selectedCompanions) ? $selectedCompanions : array_filter(array_map('trim', explode(',', $selectedCompanions)));
+                        @endphp
+                        @foreach ($reportUsers as $reportUser)
+                            <option value="{{ $reportUser->charactername }}" @selected(in_array($reportUser->charactername, $selectedCompanions, true))>
+                                {{ $reportUser->charactername }}
+                            </option>
+                        @endforeach
+                    </select>
                     <x-input-error :messages="$errors->get('withWho')" class="mt-2" />
                 </div>
 
@@ -97,6 +109,15 @@
 
     <script>
         $(function() {
+            $('#withWho').select2({
+                width: '100%',
+                placeholder: 'Társaid...',
+                allowClear: true,
+                closeOnSelect: false,
+                minimumResultsForSearch: 0,
+                dropdownCssClass: 'report-companions-dropdown',
+            });
+
             function isEmpty($el) {
                 return $el.val().toString().trim() === '';
             }

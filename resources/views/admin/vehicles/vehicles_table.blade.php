@@ -24,21 +24,21 @@
                         </thead>
                         <tbody>
                             @foreach ($vehicles as $vehicle)
-                                <tr class="vehicle-row">
+                                <tr class="vehicle-row" data-plate-number="{{ $vehicle->plate_number ?? '' }}">
                                     <th scope="row" class="vehicle-row-number">{{ $loop->iteration }}</th>
-                                    <td>
+                                    <td data-search="{{ $vehicle->vehicle_identifier ?? '' }}">
                                         <x-text-input type="text" name="vehicles[{{ $vehicle->id }}][vehicle_identifier]"
                                             value="{{ $vehicle->vehicle_identifier }}"
                                             class="vehicle-admin-input rounded border-gray-300 dark:bg-gray-900 dark:text-white"
                                             required maxlength="255" :readonly="Auth::user()->adminLevel != 2" />
                                     </td>
-                                    <td>
+                                    <td data-order="{{ $vehicle->plate_number ?? '' }}" data-search="{{ $vehicle->plate_number ?? '' }}">
                                         <x-text-input type="text" name="vehicles[{{ $vehicle->id }}][plate_number]"
                                             value="{{ $vehicle->plate_number }}"
                                             class="vehicle-admin-input rounded border-gray-300 dark:bg-gray-900 dark:text-white"
                                             required maxlength="255" :readonly="Auth::user()->adminLevel != 2" />
                                     </td>
-                                    <td>
+                                    <td data-search="{{ $vehicle->type ?? '' }}">
                                         <select name="vehicles[{{ $vehicle->id }}][type]"
                                             class="vehicle-type-select vehicle-admin-input rounded border-gray-300 dark:bg-gray-900 dark:text-white"
                                             required @disabled(Auth::user()->adminLevel != 2)>
@@ -49,7 +49,7 @@
                                             @endforeach
                                         </select>
                                     </td>
-                                    <td>
+                                    <td data-search="{{ $vehicle->caregiver_name ?? '' }}">
                                         <select name="vehicles[{{ $vehicle->id }}][caregiver_user_id]"
                                             class="vehicle-user-select rounded border-gray-300 dark:bg-gray-900 dark:text-white"
                                             @disabled(Auth::user()->adminLevel < 1)>
@@ -61,7 +61,7 @@
                                             @endforeach
                                         </select>
                                     </td>
-                                    <td>
+                                    <td data-search="{{ $vehicle->secondary_caregiver_name ?? '' }}">
                                         <select name="vehicles[{{ $vehicle->id }}][secondary_caregiver_user_id]"
                                             class="vehicle-user-select rounded border-gray-300 dark:bg-gray-900 dark:text-white"
                                             @disabled(Auth::user()->adminLevel < 1)>
@@ -93,7 +93,7 @@
                                             class="rounded border-gray-300 dark:bg-gray-900 dark:text-white"
                                             maxlength="255" />
                                     </td>
-                                    <td>
+                                    <td data-order="zzzzzzzzzz">
                                         <x-text-input type="text" id="new_vehicle_plate_draft"
                                             placeholder="Rendszám..."
                                             class="rounded border-gray-300 dark:bg-gray-900 dark:text-white"
@@ -252,12 +252,29 @@
             });
         }
 
+        function updateVehicleSearchData(row) {
+            const cells = $(row).find('td');
+            const vehicleIdentifier = cells.eq(0).find('input').val() || '';
+            const plateNumber = cells.eq(1).find('input').val() || '';
+            const type = cells.eq(2).find('select option:selected').text().trim();
+            const caregiver = cells.eq(3).find('select option:selected').text().trim();
+            const secondaryCaregiver = cells.eq(4).find('select option:selected').text().trim();
+
+            cells.eq(0).attr('data-search', vehicleIdentifier);
+            cells.eq(1).attr('data-search', plateNumber);
+            cells.eq(2).attr('data-search', type);
+            cells.eq(3).attr('data-search', caregiver);
+            cells.eq(4).attr('data-search', secondaryCaregiver);
+        }
+
         function refreshVehiclesTable() {
             if (!window.vehiclesTable) {
                 return;
             }
 
             window.vehiclesTable.rows().invalidate();
+            window.vehiclesTable.order([2, 'asc']).draw(false);
+            updateVehicleRowNumbers();
             window.vehiclesTable.columns.adjust();
         }
 
@@ -295,19 +312,24 @@
         initializeVehicleTypeSelects(document);
         updateVehicleRowNumbers();
 
-        if (initialUnassignedNames.length > 0) {
-            window.queueAdminAlert(function() {
-                return Swal.fire({
-                    title: 'Jármű nélküliek',
-                    html: renderNameList(initialUnassignedNames),
-                    icon: 'warning',
-                    confirmButtonText: 'Rendben',
-                });
-            });
-        }
-
         form.on('input change', 'input, select', updateSaveButton);
+        form.on('input change', 'input, select', function() {
+            const row = $(this).closest('tr.vehicle-row');
+
+            updateVehicleSearchData(row);
+            if (window.vehiclesTable && row.length) {
+                window.vehiclesTable.row(row).invalidate();
+            }
+        });
         form.on('select2:select select2:clear', '.vehicle-user-select, .vehicle-type-select', updateSaveButton);
+        form.on('input', 'input[name$="[plate_number]"]', function() {
+            const row = $(this).closest('tr.vehicle-row');
+            const plateNumber = $(this).val().trim();
+
+            row.attr('data-plate-number', plateNumber);
+            row.find('td').eq(2).attr('data-order', plateNumber);
+            refreshVehiclesTable();
+        });
 
         $('#add-vehicle-button').on('click', function() {
             const vehicleIdentifier = $('#new_vehicle_identifier_draft').val().trim();
@@ -348,26 +370,32 @@
             }
 
             const index = newVehicleCounter++;
-            const newRow = $('<tr class="vehicle-row"></tr>');
+            const newRow = $('<tr class="vehicle-row" data-plate-number="' + escapeHtml(plateNumber) + '"></tr>');
 
             newRow.append('<th scope="row" class="vehicle-row-number"></th>');
-            newRow.append('<td><input type="text" name="new_vehicles[' + index + '][vehicle_identifier]" value="' + escapeHtml(vehicleIdentifier) + '" class="vehicle-admin-input text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm rounded border-gray-300 dark:bg-gray-900 dark:text-white" required maxlength="255"></td>');
-            newRow.append('<td><input type="text" name="new_vehicles[' + index + '][plate_number]" value="' + escapeHtml(plateNumber) + '" class="vehicle-admin-input text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm rounded border-gray-300 dark:bg-gray-900 dark:text-white" required maxlength="255"></td>');
-            newRow.append('<td><select name="new_vehicles[' + index + '][type]" class="vehicle-type-select vehicle-admin-input rounded border-gray-300 dark:bg-gray-900 dark:text-white" required>' + buildVehicleTypeOptions(type) + '</select></td>');
-            newRow.append('<td><select name="new_vehicles[' + index + '][caregiver_user_id]" class="vehicle-user-select rounded border-gray-300 dark:bg-gray-900 dark:text-white">' + buildVehicleUserOptions(caregiverUserId) + '</select></td>');
-            newRow.append('<td><select name="new_vehicles[' + index + '][secondary_caregiver_user_id]" class="vehicle-user-select rounded border-gray-300 dark:bg-gray-900 dark:text-white">' + buildVehicleUserOptions(secondaryCaregiverUserId) + '</select></td>');
+            const caregiverName = vehicleUsers.find(function(user) {
+                return String(user.id) === String(caregiverUserId);
+            })?.name ?? '';
+            const secondaryCaregiverName = vehicleUsers.find(function(user) {
+                return String(user.id) === String(secondaryCaregiverUserId);
+            })?.name ?? '';
+
+            newRow.append('<td data-search="' + escapeHtml(vehicleIdentifier) + '"><input type="text" name="new_vehicles[' + index + '][vehicle_identifier]" value="' + escapeHtml(vehicleIdentifier) + '" class="vehicle-admin-input text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm rounded border-gray-300 dark:bg-gray-900 dark:text-white" required maxlength="255"></td>');
+            newRow.append('<td data-order="' + escapeHtml(plateNumber) + '" data-search="' + escapeHtml(plateNumber) + '"><input type="text" name="new_vehicles[' + index + '][plate_number]" value="' + escapeHtml(plateNumber) + '" class="vehicle-admin-input text-gray-900 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm rounded border-gray-300 dark:bg-gray-900 dark:text-white" required maxlength="255"></td>');
+            newRow.append('<td data-search="' + escapeHtml(type) + '"><select name="new_vehicles[' + index + '][type]" class="vehicle-type-select vehicle-admin-input rounded border-gray-300 dark:bg-gray-900 dark:text-white" required>' + buildVehicleTypeOptions(type) + '</select></td>');
+            newRow.append('<td data-search="' + escapeHtml(caregiverName) + '"><select name="new_vehicles[' + index + '][caregiver_user_id]" class="vehicle-user-select rounded border-gray-300 dark:bg-gray-900 dark:text-white">' + buildVehicleUserOptions(caregiverUserId) + '</select></td>');
+            newRow.append('<td data-search="' + escapeHtml(secondaryCaregiverName) + '"><select name="new_vehicles[' + index + '][secondary_caregiver_user_id]" class="vehicle-user-select rounded border-gray-300 dark:bg-gray-900 dark:text-white">' + buildVehicleUserOptions(secondaryCaregiverUserId) + '</select></td>');
             newRow.append('<td><button type="button" class="vehicle-delete-btn w-8 h-8 flex items-center justify-center rounded-full bg-red-600 hover:bg-red-700 text-white text-lg font-bold leading-none" title="Jármű törlése" aria-label="Jármű törlése">&minus;</button></td>');
 
-            newRow.insertBefore('#new-vehicle-row');
             initializeVehicleUserSelects(newRow);
             initializeVehicleTypeSelects(newRow);
+            window.vehiclesTable.row.add(newRow[0]);
 
             $('#new_vehicle_identifier_draft').val('');
             $('#new_vehicle_plate_draft').val('');
             $('#new_vehicle_type_draft').val('').trigger('change');
             $('#new_vehicle_caregiver_draft, #new_vehicle_secondary_caregiver_draft').val('').trigger('change');
 
-            updateVehicleRowNumbers();
             refreshVehiclesTable();
             updateSaveButton();
         });

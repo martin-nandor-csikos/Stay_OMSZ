@@ -23,6 +23,13 @@
 </head>
 
 <body class="font-sans text-gray-900 antialiased">
+    <div class="fixed top-4 right-4 z-10">
+        <button id="theme-toggle" type="button"
+            class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5"
+            title="Világos mód" aria-label="Világos mód">
+        </button>
+    </div>
+
     <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">
         <div>
             <a href="/">

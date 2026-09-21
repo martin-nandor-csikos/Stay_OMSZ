@@ -23,7 +23,7 @@
                                 <tr>
                                     <th scope="row">{{ $loop->iteration }}</th>
                                     <td>{{ $pointUser->charactername }}</td>
-                                    <td>{{ $pointUser->rank_name ?? '-' }}</td>
+                                    <td data-order="{{ $pointUser->rank_order ?? 0 }}">{{ $pointUser->rank_name ?? '-' }}</td>
                                     <td class="point-value-cell" data-order="{{ $pointUser->plus_points }}">
                                         <input type="number" name="users[{{ $pointUser->id }}][plus_points]"
                                             value="{{ $pointUser->plus_points }}" min="0"
