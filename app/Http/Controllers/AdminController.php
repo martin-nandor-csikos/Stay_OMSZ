@@ -157,7 +157,7 @@ class AdminController extends Controller
                 DB::raw('COALESCE((SELECT SUM(duty_times.minutes) FROM duty_times WHERE duty_times.user_id = users.id), 0) as dutyMinuteSum'),
                 DB::raw('COALESCE((SELECT MAX(duty_times.end) FROM duty_times WHERE duty_times.user_id = users.id), "-") as lastDutyDate')
             )
-            ->groupBy('users.id', 'users.charactername', 'ranks.name', 'ranks.salary')
+            ->groupBy('users.id', 'users.charactername', 'ranks.rank_order', 'ranks.name', 'ranks.salary')
             ->get();
 
         $userStats = $userStats->sort(function ($left, $right) {
