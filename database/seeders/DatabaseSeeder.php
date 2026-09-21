@@ -129,6 +129,33 @@ class DatabaseSeeder extends Seeder
             'cost' => 150000,
         ]);
 
+        \App\Models\Vehicle::factory()->create([
+            'id' => 1,
+            'vehicle_identifier' => '1',
+            'plate_number' => 'MA-03-01',
+            'type' => 'ESET',
+            'caregiver_user_id' => null,
+            'secondary_caregiver_user_id' => null,
+        ]);
+
+        \App\Models\Vehicle::factory()->create([
+            'id' => 2,
+            'vehicle_identifier' => '2',
+            'plate_number' => 'MA-03-02',
+            'type' => 'MGK',
+            'caregiver_user_id' => null,
+            'secondary_caregiver_user_id' => null,
+        ]);
+
+        \App\Models\Vehicle::factory()->create([
+            'id' => 3,
+            'vehicle_identifier' => '3',
+            'plate_number' => 'MA-04-01',
+            'type' => 'ROKO',
+            'caregiver_user_id' => null,
+            'secondary_caregiver_user_id' => null,
+        ]);
+
         \App\Models\User::factory(20)->create();
         \App\Models\Report::factory(20)->create();
         \App\Models\DutyTime::factory(50)->create();

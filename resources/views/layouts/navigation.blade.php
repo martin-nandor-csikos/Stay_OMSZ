@@ -52,8 +52,8 @@
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <button id="theme-toggle" type="button" style="margin-right: 15px"
-                    class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
-                    Világos mód
+                    class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5"
+                    title="Világos mód" aria-label="Világos mód">
                 </button>
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
@@ -94,8 +94,8 @@
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button id="theme-toggle-resp" type="button" style="margin-right: 15px"
-                    class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
-                    Világos mód
+                    class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5"
+                    title="Világos mód" aria-label="Világos mód">
                 </button>
 
                 <button @click="open = ! open"

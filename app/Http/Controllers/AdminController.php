@@ -150,6 +150,7 @@ class AdminController extends Controller
                 'users.id',
                 'users.charactername',
                 DB::raw('COALESCE(ranks.name, "-") as rank_name'),
+                'ranks.rank_order as rank_order',
                 'ranks.salary as rank_salary',
                 DB::raw('COALESCE(count(reports.user_id), 0) as reportCount'),
                 DB::raw('COALESCE((SELECT MAX(reports.created_at) FROM reports WHERE reports.user_id = users.id), "-") as lastReportDate'),
@@ -157,8 +158,17 @@ class AdminController extends Controller
                 DB::raw('COALESCE((SELECT MAX(duty_times.end) FROM duty_times WHERE duty_times.user_id = users.id), "-") as lastDutyDate')
             )
             ->groupBy('users.id', 'users.charactername', 'ranks.name', 'ranks.salary')
-            ->orderBy('reportCount', 'DESC')
             ->get();
+
+        $userStats = $userStats->sort(function ($left, $right) {
+            $reportDifference = (int) ($right->reportCount ?? 0) <=> (int) ($left->reportCount ?? 0);
+
+            if ($reportDifference !== 0) {
+                return $reportDifference;
+            }
+
+            return (int) ($right->dutyMinuteSum ?? 0) <=> (int) ($left->dutyMinuteSum ?? 0);
+        })->values();
 
         return $this->calculateWeeklySalaries($userStats);
     }
@@ -404,7 +414,8 @@ class AdminController extends Controller
                 'users.penalty_points',
                 'users.last_plus_point_at',
                 'users.last_penalty_point_at',
-                'ranks.name as rank_name'
+                'ranks.name as rank_name',
+                'ranks.rank_order as rank_order'
             )
             ->orderBy('users.charactername')
             ->get();
@@ -414,7 +425,7 @@ class AdminController extends Controller
     {
         return DB::table('users')
             ->leftJoin('ranks', 'users.rank_id', '=', 'ranks.id')
-            ->select('users.id', 'users.charactername', 'ranks.name as rank_name', 'users.department', 'users.last_department_change_at')
+            ->select('users.id', 'users.charactername', 'ranks.name as rank_name', 'ranks.rank_order as rank_order', 'users.department', 'users.last_department_change_at')
             ->orderBy('users.charactername')
             ->get();
     }

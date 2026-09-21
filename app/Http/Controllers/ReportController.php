@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Report;
+use App\Models\User;
 use App\Http\Controllers\TicketServiceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -53,9 +54,14 @@ class ReportController extends Controller
     public function createReportView()
     {
         $services = $this->ticketServiceController->getServicesQuery();
+        $reportUsers = User::query()
+            ->where('id', '<>', Auth::id())
+            ->orderBy('charactername')
+            ->get(['charactername']);
 
         return view('report.create_report', [
-            'services' => $services
+            'services' => $services,
+            'reportUsers' => $reportUsers,
         ]);
     }
 
@@ -72,7 +78,7 @@ class ReportController extends Controller
         $report['user_id'] = $request->user()->id;
         $report['price'] = $request->cost;
         $report['diagnosis'] = $request->services;
-        $report['withWho'] = $request->withWho;
+        $report['withWho'] = $this->formatCompanions($request->withWho ?? []);
         $report['img'] = $request->img;
 
         Report::create($report);
@@ -96,6 +102,10 @@ class ReportController extends Controller
             'report' => $report,
             'services' => $services,
             'selectedServices' => $selectedServices,
+            'reportUsers' => User::query()
+                ->where('id', '<>', Auth::id())
+                ->orderBy('charactername')
+                ->get(['charactername']),
         ]);
     }
 
@@ -124,8 +134,10 @@ class ReportController extends Controller
             $changed = true;
         }
 
-        if ($request->withWho !== $report->withWho) {
-            $report->withWho = $request->withWho;
+        $withWho = $this->formatCompanions($request->withWho ?? []);
+
+        if ($withWho !== $report->withWho) {
+            $report->withWho = $withWho;
             $changed = true;
         }
 
@@ -213,7 +225,8 @@ class ReportController extends Controller
         $request->validate([
             'cost' => ['required', 'integer', 'max:300000', 'min:0'],
             'services' => ['required', 'string'],
-            'withWho' => ['nullable', 'string'],
+            'withWho' => ['nullable', 'array'],
+            'withWho.*' => ['string', 'max:100'],
             'img' => ['required', 'url', 'unique:reports'],
         ], [
             'cost.required' => 'Az ár nem lehet üres.',
@@ -225,7 +238,7 @@ class ReportController extends Controller
             'services.string' => 'A ellátás mezőben csak szöveg lehet.',
             'services.max' => 'Az ellátás mező maximum 100 karakterből állhat.',
 
-            'withWho.string' => 'A társ mezőben csak szöveg lehet.',
+            'withWho.array' => 'A társak mezőben csak regisztrált felhasználók választhatók.',
 
             'img.required' => 'A kép megadása kötelező.',
             'img.url' => 'A képnek érvényes URL-nek kell lennie.',
@@ -245,7 +258,8 @@ class ReportController extends Controller
         $request->validate([
             'cost' => ['required', 'integer', 'max:300000', 'min:0'],
             'services' => ['required', 'string'],
-            'withWho' => ['nullable', 'string'],
+            'withWho' => ['nullable', 'array'],
+            'withWho.*' => ['string', 'max:100'],
             'img' => ['required', 'url', Rule::unique('reports')->ignore($reportId)],
         ], [
             'cost.required' => 'Az ár nem lehet üres.',
@@ -257,12 +271,21 @@ class ReportController extends Controller
             'services.string' => 'A ellátás mezőben csak szöveg lehet.',
             'services.max' => 'Az ellátás mező maximum 100 karakterből állhat.',
 
-            'withWho.string' => 'A társ mezőben csak szöveg lehet.',
+            'withWho.array' => 'A társak mezőben csak regisztrált felhasználók választhatók.',
 
             'img.required' => 'A kép megadása kötelező.',
             'img.url' => 'A képnek érvényes URL-nek kell lennie.',
             'img.max' => 'A kép URL-je maximum 100 karakterből állhat.',
             'img.unique' => 'Ezt a képet már feltöltötted.',
         ]);
+    }
+
+    private function formatCompanions(array|string $companions): string
+    {
+        if (is_string($companions)) {
+            $companions = array_map('trim', explode(',', $companions));
+        }
+
+        return implode(', ', array_filter(array_map('trim', $companions)));
     }
 }

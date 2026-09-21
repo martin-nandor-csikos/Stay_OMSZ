@@ -28,7 +28,7 @@
                                 <tr>
                                     <th scope="row">{{ $loop->iteration }}</th>
                                     <td>{{ $departmentUser->charactername }}</td>
-                                    <td>{{ $departmentUser->rank_name ?? '-' }}</td>
+                                    <td data-order="{{ $departmentUser->rank_order ?? 0 }}">{{ $departmentUser->rank_name ?? '-' }}</td>
                                     <td class="department-cell"
                                         data-search="{{ $departmentUser->department }} {{ $departmentLabels[$departmentUser->department] ?? '' }}">
                                         <select name="users[{{ $departmentUser->id }}][department]"

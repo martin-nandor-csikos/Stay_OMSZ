@@ -75,7 +75,7 @@
                                 filename: 'heti_statisztika_' +
                                     '{{ $firstDayOfWeek }}_{{ $lastDayOfWeek }}',
                                 exportOptions: {
-                                    columns: [0, 1, 2, 3, 4, 6, 7, 9]
+                                    columns: [0, 1, 2, 3, 4, 5, 6, 7]
                                 }
                             },
                             {
@@ -83,7 +83,7 @@
                                 filename: 'heti_statisztika_' +
                                     '{{ $firstDayOfWeek }}_{{ $lastDayOfWeek }}',
                                 exportOptions: {
-                                    columns: [0, 1, 2, 3, 4, 6, 7, 9]
+                                    columns: [0, 1, 2, 3, 4, 5, 6, 7]
                                 }
                             }
                         ]
@@ -103,7 +103,19 @@
                                 filename: 'heti_statisztika_' +
                                     '{{ $firstDayOfPreviousWeek }}_{{ $lastDayOfPreviousWeek }}',
                                 exportOptions: {
-                                    columns: [0, 1, 2, 3, 4, 6, 7, 9]
+                                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+                                    format: {
+                                        body: function(data, row, column, node) {
+                                            if (column === 6) {
+                                                const checkbox = $(node).find('.closed-week-paid-status');
+                                                const proofUrl = $(node).find('.payment-proof-link').attr('href');
+
+                                                return checkbox.is(':checked') && proofUrl ? proofUrl : '-';
+                                            }
+
+                                            return data;
+                                        },
+                                    },
                                 }
                             },
                             {
@@ -111,7 +123,19 @@
                                 filename: 'heti_statisztika_' +
                                     '{{ $firstDayOfPreviousWeek }}_{{ $lastDayOfPreviousWeek }}',
                                 exportOptions: {
-                                    columns: [0, 1, 2, 3, 4, 6, 7, 9]
+                                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+                                    format: {
+                                        body: function(data, row, column, node) {
+                                            if (column === 6) {
+                                                const checkbox = $(node).find('.closed-week-paid-status');
+                                                const proofUrl = $(node).find('.payment-proof-link').attr('href');
+
+                                                return checkbox.is(':checked') && proofUrl ? proofUrl : '-';
+                                            }
+
+                                            return data;
+                                        },
+                                    },
                                 }
                             }
                         ]
@@ -229,7 +253,9 @@
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/hu.json',
                 },
-                ordering: false,
+                order: [
+                    [2, 'asc']
+                ],
                 paging: false,
                 scrollX: true,
             });
