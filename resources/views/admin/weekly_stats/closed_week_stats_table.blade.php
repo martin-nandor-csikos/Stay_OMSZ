@@ -140,8 +140,9 @@
 
             $.ajax({
                 url: "{{ url('/admin/lezart-het-kifizetes') }}/" + checkbox.data('userId'),
-                method: 'PUT',
+                method: 'POST',
                 data: {
+                    _method: 'PUT',
                     is_paid: isPaid ? 1 : 0,
                     payment_proof_url: paymentProofUrl,
                     _token: csrfToken,
@@ -152,13 +153,23 @@
             }).fail(function(xhr) {
                 checkbox.prop('checked', !isPaid);
 
-                if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.message) {
-                    Swal.fire({
-                        title: xhr.responseJSON.message,
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                    });
+                let errorMessage = 'A kifizetési státusz módosítása sikertelen (hiba: ' + xhr.status + ').';
+
+                if (xhr.status === 419) {
+                    errorMessage = 'A munkameneted lejárt. Frissítsd az oldalt és próbáld újra.';
+                } else if (xhr.responseJSON) {
+                    if (xhr.responseJSON.errors) {
+                        errorMessage = Object.values(xhr.responseJSON.errors).flat().join(' ');
+                    } else if (xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
                 }
+
+                Swal.fire({
+                    title: errorMessage,
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                });
             }).always(function() {
                 checkbox.prop('disabled', false);
             });
