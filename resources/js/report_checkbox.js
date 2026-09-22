@@ -1,14 +1,17 @@
-// When the checkboxes are checked, update the value of price and diagnosis
 $(document).ready(function() {
-    $('input[type=checkbox]').click(function () {
-        let totalCost = parseFloat($('#cost').val()) || 0;
-        let checkedServices = $('input[type=checkbox]:checked').map(function () {
+    function updateReportCostAndServices() {
+        let checkedServices = $('.report-service-checkbox:checked').map(function () {
             return this.value;
         }).get().join(', ');
 
         $('#services').val(checkedServices || '');
 
-        totalCost = 0;
+        if ($('#free_treatment').is(':checked')) {
+            $('#cost').val(0);
+            return;
+        }
+
+        let totalCost = 0;
 
         $.each(services, function (service_name, service_cost) {
             if ($('#' + service_name).is(':checked')) {
@@ -21,5 +24,8 @@ $(document).ready(function() {
         });
 
         $('#cost').val(totalCost);
-    });
+    }
+
+    $('.report-service-checkbox, #free_treatment').on('change click', updateReportCostAndServices);
+    updateReportCostAndServices();
 });

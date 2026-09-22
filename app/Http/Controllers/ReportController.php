@@ -8,6 +8,7 @@ use App\Http\Controllers\TicketServiceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 
 class ReportController extends Controller
@@ -76,7 +77,7 @@ class ReportController extends Controller
         $this->validateReport($request);
 
         $report['user_id'] = $request->user()->id;
-        $report['price'] = $request->cost;
+        $report['price'] = $this->validatedReportCost($request);
         $report['diagnosis'] = $request->services;
         $report['withWho'] = $this->formatCompanions($request->withWho ?? []);
         $report['img'] = $request->img;
@@ -123,9 +124,10 @@ class ReportController extends Controller
         $this->validateReportUpdate($request, $report->id);
 
         $changed = false;
+        $cost = $this->validatedReportCost($request);
 
-        if ((int) $request->cost !== (int) $report->price) {
-            $report->price = $request->cost;
+        if ($cost !== (int) $report->price) {
+            $report->price = $cost;
             $changed = true;
         }
 
@@ -224,6 +226,7 @@ class ReportController extends Controller
     {
         $request->validate([
             'cost' => ['required', 'integer', 'max:300000', 'min:0'],
+            'free_treatment' => ['nullable', 'boolean'],
             'services' => ['required', 'string'],
             'withWho' => ['nullable', 'array'],
             'withWho.*' => ['string', 'max:100'],
@@ -233,6 +236,8 @@ class ReportController extends Controller
             'cost.integer' => 'Az árnak egy pozitív egész számnak kell lennie.',
             'cost.max' => 'Az ár maximum $300.000 lehet.',
             'cost.min' => 'Az ár minimum $0 lehet.',
+
+            'free_treatment.boolean' => 'Az ingyenes ellátás mező értéke érvénytelen.',
 
             'services.required' => 'Az ellátás mező nem lehet üres.',
             'services.string' => 'A ellátás mezőben csak szöveg lehet.',
@@ -257,6 +262,7 @@ class ReportController extends Controller
     {
         $request->validate([
             'cost' => ['required', 'integer', 'max:300000', 'min:0'],
+            'free_treatment' => ['nullable', 'boolean'],
             'services' => ['required', 'string'],
             'withWho' => ['nullable', 'array'],
             'withWho.*' => ['string', 'max:100'],
@@ -266,6 +272,8 @@ class ReportController extends Controller
             'cost.integer' => 'Az árnak egy pozitív egész számnak kell lennie.',
             'cost.max' => 'Az ár maximum $300.000 lehet.',
             'cost.min' => 'Az ár minimum $0 lehet.',
+
+            'free_treatment.boolean' => 'Az ingyenes ellátás mező értéke érvénytelen.',
 
             'services.required' => 'Az ellátás mező nem lehet üres.',
             'services.string' => 'A ellátás mezőben csak szöveg lehet.',
@@ -278,6 +286,38 @@ class ReportController extends Controller
             'img.max' => 'A kép URL-je maximum 100 karakterből állhat.',
             'img.unique' => 'Ezt a képet már feltöltötted.',
         ]);
+    }
+
+    private function validatedReportCost(Request $request): int
+    {
+        $expectedCost = $request->boolean('free_treatment') ? 0 : $this->calculateReportCost($request->services);
+
+        if ((int) $request->cost !== $expectedCost) {
+            throw ValidationException::withMessages([
+                'cost' => 'Az ár nem egyezik a kiválasztott ellátásokkal.',
+            ]);
+        }
+
+        return $expectedCost;
+    }
+
+    private function calculateReportCost(string $services): int
+    {
+        $availableServices = $this->ticketServiceController->getServicesQuery();
+        $selectedServices = array_filter(array_map('trim', explode(',', $services)));
+        $totalCost = 0;
+
+        foreach ($selectedServices as $serviceName) {
+            if (!array_key_exists($serviceName, $availableServices)) {
+                throw ValidationException::withMessages([
+                    'services' => 'Érvénytelen ellátás lett kiválasztva.',
+                ]);
+            }
+
+            $totalCost = min(300000, $totalCost + (int) $availableServices[$serviceName]);
+        }
+
+        return $totalCost;
     }
 
     private function formatCompanions(array|string $companions): string

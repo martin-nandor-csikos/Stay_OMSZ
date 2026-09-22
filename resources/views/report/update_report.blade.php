@@ -26,6 +26,12 @@
                                 class="block mt-1 w-full bg-gray-100 dark:bg-gray-500 dark:text-white cursor-not-allowed"
                                 type="number" name="cost" value="{{ old('cost', $report->price) }}" required
                                 max="300000" min="0" readonly />
+                            <label for="free_treatment" class="inline-flex items-center mt-2">
+                                <input type="checkbox" id="free_treatment" name="free_treatment" value="1"
+                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                    @checked(old('free_treatment', (int) $report->price === 0))>
+                                <span class="ms-2 text-sm text-gray-700 dark:text-gray-300">{{ __('Ingyenes ellátás') }}</span>
+                            </label>
                             <x-input-error :messages="$errors->get('cost')" class="mt-2" />
                         </div>
 
@@ -51,7 +57,7 @@
                                             <input type="checkbox" id="{{ $service_name }}" name="{{ $service_name }}"
                                                 value="{{ $service_name }}"
                                                 @checked(in_array($service_name, $selectedServices))
-                                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                                class="report-service-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                                             <label for="{{ $service_name }}"> {{ $service_name }}</label><br>
                                         </div>
 
@@ -126,6 +132,7 @@
             const originalReportValues = {
                 cost: $('#cost').val(),
                 services: $('#services').val(),
+                freeTreatment: $('#free_treatment').is(':checked'),
                 withWho: getCompanionsValue(),
                 img: $('#img').val(),
             };
@@ -151,6 +158,7 @@
                 const changed =
                     $('#cost').val() !== originalReportValues.cost ||
                     $('#services').val() !== originalReportValues.services ||
+                    $('#free_treatment').is(':checked') !== originalReportValues.freeTreatment ||
                     getCompanionsValue() !== originalReportValues.withWho ||
                     $('#img').val() !== originalReportValues.img;
 
@@ -158,7 +166,7 @@
             }
 
             // Ellátások: only react to checkbox changes, after report_checkbox.js updates the field
-            $('input[type=checkbox]').on('click', function() {
+            $('.report-service-checkbox, #free_treatment').on('click change', function() {
                 setTimeout(function() {
                     updateFieldError($('#services'));
                     updateSaveButtonState();

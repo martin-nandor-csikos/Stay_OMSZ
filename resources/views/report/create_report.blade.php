@@ -27,6 +27,12 @@
                                 class="block mt-1 w-full bg-gray-100 dark:bg-gray-500 dark:text-white cursor-not-allowed"
                                 type="number" name="cost" value="0" required max="300000" min="0"
                                 readonly />
+                            <label for="free_treatment" class="inline-flex items-center mt-2">
+                                <input type="checkbox" id="free_treatment" name="free_treatment" value="1"
+                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                    @checked(old('free_treatment'))>
+                                <span class="ms-2 text-sm text-gray-700 dark:text-gray-300">{{ __('Ingyenes ellátás') }}</span>
+                            </label>
                             <x-input-error :messages="$errors->get('cost')" class="mt-2" />
                         </div>
 
@@ -50,7 +56,7 @@
                                         <div class="form-check form-check-inline checkbox">
                                             <input type="checkbox" id="{{ $service_name }}" name="{{ $service_name }}"
                                                 value="{{ $service_name }}"
-                                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                                class="report-service-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                                             <label for="{{ $service_name }}"> {{ $service_name }}</label><br>
                                         </div>
 
@@ -140,7 +146,7 @@
             }
 
             // Ellátások: only react to checkbox changes, after report_checkbox.js updates the field
-            $('input[type=checkbox]').on('click', function() {
+            $('.report-service-checkbox, #free_treatment').on('click change', function() {
                 setTimeout(function() {
                     updateFieldError($('#services'));
                     updateSaveButtonState();
