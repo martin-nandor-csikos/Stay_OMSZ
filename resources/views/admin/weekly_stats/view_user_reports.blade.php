@@ -30,7 +30,8 @@
                             <tr>
                                 <th scope="col">#</th>
                                 <th scope="col">Ár ($)</th>
-                                <th scope="col">Diagnózis</th>
+                                <th scope="col">Ellátás</th>
+                                <th scope="col">Típus</th>
                                 <th scope="col">Társai</th>
                                 <th scope="col">Kép</th>
                                 <th scope="col">Felvéve</th>
@@ -45,6 +46,7 @@
                                     <th scope="row">{{ $loop->iteration }}</th>
                                     <td>{{ $report->price }}</td>
                                     <td>{{ $report->diagnosis }}</td>
+                                    <td>{{ $report->free_treatment ? 'Ingyenes' : ($report->npc_call ? 'NPC' : 'Csekk') }}</td>
                                     <td>{{ $report->withWho }}</td>
                                     <td><a href="{{ $report->img }}" target="blank">{{ $report->img }}</a></td>
                                     <td>{{ \Illuminate\Support\Carbon::parse($report->created_at)->format('Y.m.d H:i') }}
@@ -90,14 +92,14 @@
                             extend: 'excel',
                             filename: 'jelentesek_{{ $charactername }}',
                             exportOptions: {
-                                columns: [0, 1, 2, 3, 4, 5]
+                                columns: [0, 1, 2, 3, 4, 5, 6]
                             }
                         },
                         {
                             extend: 'csv',
                             filename: 'jelentesek_{{ $charactername }}',
                             exportOptions: {
-                                columns: [0, 1, 2, 3, 4, 5]
+                                columns: [0, 1, 2, 3, 4, 5, 6]
                             }
                         }
                     ]

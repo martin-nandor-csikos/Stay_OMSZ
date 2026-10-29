@@ -16,6 +16,8 @@ class Report extends Model
      */
     protected $fillable = [
         'price',
+        'free_treatment',
+        'npc_call',
         'diagnosis',
         'withWho',
         'img',
@@ -24,5 +26,7 @@ class Report extends Model
 
     protected $casts = [
         'created_at' => 'datetime',
+        'free_treatment' => 'boolean',
+        'npc_call' => 'boolean',
     ];
 }

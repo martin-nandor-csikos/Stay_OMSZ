@@ -34,7 +34,7 @@
                                 <td>{{ $closedUserStat->dutyMinuteSum }}</td>
                                 <td title="{{ $closedUserStat->salary_tooltip ?? '' }}">${{ number_format($closedUserStat->salary, 0, '.', ' ') }}</td>
                                 <td class="text-center">
-                                    @if ($closedUserStat->salary > 0)
+                                    @if ($closedUserStat->salary > 0 || $closedUserStat->is_leader)
                                         <div class="inline-flex flex-col items-center gap-1">
                                             <input type="checkbox" class="closed-week-paid-status rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
                                                 data-user-id="{{ $closedUserStat->id }}" @checked($closedUserStat->is_paid)
@@ -88,6 +88,9 @@
                 </table>
                 <div class="mt-4 text-gray-900 dark:text-gray-100">
                     <p>Összes jelentés: <b>{{ $totalReports }}</b></p>
+                    <p>Játékos csekkek száma: <b>{{ $closedWeekReportTypeCounts['checks'] }}</b></p>
+                    <p>Ingyenes játékos ellátások száma: <b>{{ $closedWeekReportTypeCounts['free_treatments'] }}</b></p>
+                    <p>NPC jelentések száma: <b>{{ $closedWeekReportTypeCounts['npc_reports'] }}</b></p>
                     <p>Összes szolgálati idő: <b>{{ $totalDutyMinutes }} perc</b></p>
                     <p>Kifizetés összesen: <b>${{ number_format($totalSalary, 0, '.', ' ') }}</b></p>
                 </div>

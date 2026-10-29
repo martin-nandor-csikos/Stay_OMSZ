@@ -27,12 +27,20 @@
                                 class="block mt-1 w-full bg-gray-100 dark:bg-gray-500 dark:text-white cursor-not-allowed"
                                 type="number" name="cost" value="0" required max="300000" min="0"
                                 readonly />
-                            <label for="free_treatment" class="inline-flex items-center mt-2">
-                                <input type="checkbox" id="free_treatment" name="free_treatment" value="1"
-                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-                                    @checked(old('free_treatment'))>
-                                <span class="ms-2 text-sm text-gray-700 dark:text-gray-300">{{ __('Ingyenes ellátás') }}</span>
-                            </label>
+                            <div class="flex flex-wrap gap-x-6">
+                                <label for="free_treatment" class="report-treatment-option inline-flex items-center mt-2">
+                                    <input type="checkbox" id="free_treatment" name="free_treatment" value="1"
+                                        class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                        @checked(old('free_treatment'))>
+                                    <span class="ms-2 text-sm text-gray-700 dark:text-gray-300">{{ __('Ingyenes játékos ellátás') }}</span>
+                                </label>
+                                <label for="npc_call" class="report-treatment-option inline-flex items-center mt-2">
+                                    <input type="checkbox" id="npc_call" name="npc_call" value="1"
+                                        class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                        @checked(old('npc_call'))>
+                                    <span class="ms-2 text-sm text-gray-700 dark:text-gray-300">{{ __('NPC hívás') }}</span>
+                                </label>
+                            </div>
                             <x-input-error :messages="$errors->get('cost')" class="mt-2" />
                         </div>
 

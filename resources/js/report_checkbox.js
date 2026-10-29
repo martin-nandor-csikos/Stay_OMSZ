@@ -1,12 +1,20 @@
 $(document).ready(function() {
     function updateReportCostAndServices() {
+        const freeTreatment = $('#free_treatment');
+        const npcCall = $('#npc_call');
+
+        npcCall.prop('disabled', freeTreatment.is(':checked'));
+        freeTreatment.prop('disabled', npcCall.is(':checked'));
+        freeTreatment.closest('.report-treatment-option').toggleClass('is-disabled', freeTreatment.is(':disabled'));
+        npcCall.closest('.report-treatment-option').toggleClass('is-disabled', npcCall.is(':disabled'));
+
         let checkedServices = $('.report-service-checkbox:checked').map(function () {
             return this.value;
         }).get().join(', ');
 
         $('#services').val(checkedServices || '');
 
-        if ($('#free_treatment').is(':checked')) {
+        if (freeTreatment.is(':checked') || npcCall.is(':checked')) {
             $('#cost').val(0);
             return;
         }
@@ -26,6 +34,6 @@ $(document).ready(function() {
         $('#cost').val(totalCost);
     }
 
-    $('.report-service-checkbox, #free_treatment').on('change click', updateReportCostAndServices);
+    $('.report-service-checkbox, #free_treatment, #npc_call').on('change click', updateReportCostAndServices);
     updateReportCostAndServices();
 });

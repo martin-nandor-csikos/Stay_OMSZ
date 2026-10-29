@@ -78,6 +78,8 @@ class ReportController extends Controller
 
         $report['user_id'] = $request->user()->id;
         $report['price'] = $this->validatedReportCost($request);
+        $report['free_treatment'] = $request->boolean('free_treatment');
+        $report['npc_call'] = $request->boolean('npc_call');
         $report['diagnosis'] = $request->services;
         $report['withWho'] = $this->formatCompanions($request->withWho ?? []);
         $report['img'] = $request->img;
@@ -129,6 +131,15 @@ class ReportController extends Controller
         if ($cost !== (int) $report->price) {
             $report->price = $cost;
             $changed = true;
+        }
+
+        foreach (['free_treatment', 'npc_call'] as $treatmentFlag) {
+            $value = $request->boolean($treatmentFlag);
+
+            if ($value !== (bool) $report->$treatmentFlag) {
+                $report->$treatmentFlag = $value;
+                $changed = true;
+            }
         }
 
         if ($request->services !== $report->diagnosis) {
@@ -186,7 +197,7 @@ class ReportController extends Controller
     public function getUserReports($userId)
     {
         return DB::table('reports')
-            ->select('id', 'price', 'diagnosis', 'withWho', 'img', 'created_at', 'updated_at')
+            ->select('id', 'price', 'free_treatment', 'npc_call', 'diagnosis', 'withWho', 'img', 'created_at', 'updated_at')
             ->where('user_id', '=', $userId)
             ->get();
     }
@@ -200,7 +211,7 @@ class ReportController extends Controller
     public function getUserReportsFromClosedWeek($userId)
     {
         return DB::table('reports_closed')
-            ->select('id', 'price', 'diagnosis', 'withWho', 'img', 'created_at')
+            ->select('id', 'price', 'free_treatment', 'npc_call', 'diagnosis', 'withWho', 'img', 'created_at')
             ->where('user_id', '=', $userId)
             ->get();
     }
@@ -227,6 +238,7 @@ class ReportController extends Controller
         $request->validate([
             'cost' => ['required', 'integer', 'max:300000', 'min:0'],
             'free_treatment' => ['nullable', 'boolean'],
+            'npc_call' => ['nullable', 'boolean'],
             'services' => ['required', 'string'],
             'withWho' => ['nullable', 'array'],
             'withWho.*' => ['string', 'max:100'],
@@ -250,6 +262,8 @@ class ReportController extends Controller
             'img.max' => 'A kép URL-je maximum 100 karakterből állhat.',
             'img.unique' => 'Ezt a képet már feltöltötted.',
         ]);
+
+        $this->validateExclusiveTreatmentType($request);
     }
 
     /**
@@ -263,6 +277,7 @@ class ReportController extends Controller
         $request->validate([
             'cost' => ['required', 'integer', 'max:300000', 'min:0'],
             'free_treatment' => ['nullable', 'boolean'],
+            'npc_call' => ['nullable', 'boolean'],
             'services' => ['required', 'string'],
             'withWho' => ['nullable', 'array'],
             'withWho.*' => ['string', 'max:100'],
@@ -286,11 +301,15 @@ class ReportController extends Controller
             'img.max' => 'A kép URL-je maximum 100 karakterből állhat.',
             'img.unique' => 'Ezt a képet már feltöltötted.',
         ]);
+
+        $this->validateExclusiveTreatmentType($request);
     }
 
     private function validatedReportCost(Request $request): int
     {
-        $expectedCost = $request->boolean('free_treatment') ? 0 : $this->calculateReportCost($request->services);
+        $expectedCost = ($request->boolean('free_treatment') || $request->boolean('npc_call'))
+            ? 0
+            : $this->calculateReportCost($request->services);
 
         if ((int) $request->cost !== $expectedCost) {
             throw ValidationException::withMessages([
@@ -299,6 +318,15 @@ class ReportController extends Controller
         }
 
         return $expectedCost;
+    }
+
+    private function validateExclusiveTreatmentType(Request $request): void
+    {
+        if ($request->boolean('free_treatment') && $request->boolean('npc_call')) {
+            throw ValidationException::withMessages([
+                'npc_call' => 'Az ingyenes játékos ellátás és az NPC hívás nem választható együtt.',
+            ]);
+        }
     }
 
     private function calculateReportCost(string $services): int

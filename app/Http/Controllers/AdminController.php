@@ -68,6 +68,8 @@ class AdminController extends Controller
     {
         $userStats = $this->getWeeklyStatsQuery();
         $closedUserStats = $this->getClosedWeekStatsQuery();
+        $weeklyReportTypeCounts = $this->getReportTypeCounts('reports');
+        $closedWeekReportTypeCounts = $this->getReportTypeCounts('reports_closed');
         $inactivities = $this->getInactivitiesQuery();
         $pointUsers = $this->getPointUsersQuery();
         $departmentUsers = $this->getDepartmentUsersQuery();
@@ -114,6 +116,8 @@ class AdminController extends Controller
             'deletedUsers' => $deletedUsers,
             'userStats' => $userStats,
             'closedUserStats' => $closedUserStats,
+            'weeklyReportTypeCounts' => $weeklyReportTypeCounts,
+            'closedWeekReportTypeCounts' => $closedWeekReportTypeCounts,
             'admin_logs' => $admin_logs,
             'inactivities' => $inactivities,
             'pointUsers' => $pointUsers,
@@ -150,6 +154,7 @@ class AdminController extends Controller
                 'users.id',
                 'users.charactername',
                 DB::raw('COALESCE(ranks.name, "-") as rank_name'),
+                'ranks.is_leader',
                 'ranks.rank_order as rank_order',
                 'ranks.salary as rank_salary',
                 DB::raw('COALESCE(count(reports.user_id), 0) as reportCount'),
@@ -157,7 +162,7 @@ class AdminController extends Controller
                 DB::raw('COALESCE((SELECT SUM(duty_times.minutes) FROM duty_times WHERE duty_times.user_id = users.id), 0) as dutyMinuteSum'),
                 DB::raw('COALESCE((SELECT MAX(duty_times.end) FROM duty_times WHERE duty_times.user_id = users.id), "-") as lastDutyDate')
             )
-            ->groupBy('users.id', 'users.charactername', 'ranks.rank_order', 'ranks.name', 'ranks.salary')
+            ->groupBy('users.id', 'users.charactername', 'ranks.rank_order', 'ranks.name', 'ranks.salary', 'ranks.is_leader')
             ->get();
 
         $userStats = $userStats->sort(function ($left, $right) {
@@ -186,10 +191,24 @@ class AdminController extends Controller
         $bonus1 = $settings->bonus_first_percentage ?? 0;
         $bonus2 = $settings->bonus_second_percentage ?? 0;
         $bonus3 = $settings->bonus_third_percentage ?? 0;
+        $bonusPosition = 0;
 
-        foreach ($userStats as $index => $stat) {
+        foreach ($userStats as $stat) {
             $reportCount = (int) ($stat->reportCount ?? 0);
             $rankSalary = (int) ($stat->rank_salary ?? 0);
+            $bonusPercent = 0;
+
+            if (!(bool) ($stat->is_leader ?? false) && $reportCount > 0) {
+                if ($bonusPosition === 0) {
+                    $bonusPercent = $bonus1;
+                } elseif ($bonusPosition === 1) {
+                    $bonusPercent = $bonus2;
+                } elseif ($bonusPosition === 2) {
+                    $bonusPercent = $bonus3;
+                }
+
+                $bonusPosition++;
+            }
 
             if ($reportCount < $minReports) {
                 $stat->salary = 0;
@@ -198,17 +217,6 @@ class AdminController extends Controller
                 $stat->closed_week_message = "Sajnos nem kapsz fizetést, mivel nem teljesítetted a minimum jelentés számot ({$reportCount}/{$minReports} jelentést adtál le).";
             } else {
                 $baseSalary = $reportCount * $rankSalary;
-
-                $bonusPercent = 0;
-                if ($reportCount > 0) {
-                    if ($index === 0) {
-                        $bonusPercent = $bonus1;
-                    } elseif ($index === 1) {
-                        $bonusPercent = $bonus2;
-                    } elseif ($index === 2) {
-                        $bonusPercent = $bonus3;
-                    }
-                }
 
                 $bonusMultiplier = 1 + ($bonusPercent / 100);
                 $stat->salary = (int) round($baseSalary * $bonusMultiplier);
@@ -244,6 +252,7 @@ class AdminController extends Controller
                 'users_closed.id',
                 'users_closed.charactername',
                 DB::raw('COALESCE(users_closed.rank_name, "-") as rank_name'),
+                'users_closed.is_leader',
                 DB::raw('COALESCE(users_closed.salary, 0) as salary'),
                 'users_closed.is_paid',
                 'users_closed.payment_proof_url',
@@ -253,9 +262,28 @@ class AdminController extends Controller
                 DB::raw('COALESCE((SELECT SUM(duty_times_closed.minutes) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), 0) as dutyMinuteSum'),
                 DB::raw('COALESCE((SELECT MAX(duty_times_closed.end) FROM duty_times_closed WHERE duty_times_closed.user_id = users_closed.id), "-") as lastDutyDate')
             )
-            ->groupBy('users_closed.id', 'users_closed.charactername', 'users_closed.rank_name', 'users_closed.salary', 'users_closed.is_paid', 'users_closed.payment_proof_url', 'users_closed.salary_tooltip')
+            ->groupBy('users_closed.id', 'users_closed.charactername', 'users_closed.rank_name', 'users_closed.is_leader', 'users_closed.salary', 'users_closed.is_paid', 'users_closed.payment_proof_url', 'users_closed.salary_tooltip')
             ->orderBy('reportCount', 'DESC')
             ->get();
+    }
+
+    private function getReportTypeCounts(string $table): array
+    {
+        if (!in_array($table, ['reports', 'reports_closed'], true)) {
+            throw new \InvalidArgumentException('Unsupported reports table.');
+        }
+
+        $counts = DB::table($table)
+            ->selectRaw('COALESCE(SUM(CASE WHEN free_treatment = 0 AND npc_call = 0 THEN 1 ELSE 0 END), 0) as checks')
+            ->selectRaw('COALESCE(SUM(CASE WHEN free_treatment = 1 THEN 1 ELSE 0 END), 0) as free_treatments')
+            ->selectRaw('COALESCE(SUM(CASE WHEN npc_call = 1 THEN 1 ELSE 0 END), 0) as npc_reports')
+            ->first();
+
+        return [
+            'checks' => (int) $counts->checks,
+            'free_treatments' => (int) $counts->free_treatments,
+            'npc_reports' => (int) $counts->npc_reports,
+        ];
     }
 
     /**
@@ -1320,6 +1348,7 @@ class AdminController extends Controller
                     'salary' => $stat->salary ?? 0,
                     'salary_tooltip' => $stat->salary_tooltip ?? '',
                     'rank_name' => $stat->rank_name ?? '-',
+                    'is_leader' => (bool) ($stat->is_leader ?? false),
                 ]);
 
                 DB::table('users')->where('id', $stat->id)->update([

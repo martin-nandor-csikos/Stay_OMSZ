@@ -35,6 +35,7 @@
                                 <th scope="col">#</th>
                                 <th scope="col">Ár ($)</th>
                                 <th scope="col">Ellátások</th>
+                                <th scope="col">Típus</th>
                                 <th scope="col">Társaid</th>
                                 <th scope="col">Kép</th>
                                 <th scope="col">Felvéve</th>
@@ -49,6 +50,7 @@
                                     <th scope="row">{{ $loop->iteration }}</th>
                                     <td>{{ $report->price }}</td>
                                     <td>{{ $report->diagnosis }}</td>
+                                    <td>{{ $report->free_treatment ? 'Ingyenes' : ($report->npc_call ? 'NPC' : 'Csekk') }}</td>
                                     <td>{{ $report->withWho }}</td>
                                     <td><a href="{{ $report->img }}" target="blank">{{ $report->img }}</a></td>
                                     <td>{{ $report->created_at }}</td>

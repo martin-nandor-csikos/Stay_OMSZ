@@ -88,6 +88,9 @@
                 </table>
                 <div class="mt-4 text-gray-900 dark:text-gray-100">
                     <p>Összes jelentés: <b>{{ $totalReports }}</b></p>
+                    <p>Játékos csekkek száma: <b>{{ $weeklyReportTypeCounts['checks'] }}</b></p>
+                    <p>Ingyenes játékos ellátások száma: <b>{{ $weeklyReportTypeCounts['free_treatments'] }}</b></p>
+                    <p>NPC jelentések száma: <b>{{ $weeklyReportTypeCounts['npc_reports'] }}</b></p>
                     <p>Összes szolgálati idő: <b>{{ $totalDutyMinutes }} perc</b></p>
                     <p>Kifizetés összesen: <b>${{ number_format($totalSalary, 0, '.', ' ') }}</b></p>
                 </div>

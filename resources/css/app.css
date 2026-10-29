@@ -110,6 +110,17 @@ body.hidden {
     margin-right: 10px !important;
 }
 
+.report-treatment-option.is-disabled {
+    color: rgb(156 163 175) !important;
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.report-treatment-option.is-disabled input[type="checkbox"] {
+    accent-color: rgb(156 163 175) !important;
+    cursor: not-allowed;
+}
+
 .admin-readonly-scope input:not([type="hidden"])[readonly],
 .admin-readonly-scope textarea[readonly],
 .admin-readonly-scope select:disabled {

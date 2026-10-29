@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->integer('user_id');
             $table->integer('price');
+            $table->boolean('free_treatment')->default(false);
+            $table->boolean('npc_call')->default(false);
             $table->string('diagnosis');
             $table->string('withWho')->nullable();
             $table->string('img')->unique();
